@@ -1,0 +1,52 @@
+NODE_COUNT:
+  description: "Number of Cassandra nodes"
+  default: "3"
+  displayName: "Node Count"
+
+NODE_CPUS:
+  description: "CPUs (request) for the Cassandra node pods. spec.containers[].resources.requests.cpu"
+  default: "2000m"
+
+NODE_CPUS_LIMIT:
+  description: "CPUs (limit) for the Cassandra node pods. spec.containers[].resources.limits.cpu"
+  default: "2000m"
+
+NODE_MEM:
+  description: "Memory (request) for the Cassandra node pods. spec.containers[].resources.requests.memory"
+  default: 4096
+
+NODE_MEM_LIMIT:
+  description: "Memory (limit) for the Cassandra node pods. spec.containers[].resources.limits.memory"
+  default: 4096
+
+STORAGE_PORT:
+  description: "TODO"
+  default: "7000"
+
+SSL_STORAGE_PORT:
+  description: "TODO"
+  default: "7001"
+
+NATIVE_TRANSPORT_PORT:
+  description: "TODO"
+  default: "9042"
+
+RPC_PORT:
+  description: "TODO"
+  default: "9160"
+
+JMX_PORT:
+  description: "TODO"
+  default: "7199"
+
+DISK_SIZE:
+  description: "Disk size for the nodes"
+  default: "20Gi"
+
+STORAGE_CLASS:
+  description: "The storage class to be used in volumeClaimTemplates. By default its not required and the default storage class is used."
+  required: false
+
+PERSISTENT_STORAGE:
+  description: "If false, ephemeral storage is used. Not recommended for production use."
+  default: "true"

@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: svc
+spec:
+  ports:
+    - port: {{ .Params.STORAGE_PORT }}
+      name: storage
+    - port: {{ .Params.SSL_STORAGE_PORT }}
+      name: ssl-storage
+    - port: {{ .Params.NATIVE_TRANSPORT_PORT }}
+      name: native-transport
+    - port: {{ .Params.RPC_PORT }}
+      name: rpc
+    - port: {{ .Params.JMX_PORT }}
+      name: jmx
+  clusterIP: None
+  selector:
+    app: cassandra
+    kudo.dev/instance: {{ .Name }}
