@@ -1,7 +1,7 @@
 NODE_COUNT:
   description: "Number of Cassandra nodes"
-  default: "3"
   displayName: "Node Count"
+  default: 3
 
 NODE_CPUS:
   description: "CPUs (request) for the Cassandra node pods. spec.containers[].resources.requests.cpu"
