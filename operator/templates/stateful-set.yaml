@@ -5,18 +5,18 @@ metadata:
   namespace: {{ .Namespace }}
   labels:
     cassandra: {{ .OperatorName }}
-    app: cassandra
+    app: {{ .Name }}
 spec:
   selector:
     matchLabels:
-      app: cassandra
+      app: {{ .Name }}
       cassandra: {{ .OperatorName }}
   serviceName: {{ .Name }}-svc
   replicas: {{ .Params.NODE_COUNT }}
   template:
     metadata:
       labels:
-        app: cassandra
+        app: {{ .Name }}
         cassandra: {{ .OperatorName }}
     spec:
       securityContext:
