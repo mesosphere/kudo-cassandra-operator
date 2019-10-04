@@ -429,7 +429,7 @@ data:
               # Here we follow the advice from DataStax and make the first 3
               # nodes in a DC the seed nodes.
               # https://docs.datastax.com/en/dse/6.0/dse-admin/datastax_enterprise/production/seedNodesForSingleDC.html
-              - seeds: "{{- range $i, $node := until (min 3 (atoi .Params.NODE_COUNT)) -}}
+              - seeds: "{{- range $i, $node := until (int (min 3 .Params.NODE_COUNT)) -}}
                           {{- if $i -}}, {{- end -}}
                           {{ $.Name }}-node-{{ $node }}.{{ $.Name }}-svc.{{ $.Namespace }}.svc.cluster.local
                         {{- end -}}"
