@@ -10,7 +10,7 @@
 - [Docker daemon running under a non-root
   user](https://docs.docker.com/install/linux/linux-postinstall/) (only for
   Linux)
-- [KUDO](https://github.com/kudobuilder/kudo/releases) (last tested on 0.7.0)
+- [KUDO](https://github.com/kudobuilder/kudo/releases) (last tested on 0.7.2)
 - Kubernetes cluster (last tested on [Konvoy
   v1.1.5](https://github.com/mesosphere/konvoy/releases))
 
@@ -60,7 +60,7 @@ kubectl kudo plan status \
 #### Checking out the pods
 
 ```bash
-kubectl get pods -n kudo-cassandra
+kubectl get pods -n "${kudo_cassandra_instance_namespace}"
 ```
 
 #### Getting the 0th pod name
@@ -75,9 +75,22 @@ kudo_cassandra_pod_0="$(kubectl get pods \
 
 ```bash
 kubectl exec "${kudo_cassandra_pod_0}" \
-        -n kudo-cassandra \
+        -n "${kudo_cassandra_instance_namespace}" \
         -- \
         bash -c 'nodetool status'
+```
+
+#### Running a `cassandra-stress` workload
+
+```bash
+svc_endpoint="${kudo_cassandra_instance_name}-svc.${kudo_cassandra_instance_namespace}.svc.cluster.local"
+```
+
+```bash
+kubectl exec "${kudo_cassandra_pod_0}" \
+        -n "${kudo_cassandra_instance_namespace}" \
+        -- \
+        bash -c "cassandra-stress write -node ${svc_endpoint}"
 ```
 
 ### Uninstalling the KUDO Cassandra operator
