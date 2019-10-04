@@ -426,9 +426,14 @@ data:
         # multiple nodes!
         - class_name: org.apache.cassandra.locator.SimpleSeedProvider
           parameters:
-              # seeds is actually a comma-delimited list of addresses.
-              # Ex: "<ip1>,<ip2>,<ip3>"
-              - seeds: "cassandra-cassandra-0.cassandra-svc.{{ .Namespace }}.svc.cluster.local,cassandra-cassandra-1.cassandra-svc.{{ .Namespace }}.svc.cluster.local"
+              # Here we follow the advice from DataStax and make the first 3
+              # nodes in a DC the seed nodes.
+              # https://docs.datastax.com/en/dse/6.0/dse-admin/datastax_enterprise/production/seedNodesForSingleDC.html
+              - seeds: "{{- range $i, $node := until (min 3 (atoi .Params.NODE_COUNT)) -}}
+                          {{- if $i -}}, {{- end -}}
+                          {{ $.Name }}-node-{{ $node }}.{{ $.Name }}-svc.{{ $.Namespace }}.svc.cluster.local
+                        {{- end -}}"
+
 
     # For workloads with more data than can fit in memory, Cassandra's
     # bottleneck will be reads that need to fetch data from
