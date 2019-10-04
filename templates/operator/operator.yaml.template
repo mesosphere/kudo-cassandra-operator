@@ -1,0 +1,29 @@
+name: "cassandra"
+version: "${KUDO_CASSANDRA_VERSION}"
+kudoVersion: "${KUDO_VERSION}"
+kubernetesVersion: "${KUBERNETES_VERSION}"
+appVersion: "${CASSANDRA_VERSION}"
+maintainers:
+  - name: Murilo Pereira
+    email: murilo@murilopereira.com
+url: http://cassandra.apache.org/
+
+tasks:
+  node:
+    resources:
+      - service.yaml
+      - cassandra-yaml.yaml
+      - cassandra-env-sh.yaml
+      - jvm-options.yaml
+      - stateful-set.yaml
+
+plans:
+  deploy:
+    strategy: serial
+    phases:
+      - name: nodes
+        strategy: parallel
+        steps:
+          - name: node
+            tasks:
+              - node
