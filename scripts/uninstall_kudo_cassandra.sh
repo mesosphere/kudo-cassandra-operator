@@ -1,12 +1,30 @@
 #!/usr/bin/env bash
 
+readonly KUDO_CASSANDRA_OPERATOR_NAME="${KUDO_CASSANDRA_OPERATOR_NAME:-cassandra}"
 readonly KUDO_CASSANDRA_VERSION="${KUDO_CASSANDRA_VERSION:-0.1.0}"
-readonly KUBERNETES_NAMESPACE="${KUBERNETES_NAMESPACE:-kudo-cassandra}"
+readonly KUDO_CASSANDRA_INSTANCE_NAME="${KUDO_CASSANDRA_INSTANCE_NAME:-cassandra}"
+readonly KUDO_CASSANDRA_INSTANCE_NAMESPACE="${KUDO_CASSANDRA_INSTANCE_NAMESPACE:-kudo-cassandra}"
 
-kubectl delete instance cassandra -n "${KUBERNETES_NAMESPACE}"
-kubectl delete operatorversion "cassandra-${KUDO_CASSANDRA_VERSION}" -n "${KUBERNETES_NAMESPACE}"
-kubectl delete operator cassandra -n "${KUBERNETES_NAMESPACE}"
-# TODO(mpereira): get pvcs and iterate deleting each.
-kubectl delete pvc/var-lib-cassandra-cassandra-cassandra-0 -n "${KUBERNETES_NAMESPACE}"
-kubectl delete pvc/var-lib-cassandra-cassandra-cassandra-1 -n "${KUBERNETES_NAMESPACE}"
-kubectl delete pvc/var-lib-cassandra-cassandra-cassandra-2 -n "${KUBERNETES_NAMESPACE}"
+kubectl delete instance \
+        "${KUDO_CASSANDRA_INSTANCE_NAME}" \
+        -n "${KUDO_CASSANDRA_INSTANCE_NAMESPACE}"
+
+kubectl delete operatorversion \
+        "${KUDO_CASSANDRA_OPERATOR_NAME}-${KUDO_CASSANDRA_VERSION}" \
+        -n "${KUDO_CASSANDRA_INSTANCE_NAMESPACE}"
+
+kubectl delete operator \
+        "${KUDO_CASSANDRA_OPERATOR_NAME}" \
+        -n "${KUDO_CASSANDRA_INSTANCE_NAMESPACE}"
+
+declare -a PVCS
+mapfile -t PVCS < <(
+  kubectl get pvc \
+          -n "${KUDO_CASSANDRA_INSTANCE_NAMESPACE}" \
+          -o 'jsonpath={.items[*].metadata.name}' \
+    | tr ' ' '\n'
+)
+
+for pvc in "${PVCS[@]}"; do
+  kubectl delete "pvc/${pvc}" -n "${KUDO_CASSANDRA_INSTANCE_NAMESPACE}"
+done
