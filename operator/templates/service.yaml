@@ -10,8 +10,10 @@ spec:
       name: ssl-storage
     - port: {{ .Params.NATIVE_TRANSPORT_PORT }}
       name: native-transport
+    {{ if .Params.START_RPC }}
     - port: {{ .Params.RPC_PORT }}
       name: rpc
+    {{ end }}
     - port: {{ .Params.JMX_PORT }}
       name: jmx
   clusterIP: None

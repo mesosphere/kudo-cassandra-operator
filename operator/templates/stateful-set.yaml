@@ -112,8 +112,10 @@ spec:
               name: ssl-storage
             - containerPort: {{ .Params.NATIVE_TRANSPORT_PORT }}
               name: native
+            {{ if .Params.START_RPC }}
             - containerPort: {{ .Params.RPC_PORT }}
               name: rpc
+            {{ end }}
             - containerPort: {{ .Params.JMX_PORT }}
               name: jmx
           volumeMounts:
