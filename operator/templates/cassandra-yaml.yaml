@@ -134,7 +134,7 @@ data:
     # after the period specified here, become eligible for (async) reload.
     # Defaults to 2000, set to 0 to disable caching entirely.
     # Will be disabled automatically for AllowAllAuthenticator.
-    roles_validity_in_ms: 2000
+    roles_validity_in_ms: {{ .Params.ROLES_VALIDITY_IN_MS }}
 
     # Refresh interval for roles cache (if enabled).
     # After this interval, cache entries become eligible for refresh. Upon next
@@ -142,13 +142,13 @@ data:
     # completes. If roles_validity_in_ms is non-zero, then this must be
     # also.
     # Defaults to the same value as roles_validity_in_ms.
-    # roles_update_interval_in_ms: 2000
+    roles_update_interval_in_ms: {{ .Params.ROLES_UPDATE_INTERVAL_IN_MS }}
 
     # Validity period for permissions cache (fetching permissions can be an
     # expensive operation depending on the authorizer, CassandraAuthorizer is
     # one example). Defaults to 2000, set to 0 to disable.
     # Will be disabled automatically for AllowAllAuthorizer.
-    permissions_validity_in_ms: 2000
+    permissions_validity_in_ms: {{ .Params.PERMISSIONS_VALIDITY_IN_MS }}
 
     # Refresh interval for permissions cache (if enabled).
     # After this interval, cache entries become eligible for refresh. Upon next
@@ -156,7 +156,7 @@ data:
     # completes. If permissions_validity_in_ms is non-zero, then this must be
     # also.
     # Defaults to the same value as permissions_validity_in_ms.
-    # permissions_update_interval_in_ms: 2000
+    permissions_update_interval_in_ms: {{ .Params.PERMISSIONS_UPDATE_INTERVAL_IN_MS }}
 
     # Validity period for credentials cache. This cache is tightly coupled to
     # the provided PasswordAuthenticator implementation of IAuthenticator. If
@@ -167,7 +167,7 @@ data:
     # underlying table, it may not  bring a significant reduction in the
     # latency of individual authentication attempts.
     # Defaults to 2000, set to 0 to disable credentials caching.
-    credentials_validity_in_ms: 2000
+    credentials_validity_in_ms: {{ .Params.CREDENTIALS_VALIDITY_IN_MS }}
 
     # Refresh interval for credentials cache (if enabled).
     # After this interval, cache entries become eligible for refresh. Upon next
@@ -175,7 +175,7 @@ data:
     # completes. If credentials_validity_in_ms is non-zero, then this must be
     # also.
     # Defaults to the same value as credentials_validity_in_ms.
-    # credentials_update_interval_in_ms: 2000
+    credentials_update_interval_in_ms: {{ .Params.CREDENTIALS_UPDATE_INTERVAL_IN_MS }}
 
     # The partitioner is responsible for distributing groups of rows (by
     # partition key) across nodes in the cluster.  You should leave this

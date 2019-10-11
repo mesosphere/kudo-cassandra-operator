@@ -83,6 +83,30 @@ BATCHLOG_REPLAY_THROTTLE_IN_KB:
   description: "The total throttle for log replay in Kpbs."
   default: 1024
 
+ROLES_VALIDITY_IN_MS:
+  description: "Validity period for roles cache; set to 0 to disable"
+  default: 2000
+
+ROLES_UPDATE_INTERVAL_IN_MS:
+  description: "After this interval, cache entries become eligible for refresh. Upon next access, Cassandra schedules an async reload, and returns the old value until the reload completes. If roles_validity_in_ms is non-zero, then this must be also."
+  default: 2000
+
+CREDENTIALS_VALIDITY_IN_MS:
+  description: " This cache is tightly coupled to the provided PasswordAuthenticator implementation of IAuthenticator. If another IAuthenticator implementation is configured, Cassandra does not use this cache, and these settings have no effect. Set to 0 to disable."
+  default: 2000
+
+CREDENTIALS_UPDATE_INTERVAL_IN_MS:
+  description: "After this interval, cache entries become eligible for refresh. The next time the cache is accessed, the system schedules an asynchronous reload of the cache. Until this cache reload is complete, the cache returns the old values. If credentials_validity_in_ms is nonzero, this property must also be nonzero."
+  default: 2000
+
+PERMISSIONS_VALIDITY_IN_MS:
+  description: "How many milliseconds permissions in cache remain valid. Fetching permissions can be resource intensive. To disable the cache, set this to 0."
+  default: 2000
+
+PERMISSIONS_UPDATE_INTERVAL_IN_MS:
+  description: "If enabled, sets refresh interval for the permissions cache. After this interval, cache entries become eligible for refresh. On next access, Cassandra schedules an async reload and returns the old value until the reload completes. If permissions_validity_in_ms is nonzero, permissions_update_interval_in_ms must also be non-zero."
+  default: 2000
+
 PARTITIONER:
   description: "The partitioner used to distribute rows across the cluster. Murmur3Partitioner is the recommended setting. RandomPartitioner and ByteOrderedPartitioner are supported for legacy applications."
   default: "org.apache.cassandra.dht.Murmur3Partitioner"
