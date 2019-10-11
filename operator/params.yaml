@@ -55,6 +55,14 @@ CLUSTER_NAME:
   description: "The name of the cluster managed by the Service"
   default: "cassandra"
 
+CASSANDRA_HEAP_SIZE_MB:
+  description: "The amount of JVM heap, in MB, allocated to the Cassandra process."
+  default: 2048
+
+CASSANDRA_HEAP_NEW_MB:
+  description: "The amount of JVM new generation heap, in MB, allocated to the Cassandra process."
+  default: 100
+
 SEED_PROVIDER_CLASS:
   description: "The class within Cassandra that handles the seed logic."
   default: "org.apache.cassandra.locator.SimpleSeedProvider"
