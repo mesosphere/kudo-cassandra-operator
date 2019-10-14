@@ -17,13 +17,10 @@ log () {
   fi
 }
 
-# Add more environment variables to be available in templates here.
-env_vars=(
-  CASSANDRA_VERSION
-  KUBERNETES_VERSION
-  KUDO_CASSANDRA_VERSION
-  KUDO_VERSION
-)
+declare -a env_vars
+mapfile -t env_vars < <(sed -E \
+                            's/export[[:space:]]+([[:alnum:]_]+)=.*/\1/g' \
+                            "${PROJECT_DIRECTORY}/metadata.sh" )
 
 declare -a templates
 mapfile -t templates < <(find "${PROJECT_DIRECTORY}/templates" -type f)

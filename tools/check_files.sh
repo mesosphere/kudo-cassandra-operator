@@ -35,7 +35,7 @@ fi
 
 # Get all files with a shebang.
 mapfile -t shell_scripts < <(git ls-files -- ':!:shared' | xargs -I{} grep -El '^#!.+(sh|bash)' {})
-shellcheck "${shellcheck_options[@]}" "${shell_scripts[@]}"
+shellcheck -ax -e SC1091 "${shellcheck_options[@]}" "${shell_scripts[@]}"
 
 readonly shell_scripts_exit_code=$?
 
