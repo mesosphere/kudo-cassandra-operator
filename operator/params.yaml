@@ -76,11 +76,11 @@ HINTED_HANDOFF_ENABLED:
   default: true
 
 MAX_HINT_WINDOW_IN_MS:
-  description: "The maximum amount of time, in ms, that hints are generates hints for an unresponsive node."
+  description: "The maximum amount of time, in ms, that hints are generated for an unresponsive node."
   default: 10800000
 
 HINTED_HANDOFF_THROTTLE_IN_KB:
-  description: "The maximum throttle per delivery thread in kilobytes per second."
+  description: "The maximum throttle per delivery thread in KBs per second."
   default: 1024
 
 MAX_HINTS_DELIVERY_THREADS:
@@ -88,7 +88,7 @@ MAX_HINTS_DELIVERY_THREADS:
   default: 2
 
 BATCHLOG_REPLAY_THROTTLE_IN_KB:
-  description: "The total throttle for log replay in Kpbs."
+  description: "The total maximum throttle for replaying failed logged batches in KBs per second."
   default: 1024
 
 ROLES_VALIDITY_IN_MS:
@@ -164,15 +164,15 @@ INDEX_SUMMARY_RESIZE_INTERVAL_IN_MINUTES:
   default: 60
 
 START_NATIVE_TRANSPORT:
-  description: "If true CQL is enabled."
+  description: "If true, CQL is enabled."
   default: true
 
 START_RPC:
-  description: "If true Thrift RPC is enabled. This is deprecated but may be necessary for legacy applications."
+  description: "If true, Thrift RPC is enabled. This is deprecated but may be necessary for legacy applications."
   default: false
 
 RPC_KEEPALIVE:
-  description: "Enables or TCP keepalive for RPC connections."
+  description: "Enables or disables keepalive on client connections (RPC or native)."
   default: true
 
 THRIFT_FRAMED_TRANSPORT_SIZE_IN_MB:
@@ -376,7 +376,7 @@ MAX_VALUE_SIZE_IN_MB:
   default: 256
 
 OTC_COALESCING_STRATEGY:
-  description: "The strategy to use for coalescing network messages"
+  description: "The strategy to use for coalescing network messages. Values can be: fixed, movingaverage, timehorizon, disabled (default)"
   default: "DISABLED"
 
 UNLOGGED_BATCH_ACROSS_PARTITIONS_WARN_THRESHOLD:
