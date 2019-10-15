@@ -142,7 +142,9 @@ data:
     # completes. If roles_validity_in_ms is non-zero, then this must be
     # also.
     # Defaults to the same value as roles_validity_in_ms.
+    {{ if .Params.ROLES_UPDATE_INTERVAL_IN_MS }}
     roles_update_interval_in_ms: {{ .Params.ROLES_UPDATE_INTERVAL_IN_MS }}
+    {{ end }}
 
     # Validity period for permissions cache (fetching permissions can be an
     # expensive operation depending on the authorizer, CassandraAuthorizer is
@@ -156,7 +158,9 @@ data:
     # completes. If permissions_validity_in_ms is non-zero, then this must be
     # also.
     # Defaults to the same value as permissions_validity_in_ms.
+    {{ if .Params.PERMISSIONS_UPDATE_INTERVAL_IN_MS }}
     permissions_update_interval_in_ms: {{ .Params.PERMISSIONS_UPDATE_INTERVAL_IN_MS }}
+    {{ end }}
 
     # Validity period for credentials cache. This cache is tightly coupled to
     # the provided PasswordAuthenticator implementation of IAuthenticator. If
@@ -175,7 +179,9 @@ data:
     # completes. If credentials_validity_in_ms is non-zero, then this must be
     # also.
     # Defaults to the same value as credentials_validity_in_ms.
+    {{ if .Params.CREDENTIALS_UPDATE_INTERVAL_IN_MS }}
     credentials_update_interval_in_ms: {{ .Params.CREDENTIALS_UPDATE_INTERVAL_IN_MS }}
+    {{ end }}
 
     # The partitioner is responsible for distributing groups of rows (by
     # partition key) across nodes in the cluster.  You should leave this
@@ -307,7 +313,9 @@ data:
 
     # Number of keys from the key cache to save
     # Disabled by default, meaning all keys are going to be saved
+    {{ if .Params.KEY_CACHE_KEYS_TO_SAVE }}
     key_cache_keys_to_save: {{ .Params.KEY_CACHE_KEYS_TO_SAVE }}
+    {{ end }}
 
     # Row cache implementation class name. Available implementations:
     #
@@ -341,7 +349,9 @@ data:
 
     # Number of keys from the row cache to save.
     # Specify 0 (which is the default), meaning all keys are going to be saved
+    {{ if .Params.ROW_CACHE_KEYS_TO_SAVE }}
     row_cache_keys_to_save: {{ .Params.ROW_CACHE_KEYS_TO_SAVE }}
+    {{ end }}
 
     # Maximum size of the counter cache in memory.
     #
@@ -367,7 +377,9 @@ data:
 
     # Number of keys from the counter cache to save
     # Disabled by default, meaning all keys are going to be saved
+    {{ if .Params.COUNTER_CACHE_KEYS_TO_SAVE }}
     counter_cache_keys_to_save: {{ .Params.COUNTER_CACHE_KEYS_TO_SAVE }}
+    {{ end }}
 
     # saved caches
     # If not set, the default directory is $CASSANDRA_HOME/data/saved_caches.
@@ -464,26 +476,36 @@ data:
     # overhead which is roughly 128 bytes per chunk (i.e. 0.2% of the reserved size
     # if the default 64k chunk size is used).
     # Memory is only allocated when needed.
+    {{ if .Params.FILE_CACHE_SIZE_IN_MB }}
     file_cache_size_in_mb: {{ .Params.FILE_CACHE_SIZE_IN_MB }}
+    {{ end }}
 
     # Flag indicating whether to allocate on or off heap when the sstable buffer
     # pool is exhausted, that is when it has exceeded the maximum memory
     # file_cache_size_in_mb, beyond which it will not cache buffers but allocate on request.
 
-    # buffer_pool_use_heap_if_exhausted: {{ .Params.BUFFER_POOL_USE_HEAP_IF_EXHAUSTED }}
+    {{ if .Params.BUFFER_POOL_USE_HEAP_IF_EXHAUSTED }}
+    buffer_pool_use_heap_if_exhausted: {{ .Params.BUFFER_POOL_USE_HEAP_IF_EXHAUSTED }}
+    {{ end }}
 
     # The strategy for optimizing disk read
     # Possible values are:
     # ssd (for solid state disks, the default)
     # spinning (for spinning disks)
-    # disk_optimization_strategy: {{ .Params.DISK_OPTIMIZATION_STRATEGY }}
+    {{ if .Params.DISK_OPTIMIZATION_STRATEGY }}
+    disk_optimization_strategy: {{ .Params.DISK_OPTIMIZATION_STRATEGY }}
+    {{ end }}
 
     # Total permitted memory to use for memtables. Cassandra will stop
     # accepting writes when the limit is exceeded until a flush completes,
     # and will trigger a flush based on memtable_cleanup_threshold
     # If omitted, Cassandra will set both to 1/4 the size of the heap.
+    {{ if .Params.MEMTABLE_HEAP_SPACE_IN_MB }}
     memtable_heap_space_in_mb: {{ .Params.MEMTABLE_HEAP_SPACE_IN_MB }}
+    {{ end }}
+    {{ if .Params.MEMTABLE_OFFHEAP_SPACE_IN_MB }}
     memtable_offheap_space_in_mb: {{ .Params.MEMTABLE_OFFHEAP_SPACE_IN_MB }}
+    {{ end }}
 
     # memtable_cleanup_threshold is deprecated. The default calculation
     # is the only reasonable choice. See the comments on  memtable_flush_writers
@@ -496,7 +518,10 @@ data:
     # under heavy write load.
     #
     # memtable_cleanup_threshold defaults to 1 / (memtable_flush_writers + 1)
+    {{ if .Params.MEMTABLE_CLEANUP_THRESHOLD }}
     memtable_cleanup_threshold: {{ .Params.MEMTABLE_CLEANUP_THRESHOLD }}
+    {{ end }}
+
 
     # Specify the way Cassandra allocates and manages memtable memory.
     # Options are:
@@ -520,7 +545,9 @@ data:
     # The default value is the smaller of 8192, and 1/4 of the total space
     # of the commitlog volume.
     #
+    {{ if .Params.COMMITLOG_TOTAL_SPACE_IN_MB }}
     commitlog_total_space_in_mb: {{ .Params.COMMITLOG_TOTAL_SPACE_IN_MB }}
+    {{ end }}
 
     # This sets the number of memtable flush writer threads per disk
     # as well as the total number of memtables that can be flushed concurrently.
@@ -549,7 +576,9 @@ data:
     # and flush size and frequency. More is not better you just need enough flush writers
     # to never stall waiting for flushing to free memory.
     #
+    {{ if .Params.MEMTABLE_FLUSH_WRITERS }}
     memtable_flush_writers: {{ .Params.MEMTABLE_FLUSH_WRITERS }}
+    {{ end }}
 
     # Total space to use for change-data-capture logs on disk.
     #
@@ -559,12 +588,16 @@ data:
     #
     # The default value is the min of 4096 mb and 1/8th of the total space
     # of the drive where cdc_raw_directory resides.
+    {{ if .Params.CDC_TOTAL_SPACE_IN_MB }}
     cdc_total_space_in_mb: {{ .Params.CDC_TOTAL_SPACE_IN_MB }}
+    {{ end }}
 
     # When we hit our cdc_raw limit and the CDCCompactor is either running behind
     # or experiencing backpressure, we check at the following interval to see if any
     # new space for cdc-tracked tables has been made available. Default to 250ms
+    {{ if .Params.CDC_FREE_SPACE_CHECK_INTERVAL_MS }}
     cdc_free_space_check_interval_ms: {{ .Params.CDC_FREE_SPACE_CHECK_INTERVAL_MS }}
+    {{ end }}
 
     # A fixed memory pool size in MB for for SSTable index summaries. If left
     # empty, this will default to 5% of the heap size. If the memory usage of
@@ -632,11 +665,15 @@ data:
     # interfaces.
     # Ignore this property if the network configuration automatically
     # routes  between the public and private networks such as EC2.
+    {{ if .Params.LISTEN_ON_BROADCAST_ADDRESS }}
     listen_on_broadcast_address: {{ .Params.LISTEN_ON_BROADCAST_ADDRESS }}
+    {{ end }}
 
     # Internode authentication backend, implementing IInternodeAuthenticator;
     # used to allow/disallow connections from peer nodes.
+    {{ if .Params.INTERNODE_AUTHENTICATOR }}
     internode_authenticator: {{ .Params.INTERNODE_AUTHENTICATOR }}
+    {{ end }}
 
     # Whether to start the native transport server.
     # Please note that the address on which the native transport is bound is the
@@ -657,20 +694,28 @@ data:
     # This is similar to rpc_max_threads though the default differs slightly (and
     # there is no native_transport_min_threads, idle threads will always be stopped
     # after 30 seconds).
+    {{ if .Params.NATIVE_TRANSPORT_MAX_THREADS }}
     native_transport_max_threads: {{ .Params.NATIVE_TRANSPORT_MAX_THREADS }}
+    {{ end }}
     #
     # The maximum size of allowed frame. Frame (requests) larger than this will
     # be rejected as invalid. The default is 256MB. If you're changing this parameter,
     # you may want to adjust max_value_size_in_mb accordingly. This should be positive and less than 2048.
+    {{ if .Params.NATIVE_TRANSPORT_MAX_FRAME_SIZE_IN_MB }}
     native_transport_max_frame_size_in_mb: {{ .Params.NATIVE_TRANSPORT_MAX_FRAME_SIZE_IN_MB }}
+    {{ end }}
 
     # The maximum number of concurrent client connections.
     # The default is -1, which means unlimited.
+    {{ if .Params.NATIVE_TRANSPORT_MAX_CONCURRENT_CONNECTIONS }}
     native_transport_max_concurrent_connections: {{ .Params.NATIVE_TRANSPORT_MAX_CONCURRENT_CONNECTIONS }}
+    {{ end }}
 
     # The maximum number of concurrent client connections per source ip.
     # The default is -1, which means unlimited.
+    {{ if .Params.NATIVE_TRANSPORT_MAX_FRAME_SIZE_IN_MB }}
     native_transport_max_concurrent_connections_per_ip: {{ .Params.NATIVE_TRANSPORT_MAX_CONCURRENT_CONNECTIONS_PER_IP }}
+    {{ end }}
 
     # Whether to start the thrift rpc server.
     start_rpc: {{ .Params.START_RPC }}
@@ -744,12 +789,20 @@ data:
     # encouraged to set a maximum that makes sense for you in production, but do keep in mind that
     # rpc_max_threads represents the maximum number of client requests this server may execute concurrently.
     #
+    {{ if .Params.RPC_MIN_THREADS }}
     rpc_min_threads: {{ .Params.RPC_MIN_THREADS }}
+    {{ end }}
+    {{ if .Params.RPC_MAX_THREADS }}
     rpc_max_threads: {{ .Params.RPC_MAX_THREADS }}
+    {{ end }}
 
     # uncomment to set socket buffer sizes on rpc connections
+    {{ if .Params.RPC_SEND_BUFF_SIZE_IN_BYTES }}
     rpc_send_buff_size_in_bytes: {{ .Params.RPC_SEND_BUFF_SIZE_IN_BYTES }}
-    rpc_recv_buff_size_in_bytes: {{ .Params.RPC_RECV_BUFF_SIZE_IN_BYTES }}  
+    {{ end }}
+    {{ if .Params.RPC_RECV_BUFF_SIZE_IN_BYTES }}
+    rpc_recv_buff_size_in_bytes: {{ .Params.RPC_RECV_BUFF_SIZE_IN_BYTES }} 
+    {{ end }}
 
     # Uncomment to set socket buffer size for internode communication
     # Note that when setting this, the buffer size is limited by net.core.wmem_max
@@ -823,7 +876,9 @@ data:
     #
     # If your data directories are backed by SSD, you should increase this
     # to the number of cores.
+    {{ if .Params.CONCURRENT_COMPACTORS }}
     concurrent_compactors: {{ .Params.CONCURRENT_COMPACTORS }}
+    {{ end }}
 
     # Throttles compaction to the given total throughput across the entire
     # system. The faster you insert data, the faster you need to compact in
@@ -844,14 +899,18 @@ data:
     # mostly sequential IO when streaming data during bootstrap or repair, which
     # can lead to saturating the network connection and degrading rpc performance.
     # When unset, the default is 200 Mbps or 25 MB/s.
-    # stream_throughput_outbound_megabits_per_sec: {{ .Params.STREAM_THROUGHPUT_OUTBOUND_MEGABITS_PER_SEC }}
+    {{ if .Params.STREAM_THROUGHPUT_OUTBOUND_MEGABITS_PER_SEC }}
+    stream_throughput_outbound_megabits_per_sec: {{ .Params.STREAM_THROUGHPUT_OUTBOUND_MEGABITS_PER_SEC }}
+    {{ end }}
 
     # Throttles all streaming file transfer between the datacenters,
     # this setting allows users to throttle inter dc stream throughput in addition
     # to throttling all network stream traffic as configured with
     # stream_throughput_outbound_megabits_per_sec
-    # When unset, the default is 200 Mbps or 25 MB/s
-    # inter_dc_stream_throughput_outbound_megabits_per_sec: {{ .Params.INTER_DC_STREAM_THROUGHPUT_OUTBOUND_MEGABITS_PER_SEC }}
+    # When unset, the default is 200 Mbps or 25 MB/s    
+    {{ if .Params.INTER_DC_STREAM_THROUGHPUT_OUTBOUND_MEGABITS_PER_SEC }}
+    inter_dc_stream_throughput_outbound_megabits_per_sec: {{ .Params.INTER_DC_STREAM_THROUGHPUT_OUTBOUND_MEGABITS_PER_SEC }}
+    {{ end }}
 
     # How long the coordinator should wait for read operations to complete
     read_request_timeout_in_ms: {{ .Params.READ_REQUEST_TIMEOUT_IN_MS }}
@@ -892,11 +951,15 @@ data:
     # 2 keep-alive cycles the stream session times out and fail
     # Default value is 300s (5 minutes), which means stalled stream
     # times out in 10 minutes by default
+    {{ if .Params.STREAMING_KEEP_ALIVE_PERIOD_IN_SECS }}
     streaming_keep_alive_period_in_secs: {{ .Params.STREAMING_KEEP_ALIVE_PERIOD_IN_SECS }}
+    {{ end }}
 
     # phi value that must be reached for a host to be marked down.
     # most users should never need to adjust this.
+    {{ if .Params.PHI_CONVICT_THRESHOLD }}
     phi_convict_threshold: {{ .Params.PHI_CONVICT_THRESHOLD }}
+    {{ end }}
 
     # endpoint_snitch -- Set this to a class that implements
     # IEndpointSnitch.  The snitch has two functions:
@@ -1116,7 +1179,7 @@ data:
 
     # Enables materialized view creation on this node.
     # Materialized views are considered experimental and are not recommended for production use.
-    #enable_materialized_views: true
+    enable_materialized_views: {{ .Params.ENABLE_MATERIALIZED_VIEWS }}
 
     # The default Windows kernel timer and scheduling resolution is 15.6ms for power conservation.
     # Lowering this value on Windows can provide much tighter latency and better throughput, however
@@ -1191,7 +1254,9 @@ data:
     # Maximum size of any value in SSTables. Safety measure to detect SSTable corruption
     # early. Any value size larger than this threshold will result into marking an SSTable
     # as corrupted. This should be positive and less than 2048.
+    {{ if .Params.MAX_VALUE_SIZE_IN_MB }}
     max_value_size_in_mb: {{ .Params.MAX_VALUE_SIZE_IN_MB }}
+    {{ end }}
 
     # Back-pressure settings #
     # If enabled, the coordinator will apply the back-pressure strategy specified below to each mutation
@@ -1208,14 +1273,12 @@ data:
     # if SLOW at the speed of the slowest one.
     # New strategies can be added. Implementors need to implement org.apache.cassandra.net.BackpressureStrategy and
     # provide a public constructor accepting a Map<String, Object>.
-    {{ if .Params.BACK_PRESSURE_ENABLED }}
     back_pressure_strategy:
         - class_name: {{ .Params.BACK_PRESSURE_STRATEGY_CLASS }}
           parameters:
             - high_ratio: {{ .Params.BACK_PRESSURE_HIGH_RATIO }}
               factor: {{ .Params.BACK_PRESSURE_FACTOR }}
               flow: {{ .Params.BACK_PRESSURE_FLOW }}
-    {{ end }}
     # Coalescing Strategies #
     # Coalescing multiples messages turns out to significantly boost message processing throughput (think doubling or more).
     # On bare metal, the floor for packet processing throughput is high enough that many applications won't notice, but in
@@ -1232,7 +1295,9 @@ data:
     # Strategy to use for coalescing messages in OutboundTcpConnection.
     # Can be fixed, movingaverage, timehorizon, disabled (default).
     # You can also specify a subclass of CoalescingStrategies.CoalescingStrategy by name.
-    # otc_coalescing_strategy: {{ .Params.OTC_COALESCING_STRATEGY }}
+    {{ if .Params.OTC_COALESCING_STRATEGY }}
+    otc_coalescing_strategy: {{ .Params.OTC_COALESCING_STRATEGY }}
+    {{ end }}
 
     # How many microseconds to wait for coalescing. For fixed strategy this is the amount of time after the first
     # message is received before it will be sent with any accompanying messages. For moving average this is the

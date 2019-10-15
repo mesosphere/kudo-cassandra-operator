@@ -57,11 +57,11 @@ CLUSTER_NAME:
 
 CASSANDRA_HEAP_SIZE_MB:
   description: "The amount of JVM heap, in MB, allocated to the Cassandra process."
-  default: 2048
+  default:
 
 CASSANDRA_HEAP_NEW_MB:
   description: "The amount of JVM new generation heap, in MB, allocated to the Cassandra process."
-  default: 100
+  default:
 
 SEED_PROVIDER_CLASS:
   description: "The class within Cassandra that handles the seed logic."
@@ -97,7 +97,7 @@ ROLES_VALIDITY_IN_MS:
 
 ROLES_UPDATE_INTERVAL_IN_MS:
   description: "After this interval, cache entries become eligible for refresh. Upon next access, Cassandra schedules an async reload, and returns the old value until the reload completes. If roles_validity_in_ms is non-zero, then this must be also."
-  default: 2000
+  default:
 
 CREDENTIALS_VALIDITY_IN_MS:
   description: " This cache is tightly coupled to the provided PasswordAuthenticator implementation of IAuthenticator. If another IAuthenticator implementation is configured, Cassandra does not use this cache, and these settings have no effect. Set to 0 to disable."
@@ -105,7 +105,7 @@ CREDENTIALS_VALIDITY_IN_MS:
 
 CREDENTIALS_UPDATE_INTERVAL_IN_MS:
   description: "After this interval, cache entries become eligible for refresh. The next time the cache is accessed, the system schedules an asynchronous reload of the cache. Until this cache reload is complete, the cache returns the old values. If credentials_validity_in_ms is nonzero, this property must also be nonzero."
-  default: 2000
+  default:
 
 PERMISSIONS_VALIDITY_IN_MS:
   description: "How many milliseconds permissions in cache remain valid. Fetching permissions can be resource intensive. To disable the cache, set this to 0."
@@ -113,7 +113,7 @@ PERMISSIONS_VALIDITY_IN_MS:
 
 PERMISSIONS_UPDATE_INTERVAL_IN_MS:
   description: "If enabled, sets refresh interval for the permissions cache. After this interval, cache entries become eligible for refresh. On next access, Cassandra schedules an async reload and returns the old value until the reload completes. If permissions_validity_in_ms is nonzero, permissions_update_interval_in_ms must also be non-zero."
-  default: 2000
+  default:
 
 PARTITIONER:
   description: "The partitioner used to distribute rows across the cluster. Murmur3Partitioner is the recommended setting. RandomPartitioner and ByteOrderedPartitioner are supported for legacy applications."
@@ -265,7 +265,7 @@ CONCURRENT_MATERIALIZED_VIEW_WRITES:
 
 COMMITLOG_TOTAL_SPACE_IN_MB:
   description: "The total size of the commit log in Mb."
-  default: 8192
+  default:
 
 AUTO_SNAPSHOT:
   description: "Take a snapshot of the data before truncating a keyspace or dropping a table"
@@ -273,111 +273,111 @@ AUTO_SNAPSHOT:
 
 KEY_CACHE_KEYS_TO_SAVE:
   description: "The number of keys from the key cache to save"
-  default: 100
+  default:
 
 ROW_CACHE_KEYS_TO_SAVE:
   description: "The number of keys from the row cache to save"
-  default: 100
+  default:
 
 COUNTER_CACHE_KEYS_TO_SAVE:
   description: "The number of keys from the counter cache to save"
-  default: 100
+  default:
 
 FILE_CACHE_SIZE_IN_MB:
   description: "The total memory to use for SSTable-reading buffers"
-  default: 512
+  default:
 
 MEMTABLE_HEAP_SPACE_IN_MB:
   description: "The amount of on-heap memory allocated for memtables"
-  default: 2048
+  default:
 
 MEMTABLE_OFFHEAP_SPACE_IN_MB:
   description: "The total amount of off-heap memory allocated for memtables"
-  default: 2048
+  default:
 
 MEMTABLE_CLEANUP_THRESHOLD:
   description: "The ratio used for automatic memtable flush"
-  default: 0.11
+  default: 
 
 MEMTABLE_FLUSH_WRITERS:
   description: "The number of memtable flush writer threads"
-  default: 2
+  default:
 
 LISTEN_ON_BROADCAST_ADDRESS:
   description: "Listen on the address set in broadcast_address property"
-  default: false
+  default:
 
 INTERNODE_AUTHENTICATOR:
   description: "The internode authentication backend"
-  default: "org.apache.cassandra.auth.AllowAllInternodeAuthenticator"
+  default: ""
 
 NATIVE_TRANSPORT_MAX_THREADS:
   description: "The maximum number of thread handling requests"
-  default: 128
+  default:
 
 NATIVE_TRANSPORT_MAX_FRAME_SIZE_IN_MB:
   description: "The maximum allowed size of a frame"
-  default: 256
+  default:
 
 NATIVE_TRANSPORT_MAX_CONCURRENT_CONNECTIONS:
   description: "The maximum number of concurrent client connections"
-  default: -1
+  default:
 
 NATIVE_TRANSPORT_MAX_CONCURRENT_CONNECTIONS_PER_IP:
   description: "The maximum number of concurrent client connections per source IP address"
-  default: -1
+  default:
 
 RPC_MIN_THREADS:
   description: "The minimum thread pool size for remote procedure calls"
-  default: 16
+  default:
 
 RPC_MAX_THREADS:
   description: "The maximum thread pool size for remote procedure calls"
-  default: 2048
+  default:
 
 RPC_SEND_BUFF_SIZE_IN_BYTES:
   description: "The sending socket buffer size in bytes for remote procedure calls"
-  default: 16384
+  default:
 
 RPC_RECV_BUFF_SIZE_IN_BYTES:
   description: "The receiving socket buffer size for remote procedure calls"
-  default: 16384
+  default:
 
 CONCURRENT_COMPACTORS:
   description: "The number of concurrent compaction processes allowed to run simultaneously on a node"
-  default: 1
+  default:
 
 STREAM_THROUGHPUT_OUTBOUND_MEGABITS_PER_SEC:
   description: "The maximum throughput of all outbound streaming file transfers on a node"
-  default: 200
+  default:
 
 INTER_DC_STREAM_THROUGHPUT_OUTBOUND_MEGABITS_PER_SEC:
   description: "The maximum throughput of all streaming file transfers between datacenters"
-  default: 200
+  default:
 
 STREAMING_KEEP_ALIVE_PERIOD_IN_SECS:
   description: "Interval to send keep-alive messages. The stream session fails when a keep-alive message is not received for 2 keep-alive cycles."
-  default: 300
+  default:
 
 PHI_CONVICT_THRESHOLD:
   description: "The sensitivity of the failure detector on an exponential scale"
-  default: 8
+  default:
 
 BUFFER_POOL_USE_HEAP_IF_EXHAUSTED:
   description: "Allocate on-heap memory when the SSTable buffer pool is exhausted"
-  default: true
+  default:
 
 DISK_OPTIMIZATION_STRATEGY:
   description: "The strategy for optimizing disk reads"
-  default: "ssd"
+  default: ""
 
 MAX_VALUE_SIZE_IN_MB:
   description: "The maximum size of any value in SSTables"
-  default: 256
+  default:
 
 OTC_COALESCING_STRATEGY:
   description: "The strategy to use for coalescing network messages. Values can be: fixed, movingaverage, timehorizon, disabled (default)"
-  default: "DISABLED"
+  default: ""
 
 UNLOGGED_BATCH_ACROSS_PARTITIONS_WARN_THRESHOLD:
   description: "Causes Cassandra to log a WARN message on any batches not of type LOGGED that span across more partitions than this limit."
@@ -475,17 +475,21 @@ ENABLE_SCRIPTED_USER_DEFINED_FUNCTIONS:
   description: "Java UDFs are always enabled, if enable_user_defined_functions is true. Enable this option to use UDFs with language javascript or any custom JSR-223 provider. This option has no effect if enable_user_defined_functions is false"
   default: false
 
+ENABLE_MATERIALIZED_VIEWS:
+  description: "Enables materialized view creation on this node. Materialized views are considered experimental and are not recommended for production use."
+  default: false
+
 CDC_ENABLED:
   description: "Enable / disable CDC functionality on a per-node basis. This modifies the logic used for write path allocation rejection"
   default: false
 
 CDC_TOTAL_SPACE_IN_MB:
   description: "Total space to use for change-data-capture (CDC) logs on disk. "
-  default: 4096
+  default:
 
 CDC_FREE_SPACE_CHECK_INTERVAL_MS:
   description: "Interval between checks for new available space for CDC-tracked tables when the cdc_total_space_in_mb threshold is reached and the CDCCompactor is running behind or experiencing back pressure."
-  default: 250
+  default:
 
 PREPARED_STATEMENTS_CACHE_SIZE_MB:
   description: "Maximum size of the native protocol prepared statement cache"

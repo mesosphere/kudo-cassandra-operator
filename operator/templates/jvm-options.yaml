@@ -170,8 +170,13 @@ data:
     # the same value to avoid stop-the-world GC pauses during resize, and
     # so that we can lock the heap in memory on startup to prevent any
     # of it from being swapped out.
+    {{ if .Params.CASSANDRA_HEAP_SIZE_MB }}
     -Xms{{ .Params.CASSANDRA_HEAP_SIZE_MB }}M
     -Xmx{{ .Params.CASSANDRA_HEAP_SIZE_MB }}M
+    {{ else }}
+    -Xms{{ max (min 8192 (div .Params.NODE_MEM 4)) (min 1024 (div .Params.NODE_MEM 2)) }}m
+    -Xmx{{ max (min 8192 (div .Params.NODE_MEM 4)) (min 1024 (div .Params.NODE_MEM 2)) }}m
+    {{ end }}
 
     # Young generation size is automatically calculated by cassandra-env
     # based on this formula: min(100 * num_cores, 1/4 * heap size)
@@ -187,7 +192,9 @@ data:
     # The example below assumes a modern 8-core+ machine for decent
     # times. If in doubt, and if you do not particularly want to tweak, go
     # 100 MB per physical CPU core.
+    {{ if .Params.CASSANDRA_HEAP_SIZE_MB }}
     -Xmn{{ .Params.CASSANDRA_HEAP_NEW_MB }}M
+    {{ end }}
 
     ###################################
     # EXPIRATION DATE OVERFLOW POLICY #
