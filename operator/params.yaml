@@ -53,7 +53,7 @@ PERSISTENT_STORAGE:
 
 CLUSTER_NAME:
   description: "The name of the cluster managed by the Service"
-  default: "cassandra"
+  default: ""
 
 CASSANDRA_HEAP_SIZE_MB:
   description: "The amount of JVM heap, in MB, allocated to the Cassandra process."
@@ -90,6 +90,10 @@ MAX_HINTS_DELIVERY_THREADS:
 BATCHLOG_REPLAY_THROTTLE_IN_KB:
   description: "The total maximum throttle for replaying failed logged batches in KBs per second."
   default: 1024
+
+ROLE_MANAGER:
+  description: "Part of the Authentication & Authorization backend that implements IRoleManager to maintain grants and memberships between roles, By default, the value set is Apache Cassandra's out of the box Role Manager: CassandraRoleManager"
+  default: "CassandraRoleManager"
 
 ROLES_VALIDITY_IN_MS:
   description: "Validity period for roles cache; set to 0 to disable"
@@ -249,7 +253,7 @@ DYNAMIC_SNITCH_BADNESS_THRESHOLD:
 
 INTERNODE_COMPRESSION:
   description: "Controls whether traffic between nodes is compressed. all compresses all traffic. none compresses no traffic. dc compresses between datacenters."
-  default: "all"
+  default: "dc"
 
 MAX_HINTS_FILE_SIZE_IN_MB:
   description: "The maximum size of the hints file in Mb."
@@ -526,3 +530,55 @@ BACK_PRESSURE_FACTOR:
 BACK_PRESSURE_FLOW:
   description: "The flow speed to apply rate limiting: FAST - rate limited to the speed of the fastest replica. SLOW - rate limit to the speed of the slowest replica."
   default: "FAST"
+
+ALLOCATE_TOKENS_FOR_KEYSPACE:
+  description: "Triggers automatic allocation of num_tokens tokens for this node. The allocation algorithm attempts to choose tokens in a way that optimizes replicated load over the nodes in the datacenter for the replication strategy used by the specified keyspace."
+  default: ""
+
+INITIAL_TOKEN:
+  description: "initial_token allows you to specify tokens manually."
+  default:
+
+HINTS_DIRECTORY:
+  description: "Directory where Cassandra should store hints."
+  default: ""
+
+COMMITLOG_DIRECTORY:
+  description: "When running on magnetic HDD, this should be a separate spindle than the data directories. If not set, the default directory is $CASSANDRA_HOME/data/commitlog."
+  default: ""
+
+CDC_RAW_DIRECTORY:
+  description: "CommitLogSegments are moved to this directory on flush if cdc_enabled: true and the segment contains mutations for a CDC-enabled table"
+  default: ""
+
+ROW_CACHE_CLASS_NAME:
+  description: "Row cache implementation class name."
+  default: ""
+
+SAVED_CACHES_DIRECTORY:
+  description: "saved caches If not set, the default directory is $CASSANDRA_HOME/data/saved_caches."
+  default: ""
+
+INTERNODE_SEND_BUFF_SIZE_IN_BYTES:
+  description: "Set socket buffer size for internode communication Note that when setting this, the buffer size is limited by net.core.wmem_max and when not setting it it is defined by net.ipv4.tcp_wm"
+  default:
+
+INTERNODE_RECV_BUFF_SIZE_IN_BYTES:
+  description: "Set socket buffer size for internode communication Note that when setting this, the buffer size is limited by net.core.wmem_max and when not setting it it is defined by net.ipv4.tcp_wmem"
+  default:
+
+GC_LOG_THRESHOLD_IN_MS:
+  description: "GC Pauses greater than 200 ms will be logged at INFO level This threshold can be adjusted to minimize logging if necessary"
+  default:
+
+OTC_COALESCING_WINDOW_US:
+  description: "How many microseconds to wait for coalescing."
+  default:
+
+OTC_COALESCING_ENOUGH_COALESCED_MESSAGES:
+  description: "Do not try to coalesce messages if we already got that many messages. This should be more than 2 and less than 128."
+  default:
+
+OTC_BACKLOG_EXPIRATION_INTERVAL_MS:
+  description: "How many milliseconds to wait between two expiration runs on the backlog (queue) of the OutboundTcpConnection."
+  default:
