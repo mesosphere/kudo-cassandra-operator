@@ -583,107 +583,110 @@ OTC_BACKLOG_EXPIRATION_INTERVAL_MS:
   description: "How many milliseconds to wait between two expiration runs on the backlog (queue) of the OutboundTcpConnection."
   default:
 
-#JVM OPTIONS PARAMS
-AVAILABLE_PROCESSORS:
+
+################################################################################
+############################ JVM OPTIONS #######################################
+################################################################################
+JVM_OPT_AVAILABLE_PROCESSORS:
   description: "In a multi-instance deployment, multiple Cassandra instances will independently assume that all CPU processors are available to it. This setting allows you to specify a smaller set of processors and perhaps have affinity."
   default:
 
-JOIN_RING:
+JVM_OPT_JOIN_RING:
   description: "Set to false to start Cassandra on a node but not have the node join the cluster."
   default:
 
-LOAD_RING_STATE:
+JVM_OPT_LOAD_RING_STATE:
   description: "Set to false to clear all gossip state for the node on restart. Use when you have changed node information in cassandra.yaml (such as listen_address)."
   default:
 
-REPLAYLIST:
+JVM_OPT_REPLAYLIST:
   description: "Allow restoring specific tables from an archived commit log."
   default: ""
 
-RING_DELAY_MS:
+JVM_OPT_RING_DELAY_MS:
   description: "Allows overriding of the default RING_DELAY (30000ms), which is the amount of time a node waits before joining the ring."
   default:
 
-TRIGGERS_DIR:
+JVM_OPT_TRIGGERS_DIR:
   description: "Set the default location for the trigger JARs. (Default: conf/triggers)"
   default: ""
 
-WRITE_SURVEY:
+JVM_OPT_WRITE_SURVEY:
   description: "For testing new compaction and compression strategies. It allows you to experiment with different strategies and benchmark write performance differences without affecting the production workload."
   default:
 
-DISABLE_AUTH_CACHES_REMOTE_CONFIGURATION:
+JVM_OPT_DISABLE_AUTH_CACHES_REMOTE_CONFIGURATION:
   description: "To disable configuration via JMX of auth caches (such as those for credentials, permissions and roles). This will mean those config options can only be set (persistently) in cassandra.yaml and will require a restart for new values to take effect."
   default:
 
-FORCE_DEFAULT_INDEXING_PAGE_SIZE:
+JVM_OPT_FORCE_DEFAULT_INDEXING_PAGE_SIZE:
   description: "To disable dynamic calculation of the page size used when indexing an entire partition (during initial index build/rebuild). If set to true, the page size will be fixed to the default of 10000 rows per page."
   default:
 
-PREFERIPV4STACK:
+JVM_OPT_PREFER_IPV4_STACK:
   description: "Prefer binding to IPv4 network intefaces (when net.ipv6.bindv6only=1). See http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6342561 (short version: comment out this entry to enable IPv6 support)."
   default: true
 
-EXPIRATION_DATE_OVERFLOW_POLICY:
+JVM_OPT_EXPIRATION_DATE_OVERFLOW_POLICY:
   description: "Defines how to handle INSERT requests with TTL exceeding the maximum supported expiration date."
   default:
 
-THREADPRIORITYPOLICY:
+JVM_OPT_THREAD_PRIORITY_POLICY:
   description: "allows lowering thread priority without being root on linux - probably not necessary on Windows but doesn't harm anything."
   default: 42
 
-PER_THREAD_STACK_SIZE:
+JVM_OPT_PER_THREAD_STACK_SIZE:
   description: "Per-thread stack size."
   default: "256k"
 
-STRINGTABLESIZE:
+JVM_OPT_STRING_TABLE_SIZE:
   description: "Larger interned string table, for gossip's benefit (CASSANDRA-6410)"
   default: 1000003
 
-SURVIVORRATIO:
+JVM_OPT_SURVIVOR_RATIO:
   description: "CMS Settings: SurvivorRatio"
   default: 8
 
-MAXTENURINGTHRESHOLD:
+JVM_OPT_MAX_TENURING_THRESHOLD:
   description: "CMS Settings: MaxTenuringThreshold"
   default: 1
 
-CMSINITIATINGOCCUPANCYFRACTION:
+JVM_OPT_CMS_INITIATING_OCCUPANCY_FRACTION:
   description: "CMS Settings: CMSInitiatingOccupancyFraction"
   default: 75
 
-CMSWAITDURATION:
+JVM_OPT_CMS_WAIT_DURATION:
   description: "CMS Settings: CMSWaitDuration"
   default: 10000
 
-NUMBEROFGCLOGFILES:
+JVM_OPT_NUMBER_OF_GC_LOG_FILES:
   description: "GC logging options: NumberOfGCLogFiles"
   default: 10
 
-GCLOGFILESIZE:
+JVM_OPT_GC_LOG_FILE_SIZE:
   description: "GC logging options: GCLOGFILESIZE"
   default: "10M"
 
-GC_LOG_DIRECTORY:
+JVM_OPT_GC_LOG_DIRECTORY:
   description: "GC logging options: GC_LOG_DIRECTORY"
   default: ""
 
-PRINTFLSSTATISTICS:
+JVM_OPT_PRINT_FLS_STATISTICS:
   description: "GC logging options: PrintFLSStatistics"
   default: ""
 
-CONCGCTHREADS:
+JVM_OPT_CONC_GC_THREADS:
   description: "By default, ConcGCThreads is 1/4 of ParallelGCThreads. Setting both to the same value can reduce STW durations."
   default: ""
 
-INITIATINGHEAPOCCUPANCYPERCENT:
+JVM_OPT_INITIATING_HEAP_OCCUPANCY_PERCENT:
   description: "Save CPU time on large (>= 16GB) heaps by delaying region scanning until the heap is 70% full. The default in Hotspot 8u40 is 40%."
   default:
 
-MAXGCPAUSEMILLIS:
+JVM_OPT_MAX_GC_PAUSE_MILLIS:
   description: "Main G1GC tunable: lowering the pause target will lower throughput and vise versa."
   default:
 
-G1RSETUPDATINGPAUSETIMEPERCENT:
+JVM_OPT_G1R_SET_UPDATING_PAUSE_TIME_PERCENT:
   description: "Have the JVM do less remembered set work during STW, instead preferring concurrent GC. Reduces p99.9 latency."
   default:
