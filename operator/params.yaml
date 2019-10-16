@@ -582,3 +582,108 @@ OTC_COALESCING_ENOUGH_COALESCED_MESSAGES:
 OTC_BACKLOG_EXPIRATION_INTERVAL_MS:
   description: "How many milliseconds to wait between two expiration runs on the backlog (queue) of the OutboundTcpConnection."
   default:
+
+#JVM OPTIONS PARAMS
+AVAILABLE_PROCESSORS:
+  description: "In a multi-instance deployment, multiple Cassandra instances will independently assume that all CPU processors are available to it. This setting allows you to specify a smaller set of processors and perhaps have affinity."
+  default:
+
+JOIN_RING:
+  description: "Set to false to start Cassandra on a node but not have the node join the cluster."
+  default:
+
+LOAD_RING_STATE:
+  description: "Set to false to clear all gossip state for the node on restart. Use when you have changed node information in cassandra.yaml (such as listen_address)."
+  default:
+
+REPLAYLIST:
+  description: "Allow restoring specific tables from an archived commit log."
+  default: ""
+
+RING_DELAY_MS:
+  description: "Allows overriding of the default RING_DELAY (30000ms), which is the amount of time a node waits before joining the ring."
+  default:
+
+TRIGGERS_DIR:
+  description: "Set the default location for the trigger JARs. (Default: conf/triggers)"
+  default: ""
+
+WRITE_SURVEY:
+  description: "For testing new compaction and compression strategies. It allows you to experiment with different strategies and benchmark write performance differences without affecting the production workload."
+  default:
+
+DISABLE_AUTH_CACHES_REMOTE_CONFIGURATION:
+  description: "To disable configuration via JMX of auth caches (such as those for credentials, permissions and roles). This will mean those config options can only be set (persistently) in cassandra.yaml and will require a restart for new values to take effect."
+  default:
+
+FORCE_DEFAULT_INDEXING_PAGE_SIZE:
+  description: "To disable dynamic calculation of the page size used when indexing an entire partition (during initial index build/rebuild). If set to true, the page size will be fixed to the default of 10000 rows per page."
+  default:
+
+PREFERIPV4STACK:
+  description: "Prefer binding to IPv4 network intefaces (when net.ipv6.bindv6only=1). See http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6342561 (short version: comment out this entry to enable IPv6 support)."
+  default: true
+
+EXPIRATION_DATE_OVERFLOW_POLICY:
+  description: "Defines how to handle INSERT requests with TTL exceeding the maximum supported expiration date."
+  default:
+
+THREADPRIORITYPOLICY:
+  description: "allows lowering thread priority without being root on linux - probably not necessary on Windows but doesn't harm anything."
+  default: 42
+
+PER_THREAD_STACK_SIZE:
+  description: "Per-thread stack size."
+  default: "256k"
+
+STRINGTABLESIZE:
+  description: "Larger interned string table, for gossip's benefit (CASSANDRA-6410)"
+  default: 1000003
+
+SURVIVORRATIO:
+  description: "CMS Settings: SurvivorRatio"
+  default: 8
+
+MAXTENURINGTHRESHOLD:
+  description: "CMS Settings: MaxTenuringThreshold"
+  default: 1
+
+CMSINITIATINGOCCUPANCYFRACTION:
+  description: "CMS Settings: CMSInitiatingOccupancyFraction"
+  default: 75
+
+CMSWAITDURATION:
+  description: "CMS Settings: CMSWaitDuration"
+  default: 10000
+
+NUMBEROFGCLOGFILES:
+  description: "GC logging options: NumberOfGCLogFiles"
+  default: 10
+
+GCLOGFILESIZE:
+  description: "GC logging options: GCLOGFILESIZE"
+  default: "10M"
+
+GC_LOG_DIRECTORY:
+  description: "GC logging options: GC_LOG_DIRECTORY"
+  default: ""
+
+PRINTFLSSTATISTICS:
+  description: "GC logging options: PrintFLSStatistics"
+  default: ""
+
+CONCGCTHREADS:
+  description: "By default, ConcGCThreads is 1/4 of ParallelGCThreads. Setting both to the same value can reduce STW durations."
+  default: ""
+
+INITIATINGHEAPOCCUPANCYPERCENT:
+  description: "Save CPU time on large (>= 16GB) heaps by delaying region scanning until the heap is 70% full. The default in Hotspot 8u40 is 40%."
+  default:
+
+MAXGCPAUSEMILLIS:
+  description: "Main G1GC tunable: lowering the pause target will lower throughput and vise versa."
+  default:
+
+G1RSETUPDATINGPAUSETIMEPERCENT:
+  description: "Have the JVM do less remembered set work during STW, instead preferring concurrent GC. Reduces p99.9 latency."
+  default:
