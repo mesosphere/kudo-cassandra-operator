@@ -642,7 +642,7 @@ JVM_OPT_THREAD_PRIORITY_POLICY:
   description: "allows lowering thread priority without being root on linux - probably not necessary on Windows but doesn't harm anything."
   default: 42
 
-JVM_OPT_PER_THREAD_STACK_SIZE:
+JVM_OPT_THREAD_STACK_SIZE:
   description: "Per-thread stack size."
   default: "256k"
 

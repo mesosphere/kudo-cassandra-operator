@@ -139,7 +139,7 @@ data:
     -XX:+HeapDumpOnOutOfMemoryError
 
     # Per-thread stack size.
-    -Xss{{ .Params.JVM_OPT_PER_THREAD_STACK_SIZE }}
+    -Xss{{ .Params.JVM_OPT_THREAD_STACK_SIZE }}
 
     # Larger interned string table, for gossip's benefit (CASSANDRA-6410)
     -XX:StringTableSize={{ .Params.JVM_OPT_STRING_TABLE_SIZE }}
