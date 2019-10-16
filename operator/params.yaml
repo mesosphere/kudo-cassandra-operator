@@ -522,19 +522,19 @@ BACK_PRESSURE_ENABLED:
   description: "Enable for the coordinator to apply the specified back pressure strategy to each mutation that is sent to replicas."
   default: false
 
-BACK_PRESSURE_STRATEGY_CLASS:
+BACK_PRESSURE_STRATEGY_CLASS_NAME:
   description: "The back-pressure strategy applied. The default implementation, RateBasedBackPressure, takes three arguments: high ratio, factor, and flow type, and uses the ratio between incoming mutation responses and outgoing mutation requests."
   default: "org.apache.cassandra.net.RateBasedBackPressure"
 
-BACK_PRESSURE_HIGH_RATIO:
+BACK_PRESSURE_STRATEGY_HIGH_RATIO:
   description: "When outgoing mutations are below this value, they are rate limited according to the incoming rate decreased by the factor. When above this value, the rate limiting is increased by the factor."
   default: 0.9
 
-BACK_PRESSURE_FACTOR:
+BACK_PRESSURE_STRATEGY_FACTOR:
   description: "A number between 1 and 10. Increases or decreases rate limiting."
   default: 5
 
-BACK_PRESSURE_FLOW:
+BACK_PRESSURE_STRATEGY_FLOW:
   description: "The flow speed to apply rate limiting: FAST - rate limited to the speed of the fastest replica. SLOW - rate limit to the speed of the slowest replica."
   default: "FAST"
 

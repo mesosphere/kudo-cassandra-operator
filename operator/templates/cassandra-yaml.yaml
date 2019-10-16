@@ -1299,11 +1299,11 @@ data:
     # New strategies can be added. Implementors need to implement org.apache.cassandra.net.BackpressureStrategy and
     # provide a public constructor accepting a Map<String, Object>.
     back_pressure_strategy:
-      - class_name: {{ .Params.BACK_PRESSURE_STRATEGY_CLASS }}
+      - class_name: {{ .Params.BACK_PRESSURE_STRATEGY_CLASS_NAME }}
         parameters:
-          - high_ratio: {{ .Params.BACK_PRESSURE_HIGH_RATIO }}
-            factor: {{ .Params.BACK_PRESSURE_FACTOR }}
-            flow: {{ .Params.BACK_PRESSURE_FLOW }}
+          - high_ratio: {{ .Params.BACK_PRESSURE_STRATEGY_HIGH_RATIO }}
+            factor: {{ .Params.BACK_PRESSURE_STRATEGY_FACTOR }}
+            flow: {{ .Params.BACK_PRESSURE_STRATEGY_FLOW }}
     # Coalescing Strategies #
     # Coalescing multiples messages turns out to significantly boost message processing throughput (think doubling or more).
     # On bare metal, the floor for packet processing throughput is high enough that many applications won't notice, but in
