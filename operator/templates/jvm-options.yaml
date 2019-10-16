@@ -28,10 +28,10 @@ data:
     {{ end }}
 
     # The directory location of the cassandra.yaml file.
-    #-Dcassandra.config=directory
+    # -Dcassandra.config=directory
 
     # Sets the initial partitioner token for a node the first time the node is started.
-    #-Dcassandra.initial_token=token
+    # -Dcassandra.initial_token=token
 
     # Set to false to start Cassandra on a node but not have the node join the cluster.
     {{ if .Params.JVM_OPT_JOIN_RING }}
@@ -45,18 +45,23 @@ data:
     {{ end }}
 
     # Enable pluggable metrics reporter. See Pluggable metrics reporting in Cassandra 2.0.2.
-    #-Dcassandra.metricsReporterConfigFile=file
+    # -Dcassandra.metricsReporterConfigFile=file
 
     # Set the port on which the CQL native transport listens for clients. (Default: 9042)
-    #-Dcassandra.native_transport_port=port
+    # Overrides the value set in cassandra.yaml.
+    # -Dcassandra.native_transport_port=port
 
-    # Overrides the partitioner. (Default: org.apache.cassandra.dht.Murmur3Partitioner)
-    #-Dcassandra.partitioner=partitioner
+    # Overrides the value set in cassandra.yaml.
+    # (Default: org.apache.cassandra.dht.Murmur3Partitioner)
+    # -Dcassandra.partitioner=partitioner
 
     # To replace a node that has died, restart a new node in its place specifying the address of the
     # dead node. The new node must not have any data in its data directory, that is, it must be in the
     # same state as before bootstrapping.
-    #-Dcassandra.replace_address=listen_address or broadcast_address of dead node
+    #
+    # TODO(mpereira): we'll need to set this when replacing pods. Should we make
+    # it configurable via params.yaml too?
+    # -Dcassandra.replace_address=listen_address or broadcast_address of dead node
 
     # Allow restoring specific tables from an archived commit log.
     {{ if .Params.JVM_OPT_REPLAYLIST }}
@@ -70,19 +75,24 @@ data:
     {{ end }}
 
     # Set the port for the Thrift RPC service, which is used for client connections. (Default: 9160)
-    #-Dcassandra.rpc_port=port
+    # Overrides the value set in cassandra.yaml.
+    # -Dcassandra.rpc_port=port
 
     # Set the SSL port for encrypted communication. (Default: 7001)
-    #-Dcassandra.ssl_storage_port=port
+    # Overrides the value set in cassandra.yaml.
+    # -Dcassandra.ssl_storage_port=port
 
     # Enable or disable the native transport server. See start_native_transport in cassandra.yaml.
-    # cassandra.start_native_transport=true|false
+    # Overrides the value set in cassandra.yaml.
+    # -Dcassandra.start_native_transport=true|false
 
     # Enable or disable the Thrift RPC server. (Default: true)
-    #-Dcassandra.start_rpc=true/false
+    # Overrides the value set in cassandra.yaml.
+    # -Dcassandra.start_rpc=true/false
 
     # Set the port for inter-node communication. (Default: 7000)
-    #-Dcassandra.storage_port=port
+    # Overrides the value set in cassandra.yaml.
+    # -Dcassandra.storage_port=port
 
     # Set the default location for the trigger JARs. (Default: conf/triggers)
     {{ if .Params.JVM_OPT_TRIGGERS_DIR }}
@@ -159,15 +169,15 @@ data:
     ### Debug options
 
     # uncomment to enable flight recorder
-    #-XX:+UnlockCommercialFeatures
-    #-XX:+FlightRecorder
+    # -XX:+UnlockCommercialFeatures
+    # -XX:+FlightRecorder
 
     # uncomment to have Cassandra JVM listen for remote debuggers/profilers on port 1414
-    #-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1414
+    # -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1414
 
     # uncomment to have Cassandra JVM log internal method compilation (developers only)
-    #-XX:+UnlockDiagnosticVMOptions
-    #-XX:+LogCompilation
+    # -XX:+UnlockDiagnosticVMOptions
+    # -XX:+LogCompilation
 
     #################
     # HEAP SETTINGS #
@@ -242,19 +252,25 @@ data:
     -XX:+UseParNewGC
     -XX:+UseConcMarkSweepGC
     -XX:+CMSParallelRemarkEnabled
+
     {{ if .Params.JVM_OPT_SURVIVOR_RATIO }}
     -XX:SurvivorRatio={{ .Params.JVM_OPT_SURVIVOR_RATIO }}
     {{ end }}
+
     {{ if .Params.JVM_OPT_MAX_TENURING_THRESHOLD }}
     -XX:MaxTenuringThreshold={{ .Params.JVM_OPT_MAX_TENURING_THRESHOLD }}
     {{ end }}
+
     {{ if .Params.JVM_OPT_CMS_INITIATING_OCCUPANCY_FRACTION }}
     -XX:CMSInitiatingOccupancyFraction={{ .Params.JVM_OPT_CMS_INITIATING_OCCUPANCY_FRACTION }}
     {{ end }}
+
     -XX:+UseCMSInitiatingOccupancyOnly
+
     {{ if .Params.JVM_OPT_CMS_WAIT_DURATION }}
     -XX:CMSWaitDuration={{ .Params.JVM_OPT_CMS_WAIT_DURATION }}
     {{ end }}
+
     -XX:+CMSParallelInitialMarkEnabled
     -XX:+CMSEdenChunksRecordAlways
     # some JVMs will fill up their heap when accessed via JMX, see CASSANDRA-6541
@@ -263,7 +279,7 @@ data:
     ### G1 Settings (experimental, comment previous section and uncomment section below to enable)
 
     ## Use the Hotspot garbage-first collector.
-    #-XX:+UseG1GC
+    # -XX:+UseG1GC
     #
     ## Have the JVM do less remembered set work during STW, instead
     ## preferring concurrent GC. Reduces p99.9 latency.
@@ -289,7 +305,7 @@ data:
     # For systems with > 8 cores, the default ParallelGCThreads is 5/8 the number of logical cores.
     # Otherwise equal to the number of cores when 8 or less.
     # Machines with > 10 cores should try setting these to <= full cores.
-    #-XX:ParallelGCThreads=16
+    # -XX:ParallelGCThreads=16
     # By default, ConcGCThreads is 1/4 of ParallelGCThreads.
     # Setting both to the same value can reduce STW durations.
     {{ if .Params.JVM_OPT_CONC_GC_THREADS }}
@@ -304,16 +320,21 @@ data:
     -XX:+PrintTenuringDistribution
     -XX:+PrintGCApplicationStoppedTime
     -XX:+PrintPromotionFailure
+
     {{ if .Params.JVM_OPT_PRINT_FLS_STATISTICS }}
     -XX:PrintFLSStatistics={{ .Params.JVM_OPT_PRINT_FLS_STATISTICS }}
     {{ end }}
+
     {{ if .Params.JVM_OPT_GC_LOG_DIRECTORY }}
     -Xloggc:{{ .Params.JVM_OPT_GC_LOG_DIRECTORY }}
     {{ end }}
+
     -XX:+UseGCLogFileRotation
+
     {{ if .Params.JVM_OPT_NUMBER_OF_GC_LOG_FILES }}
     -XX:NumberOfGCLogFiles={{ .Params.JVM_OPT_NUMBER_OF_GC_LOG_FILES }}
     {{ end }}
+
     {{ if .Params.JVM_OPT_GC_LOG_FILE_SIZE }}
     -XX:GCLogFileSize={{ .Params.JVM_OPT_GC_LOG_FILE_SIZE }}
     {{ end }}

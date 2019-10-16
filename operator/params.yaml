@@ -1,6 +1,9 @@
+################################################################################
+############################### Operator settings ##############################
+################################################################################
+
 NODE_COUNT:
-  description: "Number of Cassandra nodes"
-  displayName: "Node Count"
+  description: "Number of Cassandra nodes."
   default: 3
 
 NODE_CPU_MC:
@@ -23,9 +26,17 @@ NODE_DISK_SIZE_GIB:
   description: "Disk size (in GiB) for the Cassandra node pods."
   default: 20
 
+NODE_STORAGE_CLASS:
+  description: "The storage class to be used in volumeClaimTemplates. By default its not required and the default storage class is used."
+  required: false
+
 OVERRIDE_CLUSTER_NAME:
   description: "Override the name of the Cassandra cluster set by the operator. This shouldn't be explicit set, unless you know what you're doing."
   default: ""
+
+################################################################################
+########################### Cassandra node settings ############################
+################################################################################
 
 STORAGE_PORT:
   description: "The port for inter-node communication."
@@ -47,13 +58,6 @@ JMX_PORT:
   description: "The JMX port that will be used to interface with the Cassandra application."
   default: "7199"
 
-STORAGE_CLASS:
-  description: "The storage class to be used in volumeClaimTemplates. By default its not required and the default storage class is used."
-  required: false
-
-PERSISTENT_STORAGE:
-  description: "If false, ephemeral storage is used. Not recommended for production use."
-  default: "true"
 NODE_MIN_HEAP_SIZE_MB:
   description: "The minimum JVM heap size in MB. This has a smart default and doesn't need to be explicitly set."
   default:
@@ -304,7 +308,7 @@ MEMTABLE_OFFHEAP_SPACE_IN_MB:
 
 MEMTABLE_CLEANUP_THRESHOLD:
   description: "The ratio used for automatic memtable flush"
-  default: 
+  default:
 
 MEMTABLE_FLUSH_WRITERS:
   description: "The number of memtable flush writer threads"
@@ -539,7 +543,7 @@ ALLOCATE_TOKENS_FOR_KEYSPACE:
   default: ""
 
 INITIAL_TOKEN:
-  description: "initial_token allows you to specify tokens manually."
+  description: "Allows the token to be specified manually."
   default:
 
 HINTS_DIRECTORY:
@@ -586,10 +590,10 @@ OTC_BACKLOG_EXPIRATION_INTERVAL_MS:
   description: "How many milliseconds to wait between two expiration runs on the backlog (queue) of the OutboundTcpConnection."
   default:
 
+################################################################################
+################################ JVM Options ###################################
+################################################################################
 
-################################################################################
-############################ JVM OPTIONS #######################################
-################################################################################
 JVM_OPT_AVAILABLE_PROCESSORS:
   description: "In a multi-instance deployment, multiple Cassandra instances will independently assume that all CPU processors are available to it. This setting allows you to specify a smaller set of processors and perhaps have affinity."
   default:
