@@ -23,6 +23,10 @@ NODE_DISK_SIZE_GIB:
   description: "Disk size (in GiB) for the Cassandra node pods."
   default: 20
 
+OVERRIDE_CLUSTER_NAME:
+  description: "Override the name of the Cassandra cluster set by the operator. This shouldn't be explicit set, unless you know what you're doing."
+  default: ""
+
 STORAGE_PORT:
   description: "The port for inter-node communication."
   default: "7000"
@@ -50,10 +54,6 @@ STORAGE_CLASS:
 PERSISTENT_STORAGE:
   description: "If false, ephemeral storage is used. Not recommended for production use."
   default: "true"
-
-CLUSTER_NAME:
-  description: "The name of the cluster managed by the Service"
-  default: ""
 NODE_MIN_HEAP_SIZE_MB:
   description: "The minimum JVM heap size in MB. This has a smart default and doesn't need to be explicitly set."
   default:

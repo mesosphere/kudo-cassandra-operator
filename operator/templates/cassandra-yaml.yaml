@@ -13,9 +13,11 @@ data:
 
     # The name of the cluster. This is mainly used to prevent machines in
     # one logical cluster from joining another.
-    {{ if .Params.CLUSTER_NAME }}    
-    cluster_name: '{{ .Params.CLUSTER_NAME }}'
-    {{ else }}    
+    {{ if .Params.OVERRIDE_CLUSTER_NAME }}
+    cluster_name: '{{ .Params.OVERRIDE_CLUSTER_NAME }}'
+    {{ else }}
+    # TODO(mpereira): does it make sense to prepend the Kubernetes namespace to
+    # the Cassandra cluster name?
     cluster_name: '{{ .Name }}'
     {{ end }}
 
