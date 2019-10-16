@@ -3,21 +3,25 @@ NODE_COUNT:
   displayName: "Node Count"
   default: 3
 
-NODE_CPUS:
-  description: "CPUs (request) for the Cassandra node pods. spec.containers[].resources.requests.cpu"
-  default: "2000m"
+NODE_CPU_MC:
+  description: "CPU request (in millicores) for the Cassandra node pods."
+  default: 2000
 
-NODE_CPUS_LIMIT:
-  description: "CPUs (limit) for the Cassandra node pods. spec.containers[].resources.limits.cpu"
-  default: "2000m"
+NODE_CPU_LIMIT_MC:
+  description: "CPU limit (in millicores) for the Cassandra node pods."
+  default: 2000
 
-NODE_MEM:
-  description: "Memory (request) for the Cassandra node pods. spec.containers[].resources.requests.memory"
+NODE_MEM_MIB:
+  description: "Memory request (in MiB) for the Cassandra node pods."
   default: 4096
 
-NODE_MEM_LIMIT:
-  description: "Memory (limit) for the Cassandra node pods. spec.containers[].resources.limits.memory"
+NODE_MEM_LIMIT_MIB:
+  description: "Memory limit (in MiB) for the Cassandra node pods."
   default: 4096
+
+NODE_DISK_SIZE_GIB:
+  description: "Disk size (in GiB) for the Cassandra node pods."
+  default: 20
 
 STORAGE_PORT:
   description: "The port for inter-node communication."
@@ -39,10 +43,6 @@ JMX_PORT:
   description: "The JMX port that will be used to interface with the Cassandra application."
   default: "7199"
 
-DISK_SIZE:
-  description: "Disk size for the nodes"
-  default: "20Gi"
-
 STORAGE_CLASS:
   description: "The storage class to be used in volumeClaimTemplates. By default its not required and the default storage class is used."
   required: false
@@ -54,13 +54,16 @@ PERSISTENT_STORAGE:
 CLUSTER_NAME:
   description: "The name of the cluster managed by the Service"
   default: ""
-
-CASSANDRA_HEAP_SIZE_MB:
-  description: "The amount of JVM heap, in MB, allocated to the Cassandra process."
+NODE_MIN_HEAP_SIZE_MB:
+  description: "The minimum JVM heap size in MB. This has a smart default and doesn't need to be explicitly set."
   default:
 
-CASSANDRA_HEAP_NEW_MB:
-  description: "The amount of JVM new generation heap, in MB, allocated to the Cassandra process."
+NODE_MAX_HEAP_SIZE_MB:
+  description: "The maximum JVM heap size in MB. This has a smart default and doesn't need to be explicitly set."
+  default:
+
+NODE_NEW_GENERATION_HEAP_SIZE_MB:
+  description: "The JVM new generation heap size in MB."
   default:
 
 SEED_PROVIDER_CLASS:
