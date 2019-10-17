@@ -27,7 +27,7 @@ NODE_DISK_SIZE_GIB:
   default: 20
 
 NODE_STORAGE_CLASS:
-  description: "The storage class to be used in volumeClaimTemplates. By default its not required and the default storage class is used."
+  description: "The storage class to be used in volumeClaimTemplates. By default, it is not required and the default storage class is used."
   required: false
 
 OVERRIDE_CLUSTER_NAME:
