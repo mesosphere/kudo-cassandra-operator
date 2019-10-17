@@ -53,9 +53,13 @@ data:
     # vnodes (num_tokens > 1, above) -- in which case you should provide a
     # comma-separated list -- it's primarily used when adding nodes to legacy clusters
     # that do not have vnodes enabled.
-    {{ if .Params.INITIAL_TOKEN }}
-    initial_token: {{ .Params.INITIAL_TOKEN }}
-    {{ end }}
+    #
+    # NOTE(mpereira): "initial_token" should be set on a per-node basis, so it
+    # doesn't make sense to expose it as an operator setting. Maybe we'll
+    # somehow support this more officially in the future. For now we'll leave it
+    # commented out.
+    #
+    # initial_token: ...
 
     # See http://wiki.apache.org/cassandra/HintedHandoff
     # May either be "true" or "false" to enable globally

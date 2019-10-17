@@ -542,10 +542,6 @@ ALLOCATE_TOKENS_FOR_KEYSPACE:
   description: "Triggers automatic allocation of num_tokens tokens for this node. The allocation algorithm attempts to choose tokens in a way that optimizes replicated load over the nodes in the datacenter for the replication strategy used by the specified keyspace."
   default: ""
 
-INITIAL_TOKEN:
-  description: "Allows the token to be specified manually."
-  default:
-
 HINTS_DIRECTORY:
   description: "Directory where Cassandra should store hints."
   default: ""
