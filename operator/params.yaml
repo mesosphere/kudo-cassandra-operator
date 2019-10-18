@@ -1,23 +1,42 @@
+################################################################################
+############################### Operator settings ##############################
+################################################################################
+
 NODE_COUNT:
-  description: "Number of Cassandra nodes"
-  displayName: "Node Count"
+  description: "Number of Cassandra nodes."
   default: 3
 
-NODE_CPUS:
-  description: "CPUs (request) for the Cassandra node pods. spec.containers[].resources.requests.cpu"
-  default: "2000m"
+NODE_CPU_MC:
+  description: "CPU request (in millicores) for the Cassandra node pods."
+  default: 2000
 
-NODE_CPUS_LIMIT:
-  description: "CPUs (limit) for the Cassandra node pods. spec.containers[].resources.limits.cpu"
-  default: "2000m"
+NODE_CPU_LIMIT_MC:
+  description: "CPU limit (in millicores) for the Cassandra node pods."
+  default: 2000
 
-NODE_MEM:
-  description: "Memory (request) for the Cassandra node pods. spec.containers[].resources.requests.memory"
+NODE_MEM_MIB:
+  description: "Memory request (in MiB) for the Cassandra node pods."
   default: 4096
 
-NODE_MEM_LIMIT:
-  description: "Memory (limit) for the Cassandra node pods. spec.containers[].resources.limits.memory"
+NODE_MEM_LIMIT_MIB:
+  description: "Memory limit (in MiB) for the Cassandra node pods."
   default: 4096
+
+NODE_DISK_SIZE_GIB:
+  description: "Disk size (in GiB) for the Cassandra node pods."
+  default: 20
+
+NODE_STORAGE_CLASS:
+  description: "The storage class to be used in volumeClaimTemplates. By default, it is not required and the default storage class is used."
+  required: false
+
+OVERRIDE_CLUSTER_NAME:
+  description: "Override the name of the Cassandra cluster set by the operator. This shouldn't be explicit set, unless you know what you're doing."
+  default: ""
+
+################################################################################
+########################### Cassandra node settings ############################
+################################################################################
 
 STORAGE_PORT:
   description: "The port for inter-node communication."
@@ -39,28 +58,16 @@ JMX_PORT:
   description: "The JMX port that will be used to interface with the Cassandra application."
   default: "7199"
 
-DISK_SIZE:
-  description: "Disk size for the nodes"
-  default: "20Gi"
-
-STORAGE_CLASS:
-  description: "The storage class to be used in volumeClaimTemplates. By default its not required and the default storage class is used."
-  required: false
-
-PERSISTENT_STORAGE:
-  description: "If false, ephemeral storage is used. Not recommended for production use."
-  default: "true"
-
-CLUSTER_NAME:
-  description: "The name of the cluster managed by the Service"
-  default: ""
-
-CASSANDRA_HEAP_SIZE_MB:
-  description: "The amount of JVM heap, in MB, allocated to the Cassandra process."
+NODE_MIN_HEAP_SIZE_MB:
+  description: "The minimum JVM heap size in MB. This has a smart default and doesn't need to be explicitly set."
   default:
 
-CASSANDRA_HEAP_NEW_MB:
-  description: "The amount of JVM new generation heap, in MB, allocated to the Cassandra process."
+NODE_MAX_HEAP_SIZE_MB:
+  description: "The maximum JVM heap size in MB. This has a smart default and doesn't need to be explicitly set."
+  default:
+
+NODE_NEW_GENERATION_HEAP_SIZE_MB:
+  description: "The JVM new generation heap size in MB."
   default:
 
 SEED_PROVIDER_CLASS:
@@ -309,7 +316,7 @@ MEMTABLE_OFFHEAP_SPACE_IN_MB:
 
 MEMTABLE_CLEANUP_THRESHOLD:
   description: "The ratio used for automatic memtable flush"
-  default: 
+  default:
 
 MEMTABLE_FLUSH_WRITERS:
   description: "The number of memtable flush writer threads"
@@ -523,29 +530,25 @@ BACK_PRESSURE_ENABLED:
   description: "Enable for the coordinator to apply the specified back pressure strategy to each mutation that is sent to replicas."
   default: false
 
-BACK_PRESSURE_STRATEGY_CLASS:
+BACK_PRESSURE_STRATEGY_CLASS_NAME:
   description: "The back-pressure strategy applied. The default implementation, RateBasedBackPressure, takes three arguments: high ratio, factor, and flow type, and uses the ratio between incoming mutation responses and outgoing mutation requests."
   default: "org.apache.cassandra.net.RateBasedBackPressure"
 
-BACK_PRESSURE_HIGH_RATIO:
+BACK_PRESSURE_STRATEGY_HIGH_RATIO:
   description: "When outgoing mutations are below this value, they are rate limited according to the incoming rate decreased by the factor. When above this value, the rate limiting is increased by the factor."
   default: 0.9
 
-BACK_PRESSURE_FACTOR:
+BACK_PRESSURE_STRATEGY_FACTOR:
   description: "A number between 1 and 10. Increases or decreases rate limiting."
   default: 5
 
-BACK_PRESSURE_FLOW:
+BACK_PRESSURE_STRATEGY_FLOW:
   description: "The flow speed to apply rate limiting: FAST - rate limited to the speed of the fastest replica. SLOW - rate limit to the speed of the slowest replica."
   default: "FAST"
 
 ALLOCATE_TOKENS_FOR_KEYSPACE:
   description: "Triggers automatic allocation of num_tokens tokens for this node. The allocation algorithm attempts to choose tokens in a way that optimizes replicated load over the nodes in the datacenter for the replication strategy used by the specified keyspace."
   default: ""
-
-INITIAL_TOKEN:
-  description: "initial_token allows you to specify tokens manually."
-  default:
 
 HINTS_DIRECTORY:
   description: "Directory where Cassandra should store hints."
@@ -591,10 +594,10 @@ OTC_BACKLOG_EXPIRATION_INTERVAL_MS:
   description: "How many milliseconds to wait between two expiration runs on the backlog (queue) of the OutboundTcpConnection."
   default:
 
+################################################################################
+################################ JVM Options ###################################
+################################################################################
 
-################################################################################
-############################ JVM OPTIONS #######################################
-################################################################################
 JVM_OPT_AVAILABLE_PROCESSORS:
   description: "In a multi-instance deployment, multiple Cassandra instances will independently assume that all CPU processors are available to it. This setting allows you to specify a smaller set of processors and perhaps have affinity."
   default:
@@ -643,7 +646,7 @@ JVM_OPT_THREAD_PRIORITY_POLICY:
   description: "allows lowering thread priority without being root on linux - probably not necessary on Windows but doesn't harm anything."
   default: 42
 
-JVM_OPT_PER_THREAD_STACK_SIZE:
+JVM_OPT_THREAD_STACK_SIZE:
   description: "Per-thread stack size."
   default: "256k"
 

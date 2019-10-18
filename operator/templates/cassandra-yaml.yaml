@@ -13,9 +13,11 @@ data:
 
     # The name of the cluster. This is mainly used to prevent machines in
     # one logical cluster from joining another.
-    {{ if .Params.CLUSTER_NAME }}    
-    cluster_name: '{{ .Params.CLUSTER_NAME }}'
-    {{ else }}    
+    {{ if .Params.OVERRIDE_CLUSTER_NAME }}
+    cluster_name: '{{ .Params.OVERRIDE_CLUSTER_NAME }}'
+    {{ else }}
+    # TODO(mpereira): does it make sense to prepend the Kubernetes namespace to
+    # the Cassandra cluster name?
     cluster_name: '{{ .Name }}'
     {{ end }}
 
@@ -51,9 +53,13 @@ data:
     # vnodes (num_tokens > 1, above) -- in which case you should provide a
     # comma-separated list -- it's primarily used when adding nodes to legacy clusters
     # that do not have vnodes enabled.
-    {{ if .Params.INITIAL_TOKEN }}
-    initial_token: {{ .Params.INITIAL_TOKEN }}
-    {{ end }}
+    #
+    # NOTE(mpereira): "initial_token" should be set on a per-node basis, so it
+    # doesn't make sense to expose it as an operator setting. Maybe we'll
+    # somehow support this more officially in the future. For now we'll leave it
+    # commented out.
+    #
+    # initial_token: ...
 
     # See http://wiki.apache.org/cassandra/HintedHandoff
     # May either be "true" or "false" to enable globally
@@ -61,14 +67,16 @@ data:
 
     # When hinted_handoff_enabled is true, a black list of data centers that will not
     # perform hinted handoff
+    #
+    # TODO(mpereira): expose this setting when we add multi-datacenter support.
     # hinted_handoff_disabled_datacenters:
-    #    - DC1
-    #    - DC2
+    #   - DC1
+    #   - DC2
 
     # this defines the maximum amount of time a dead host will have hints
     # generated.  After it has been dead this long, new hints for it will not be
     # created until it has been seen alive and gone down again.
-    max_hint_window_in_ms: {{ .Params.MAX_HINT_WINDOW_IN_MS }} # 3 hours
+    max_hint_window_in_ms: {{ .Params.MAX_HINT_WINDOW_IN_MS }}
 
     # Maximum throttle in KBs per second, per delivery thread.  This will be
     # reduced proportionally to the number of nodes in the cluster.  (If there
@@ -98,10 +106,10 @@ data:
     # Compression to apply to the hint files. If omitted, hints files
     # will be written uncompressed. LZ4, Snappy, and Deflate compressors
     # are supported.
-    #hints_compression:
+    # hints_compression:
     #   - class_name: LZ4Compressor
     #     parameters:
-    #         -
+    #       - ...
 
     # Maximum throttle in KBs per second, total. This will be
     # reduced proportionally to the number of nodes in the cluster.
@@ -337,11 +345,10 @@ data:
     #
     # org.apache.cassandra.cache.SerializingCacheProvider
     #   This is the row cache implementation availabile
-    #   in previous releases of Cassandra. 
+    #   in previous releases of Cassandra.
     {{ if .Params.ROW_CACHE_CLASS_NAME }}
     row_cache_class_name: {{ .Params.ROW_CACHE_CLASS_NAME }}
     {{ end }}
-
 
     # Maximum size of the row cache in memory.
     # Please note that OHC cache implementation requires some additional off-heap memory to manage
@@ -399,30 +406,27 @@ data:
 
     # saved caches
     # If not set, the default directory is $CASSANDRA_HOME/data/saved_caches.
-    # saved_caches_directory: /var/lib/cassandra/saved_caches    
+    # saved_caches_directory: /var/lib/cassandra/saved_caches
     {{ if .Params.SAVED_CACHES_DIRECTORY }}
     saved_caches_directory: {{ .Params.SAVED_CACHES_DIRECTORY }}
     {{ end }}
 
     # commitlog_sync may be either "periodic" or "batch."
     #
-    # When in batch mode, Cassandra won't ack writes until the commit log
-    # has been fsynced to disk.  It will wait
-    # commitlog_sync_batch_window_in_ms milliseconds between fsyncs.
-    # This window should be kept short because the writer threads will
-    # be unable to do extra work while waiting.  (You may need to increase
-    # concurrent_writes for the same reason.)
+    # When in batch mode, Cassandra won't ack writes until the commit log has
+    # been fsynced to disk. It will wait commitlog_sync_batch_window_in_ms
+    # milliseconds between fsyncs. This window should be kept short because the
+    # writer threads will be unable to do extra work while waiting. (You may
+    # need to increase concurrent_writes for the same reason.)
     #
-    # commitlog_sync: batch
-    {{ if .Params.COMMITLOG_SYNC_BATCH_WINDOW_IN_MS }}
-    commitlog_sync_batch_window_in_ms: {{ .Params.COMMITLOG_SYNC_BATCH_WINDOW_IN_MS }}
-    {{ end }}
-    #
-    # the other option is "periodic" where writes may be acked immediately
-    # and the CommitLog is simply synced every commitlog_sync_period_in_ms
+    # the other option is "periodic" where writes may be acked immediately and
+    # the CommitLog is simply synced every commitlog_sync_period_in_ms
     # milliseconds.
     commitlog_sync: {{ .Params.COMMITLOG_SYNC }}
     commitlog_sync_period_in_ms: {{ .Params.COMMITLOG_SYNC_PERIOD_IN_MS }}
+    {{ if .Params.COMMITLOG_SYNC_BATCH_WINDOW_IN_MS }}
+    commitlog_sync_batch_window_in_ms: {{ .Params.COMMITLOG_SYNC_BATCH_WINDOW_IN_MS }}
+    {{ end }}
 
     # The size of the individual commitlog file segments.  A commitlog
     # segment may be archived, deleted, or recycled once all the data
@@ -448,25 +452,24 @@ data:
     # commitlog_compression:
     #   - class_name: LZ4Compressor
     #     parameters:
-    #         -
+    #       -
 
     # any class that implements the SeedProvider interface and has a
     # constructor that takes a Map<String, String> of parameters will do.
     seed_provider:
-        # Addresses of hosts that are deemed contact points.
-        # Cassandra nodes use this list of hosts to find each other and learn
-        # the topology of the ring.  You must change this if you are running
-        # multiple nodes!
-        - class_name: {{ .Params.SEED_PROVIDER_CLASS }}
-          parameters:
-              # Here we follow the advice from DataStax and make the first 3
-              # nodes in a DC the seed nodes.
-              # https://docs.datastax.com/en/dse/6.0/dse-admin/datastax_enterprise/production/seedNodesForSingleDC.html
-              - seeds: "{{- range $i, $node := until (int (min 3 .Params.NODE_COUNT)) -}}
-                          {{- if $i -}}, {{- end -}}
-                          {{ $.Name }}-node-{{ $node }}.{{ $.Name }}-svc.{{ $.Namespace }}.svc.cluster.local
-                        {{- end -}}"
-
+      # Addresses of hosts that are deemed contact points.
+      # Cassandra nodes use this list of hosts to find each other and learn
+      # the topology of the ring.  You must change this if you are running
+      # multiple nodes!
+      - class_name: {{ .Params.SEED_PROVIDER_CLASS }}
+        parameters:
+          # Here we follow the advice from DataStax and make the first 3
+          # nodes in a DC the seed nodes.
+          # https://docs.datastax.com/en/dse/6.0/dse-admin/datastax_enterprise/production/seedNodesForSingleDC.html
+          - seeds: "{{- range $i, $node := until (int (min 3 .Params.NODE_COUNT)) -}}
+                      {{- if $i -}}, {{- end -}}
+                      {{ $.Name }}-node-{{ $node }}.{{ $.Name }}-svc.{{ $.Namespace }}.svc.cluster.local
+                    {{- end -}}"
 
     # For workloads with more data than can fit in memory, Cassandra's
     # bottleneck will be reads that need to fetch data from
@@ -540,7 +543,6 @@ data:
     {{ if .Params.MEMTABLE_CLEANUP_THRESHOLD }}
     memtable_cleanup_threshold: {{ .Params.MEMTABLE_CLEANUP_THRESHOLD }}
     {{ end }}
-
 
     # Specify the way Cassandra allocates and manages memtable memory.
     # Options are:
@@ -798,7 +800,7 @@ data:
     # of an o.a.c.t.TServerFactory that can create an instance of it.
     rpc_server_type: {{ .Params.RPC_SERVER_TYPE }}
 
-    # Uncomment rpc_min|max_thread to set request pool size limits.
+    # Set request pool size limits.
     #
     # Regardless of your choice of RPC server (see above), the number of maximum requests in the
     # RPC thread pool dictates how many concurrent requests are possible (but if you are using the sync
@@ -811,19 +813,20 @@ data:
     {{ if .Params.RPC_MIN_THREADS }}
     rpc_min_threads: {{ .Params.RPC_MIN_THREADS }}
     {{ end }}
+
     {{ if .Params.RPC_MAX_THREADS }}
     rpc_max_threads: {{ .Params.RPC_MAX_THREADS }}
     {{ end }}
 
-    # uncomment to set socket buffer sizes on rpc connections
     {{ if .Params.RPC_SEND_BUFF_SIZE_IN_BYTES }}
     rpc_send_buff_size_in_bytes: {{ .Params.RPC_SEND_BUFF_SIZE_IN_BYTES }}
     {{ end }}
+
     {{ if .Params.RPC_RECV_BUFF_SIZE_IN_BYTES }}
-    rpc_recv_buff_size_in_bytes: {{ .Params.RPC_RECV_BUFF_SIZE_IN_BYTES }} 
+    rpc_recv_buff_size_in_bytes: {{ .Params.RPC_RECV_BUFF_SIZE_IN_BYTES }}
     {{ end }}
 
-    # Uncomment to set socket buffer size for internode communication
+    # Set socket buffer size for internode communication
     # Note that when setting this, the buffer size is limited by net.core.wmem_max
     # and when not setting it it is defined by net.ipv4.tcp_wmem
     # See also:
@@ -836,7 +839,7 @@ data:
     internode_send_buff_size_in_bytes: {{ .Params.INTERNODE_SEND_BUFF_SIZE_IN_BYTES }}
     {{ end }}
 
-    # Uncomment to set socket buffer size for internode communication
+    # Set socket buffer size for internode communication
     # Note that when setting this, the buffer size is limited by net.core.wmem_max
     # and when not setting it it is defined by net.ipv4.tcp_wmem
     {{ if .Params.INTERNODE_RECV_BUFF_SIZE_IN_BYTES }}
@@ -930,7 +933,7 @@ data:
     # this setting allows users to throttle inter dc stream throughput in addition
     # to throttling all network stream traffic as configured with
     # stream_throughput_outbound_megabits_per_sec
-    # When unset, the default is 200 Mbps or 25 MB/s    
+    # When unset, the default is 200 Mbps or 25 MB/s
     {{ if .Params.INTER_DC_STREAM_THROUGHPUT_OUTBOUND_MEGABITS_PER_SEC }}
     inter_dc_stream_throughput_outbound_megabits_per_sec: {{ .Params.INTER_DC_STREAM_THROUGHPUT_OUTBOUND_MEGABITS_PER_SEC }}
     {{ end }}
@@ -1129,36 +1132,39 @@ data:
     # the keystore and truststore.  For instructions on generating these files, see:
     # http://download.oracle.com/javase/6/docs/technotes/guides/security/jsse/JSSERefGuide.html#CreateKeystore
     #
+    # TODO(mpereira): we'll have to configure this when adding TLS support.
     server_encryption_options:
-        internode_encryption: none
-        keystore: conf/.keystore
-        keystore_password: cassandra
-        truststore: conf/.truststore
-        truststore_password: cassandra
-        # More advanced defaults below:
-        # protocol: TLS
-        # algorithm: SunX509
-        # store_type: JKS
-        # cipher_suites: [TLS_RSA_WITH_AES_128_CBC_SHA,TLS_RSA_WITH_AES_256_CBC_SHA,TLS_DHE_RSA_WITH_AES_128_CBC_SHA,TLS_DHE_RSA_WITH_AES_256_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA]
-        # require_client_auth: false
-        # require_endpoint_verification: false
+      internode_encryption: none
+      keystore: conf/.keystore
+      keystore_password: cassandra
+      truststore: conf/.truststore
+      truststore_password: cassandra
+      # More advanced defaults below:
+      # protocol: TLS
+      # algorithm: SunX509
+      # store_type: JKS
+      # cipher_suites: [TLS_RSA_WITH_AES_128_CBC_SHA,TLS_RSA_WITH_AES_256_CBC_SHA,TLS_DHE_RSA_WITH_AES_128_CBC_SHA,TLS_DHE_RSA_WITH_AES_256_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA]
+      # require_client_auth: false
+      # require_endpoint_verification: false
 
     # enable or disable client/server encryption.
+    #
+    # TODO(mpereira): we'll have to configure this when adding TLS support.
     client_encryption_options:
-        enabled: false
-        # If enabled and optional is set to true encrypted and unencrypted connections are handled.
-        optional: false
-        keystore: conf/.keystore
-        keystore_password: cassandra
-        # require_client_auth: false
-        # Set trustore and truststore_password if require_client_auth is true
-        # truststore: conf/.truststore
-        # truststore_password: cassandra
-        # More advanced defaults below:
-        # protocol: TLS
-        # algorithm: SunX509
-        # store_type: JKS
-        # cipher_suites: [TLS_RSA_WITH_AES_128_CBC_SHA,TLS_RSA_WITH_AES_256_CBC_SHA,TLS_DHE_RSA_WITH_AES_128_CBC_SHA,TLS_DHE_RSA_WITH_AES_256_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA]
+      enabled: false
+      # If enabled and optional is set to true encrypted and unencrypted connections are handled.
+      optional: false
+      keystore: conf/.keystore
+      keystore_password: cassandra
+      # require_client_auth: false
+      # Set trustore and truststore_password if require_client_auth is true
+      # truststore: conf/.truststore
+      # truststore_password: cassandra
+      # More advanced defaults below:
+      # protocol: TLS
+      # algorithm: SunX509
+      # store_type: JKS
+      # cipher_suites: [TLS_RSA_WITH_AES_128_CBC_SHA,TLS_RSA_WITH_AES_256_CBC_SHA,TLS_DHE_RSA_WITH_AES_128_CBC_SHA,TLS_DHE_RSA_WITH_AES_256_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA]
 
     # internode_compression controls whether traffic between nodes is
     # compressed.
@@ -1213,7 +1219,6 @@ data:
     # setting.
     windows_timer_interval: {{ .Params.WINDOWS_TIMER_INTERVAL }}
 
-
     # Enables encrypting data at-rest (on disk). Different key providers can be plugged in, but the default reads from
     # a JCE-style keystore. A single keystore can hold multiple keys, but the one referenced by
     # the "key_alias" is the only key that will be used for encrypt opertaions; previously used keys
@@ -1227,20 +1232,19 @@ data:
     # Currently, only the following file types are supported for transparent data encryption, although
     # more are coming in future cassandra releases: commitlog, hints
     transparent_data_encryption_options:
-        enabled: false
-        chunk_length_kb: 64
-        cipher: AES/CBC/PKCS5Padding
-        key_alias: testing:1
-        # CBC IV length for AES needs to be 16 bytes (which is also the default size)
-        # iv_length: 16
-        key_provider:
-          - class_name: org.apache.cassandra.security.JKSKeyProvider
-            parameters:
-              - keystore: conf/.keystore
-                keystore_password: cassandra
-                store_type: JCEKS
-                key_password: cassandra
-
+      enabled: false
+      chunk_length_kb: 64
+      cipher: AES/CBC/PKCS5Padding
+      key_alias: testing:1
+      # CBC IV length for AES needs to be 16 bytes (which is also the default size)
+      # iv_length: 16
+      key_provider:
+        - class_name: org.apache.cassandra.security.JKSKeyProvider
+          parameters:
+            - keystore: conf/.keystore
+              keystore_password: cassandra
+              store_type: JCEKS
+              key_password: cassandra
 
     #####################
     # SAFETY THRESHOLDS #
@@ -1299,11 +1303,11 @@ data:
     # New strategies can be added. Implementors need to implement org.apache.cassandra.net.BackpressureStrategy and
     # provide a public constructor accepting a Map<String, Object>.
     back_pressure_strategy:
-        - class_name: {{ .Params.BACK_PRESSURE_STRATEGY_CLASS }}
-          parameters:
-            - high_ratio: {{ .Params.BACK_PRESSURE_HIGH_RATIO }}
-              factor: {{ .Params.BACK_PRESSURE_FACTOR }}
-              flow: {{ .Params.BACK_PRESSURE_FLOW }}
+      - class_name: {{ .Params.BACK_PRESSURE_STRATEGY_CLASS_NAME }}
+        parameters:
+          - high_ratio: {{ .Params.BACK_PRESSURE_STRATEGY_HIGH_RATIO }}
+            factor: {{ .Params.BACK_PRESSURE_STRATEGY_FACTOR }}
+            flow: {{ .Params.BACK_PRESSURE_STRATEGY_FLOW }}
     # Coalescing Strategies #
     # Coalescing multiples messages turns out to significantly boost message processing throughput (think doubling or more).
     # On bare metal, the floor for packet processing throughput is high enough that many applications won't notice, but in
