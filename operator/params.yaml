@@ -91,6 +91,14 @@ BATCHLOG_REPLAY_THROTTLE_IN_KB:
   description: "The total maximum throttle for replaying failed logged batches in KBs per second."
   default: 1024
 
+AUTHENTICATOR:
+  description: "Authentication backend, implementing IAuthenticator; used to identify users."
+  default: "AllowAllAuthenticator"
+
+AUTHORIZER:
+  description: "Authorization backend, implementing IAuthorizer; used to limit access/provide permissions."
+  default: "AllowAllAuthorizer"
+
 ROLE_MANAGER:
   description: "Part of the Authentication & Authorization backend that implements IRoleManager to maintain grants and memberships between roles, By default, the value set is Apache Cassandra's out of the box Role Manager: CassandraRoleManager"
   default: "CassandraRoleManager"
