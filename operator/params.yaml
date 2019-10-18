@@ -5,11 +5,11 @@ NODE_COUNT:
 
 NODE_CPUS:
   description: "CPUs (request) for the Cassandra node pods. spec.containers[].resources.requests.cpu"
-  default: "2000m"
+  default: "500m"
 
 NODE_CPUS_LIMIT:
   description: "CPUs (limit) for the Cassandra node pods. spec.containers[].resources.limits.cpu"
-  default: "2000m"
+  default: "500m"
 
 NODE_MEM:
   description: "Memory (request) for the Cassandra node pods. spec.containers[].resources.requests.memory"
