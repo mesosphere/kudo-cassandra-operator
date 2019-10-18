@@ -3,6 +3,7 @@ FROM cassandra:3.11.4
 RUN set -eux; \
   apt-get update; \
   apt-get install -y --no-install-recommends libcap2-bin; \
+  apt-get install -y curl; \
   # Setting this capability will cause running the Java binary to not be
   # "recognized" when the Cassandra binary is run in a container without
   # IPC_LOCK capabilities, showing a message like "Cassandra 3.0 and later
