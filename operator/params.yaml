@@ -5,6 +5,7 @@
 NODE_COUNT:
   description: "Number of Cassandra nodes."
   default: 3
+
 NODE_CPU_MC:
   description: "CPU request (in millicores) for the Cassandra node pods."
   default: 2000
