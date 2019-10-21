@@ -4,7 +4,7 @@ metadata:
   name: cassandra-exporter-config-yml
 data:
   cassandra-exporter-config.yml: |
-    host: localhost:7199
+    host: localhost:{{ .Params.METRICS_PORT }}
     ssl: False
     user:
     password:

@@ -62,21 +62,21 @@ spec:
                 command:
                   - nodetool
                   - drain
-          # command:
-          #   - cassandra
-          #   - -f
+          command:
+            - cassandra
+            - -f
           # Comment the `command` above and uncomment the one below if pods are
           # crash-looping and you would like to investigate their state. This is
           # analogous to a `pod pause` in SDK-land.
-          command:
-            - bash
-            - -c
+          # command:
+          #   - bash
+          #   - -c
           #   - "while true; do echo 'sleeping...'; sleep 5; done"
-          args:
-            - cd /etc/cassandra;
-              curl -L -O https://github.com/criteo/cassandra_exporter/releases/download/2.2.1/cassandra_exporter-2.2.1-all.jar;
-              java -jar cassandra_exporter-2.2.1-all.jar cassandra-exporter-config.yml;
-              cassandra -f;
+          # args:
+          #   - cd /etc/cassandra;
+          #     curl -L -O https://github.com/criteo/cassandra_exporter/releases/download/2.2.1/cassandra_exporter-2.2.1-all.jar;
+          #     java -jar cassandra_exporter-2.2.1-all.jar cassandra-exporter-config.yml;
+          #     cassandra -f;
           env:
             - name: NODE_NAME
               valueFrom:
@@ -102,6 +102,8 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.uid
+            - name: METRICS_ENABLED
+              value: "{{ .Params.METRICS_ENABLED }}"
           resources:
             requests:
               memory: "{{ .Params.NODE_MEM_MIB }}Mi"
@@ -138,6 +140,59 @@ spec:
             - name: jvm-options
               mountPath: /etc/cassandra/jvm.options
               subPath: jvm.options
+            - name: cassandra-exporter-config-yml
+              mountPath: /etc/cassandra/cassandra-exporter-config.yml
+              subPath: cassandra-exporter-config.yml
+        - name: metrics
+          imagePullPolicy: Always
+          image: viivek46/cassandra:3.11.4
+          securityContext:
+            capabilities:
+              add:
+                # TODO(mpereira): add an operator parameter for "memory lock" so
+                # that this capability and a respective Docker image with
+                # `setcap`ed binaries are conditionally used.
+                - IPC_LOCK
+                # FIXME(mpereira): might not be necessary given DCOS-59219.
+                - SYS_RESOURCE
+          command:
+            - bash
+            - -c
+          args:
+            - cd /etc/cassandra;
+              curl -L -O https://github.com/criteo/cassandra_exporter/releases/download/2.2.1/cassandra_exporter-2.2.1-all.jar;
+              java -jar cassandra_exporter-2.2.1-all.jar cassandra-exporter-config.yml;
+          env:
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_SERVICE_ACCOUNT
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.serviceAccountName
+            - name: POD_UID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.uid
+            - name: METRICS_ENABLED
+              value: "{{ .Params.METRICS_ENABLED }}"
+          ports:
+            - containerPort: {{ .Params.METRICS_PORT }}
+              name: METRICS_PORT
+          volumeMounts:
             - name: cassandra-exporter-config-yml
               mountPath: /etc/cassandra/cassandra-exporter-config.yml
               subPath: cassandra-exporter-config.yml

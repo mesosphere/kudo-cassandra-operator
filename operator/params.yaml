@@ -8,11 +8,11 @@ NODE_COUNT:
 
 NODE_CPU_MC:
   description: "CPU request (in millicores) for the Cassandra node pods."
-  default: 2000
+  default: 500
 
 NODE_CPU_LIMIT_MC:
   description: "CPU limit (in millicores) for the Cassandra node pods."
-  default: 2000
+  default: 500
 
 NODE_MEM_MIB:
   description: "Memory request (in MiB) for the Cassandra node pods."
@@ -73,6 +73,13 @@ NODE_NEW_GENERATION_HEAP_SIZE_MB:
 SEED_PROVIDER_CLASS:
   description: "The class within Cassandra that handles the seed logic."
   default: "org.apache.cassandra.locator.SimpleSeedProvider"
+
+METRICS_ENABLED:
+  default: "true"
+
+METRICS_PORT:
+  description: "metrics Port"
+  default: "7200"
 
 NUM_TOKENS:
   description: "The number of tokens assigned to each node."
