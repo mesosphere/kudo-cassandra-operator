@@ -79,7 +79,7 @@ METRICS_ENABLED:
 
 METRICS_PORT:
   description: "metrics Port"
-  default: "7200"
+  default: 7200
 
 NUM_TOKENS:
   description: "The number of tokens assigned to each node."
