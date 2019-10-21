@@ -72,11 +72,6 @@ spec:
           #   - bash
           #   - -c
           #   - "while true; do echo 'sleeping...'; sleep 5; done"
-          # args:
-          #   - cd /etc/cassandra;
-          #     curl -L -O https://github.com/criteo/cassandra_exporter/releases/download/2.2.1/cassandra_exporter-2.2.1-all.jar;
-          #     java -jar cassandra_exporter-2.2.1-all.jar cassandra-exporter-config.yml;
-          #     cassandra -f;
           env:
             - name: NODE_NAME
               valueFrom:
@@ -140,9 +135,6 @@ spec:
             - name: jvm-options
               mountPath: /etc/cassandra/jvm.options
               subPath: jvm.options
-            - name: cassandra-exporter-config-yml
-              mountPath: /etc/cassandra/cassandra-exporter-config.yml
-              subPath: cassandra-exporter-config.yml
         {{ if eq .Params.METRICS_ENABLED "true" }}
         - name: metrics
           imagePullPolicy: Always
@@ -188,6 +180,13 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.uid
+          resources:
+            requests:
+              memory: "{{ .Params.METRICS_MEM_MIB }}Mi"
+              cpu: "{{ .Params.METRICS_CPU_MC }}m"
+            limits:
+              memory: "{{ .Params.METRICS_MEM_LIMIT_MIB }}Mi"
+              cpu: "{{ .Params.METRICS_CPU_LIMIT_MC }}m"
           volumeMounts:
             - name: cassandra-exporter-config-yml
               mountPath: /etc/cassandra/cassandra-exporter-config.yml
@@ -205,10 +204,12 @@ spec:
             name: {{ .Name }}-cassandra-env-sh
         - name: jvm-options
           configMap:
-            name: {{ .Name }}-jvm-options
+            name: {{ .Name }}-jvm-options            
+        {{ if eq .Params.METRICS_ENABLED "true" }}
         - name: cassandra-exporter-config-yml
           configMap:
             name: {{ .Name }}-cassandra-exporter-config-yml
+        {{ end }}
   volumeClaimTemplates:
     - metadata:
         name: var-lib-cassandra
