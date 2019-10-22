@@ -11,7 +11,7 @@ spec:
       port: prometheus-exporter-port
   namespaceSelector:
     matchNames:
-      - test
+      - default
   selector:
     matchLabels:
       kudo.dev/servicemonitor: "true"
