@@ -94,7 +94,7 @@ METRICS_ENABLED:
   default: "true"
 
 METRICS_PORT:
-  description: "metrics Port"
+  description: "Metrics Port"
   default: 7200
 
 NUM_TOKENS:

@@ -33,13 +33,13 @@ data:
        - .*:mean
        - .*:min
 
-       # Path present in many metrics but uninterresting
+       # Non-interesting metrics
        - .*:viewlockacquiretime:.*
        - .*:viewreadtime:.*
        - .*:cas[a-z]+latency:.*
        - .*:colupdatetimedeltahistogram:.*
 
-       # Mostly for RPC, do not scrap them
+       # RPC metrics that do not need to be scraped
        - org:apache:cassandra:db:.*
 
        # columnfamily is an alias for Table metrics
@@ -49,7 +49,7 @@ data:
        # Should we export metrics for system keyspaces/tables ?
        - org:apache:cassandra:metrics:[^:]+:system[^:]*:.*
 
-       # Don't scrap us
+       # Don't scrape metrics from Criteo
        - com:criteo:nosql:cassandra:exporter:.*
 
     maxScrapFrequencyInSec:
