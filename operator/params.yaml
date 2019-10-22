@@ -23,19 +23,19 @@ NODE_MEM_LIMIT_MIB:
   default: 4096
 
 METRICS_CPU_MC:
-  description: "CPU request (in millicores) for the Cassandra node pods."
+  description: "CPU request (in millicores) for the Cassandra metrics pods."
   default: 200
 
 METRICS_CPU_LIMIT_MC:
-  description: "CPU limit (in millicores) for the Cassandra node pods."
+  description: "CPU limit (in millicores) for the Cassandra metrics pods."
   default: 200
 
 METRICS_MEM_MIB:
-  description: "Memory request (in MiB) for the Cassandra node pods."
+  description: "Memory request (in MiB) for the Cassandra metrics pods."
   default: 500
 
 METRICS_MEM_LIMIT_MIB:
-  description: "Memory limit (in MiB) for the Cassandra node pods."
+  description: "Memory limit (in MiB) for the Cassandra metrics pods."
   default: 500
 
 NODE_DISK_SIZE_GIB:
