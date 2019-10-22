@@ -7,11 +7,11 @@ metadata:
   name: cassandra-cluster-monitor
 spec:
   endpoints:
-  - interval: 30s
-    port: metrics
+    - interval: 30s
+      port: prometheus-exporter-port
   namespaceSelector:
     matchNames:
-    - default
+      - test
   selector:
     matchLabels:
       kudo.dev/servicemonitor: "true"

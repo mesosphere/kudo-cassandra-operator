@@ -9,7 +9,7 @@ data:
     user:
     password:
     listenAddress: 0.0.0.0
-    listenPort: {{ .Params.METRICS_PORT }}
+    listenPort: {{ .Params.PROMETHEUS_EXPORTER_PORT }}
     blacklist:
        # To profile the duration of jmx call you can start the program with the following options
        # > java -Dorg.slf4j.simpleLogger.defaultLogLevel=trace -jar cassandra_exporter.jar config.yml --oneshot

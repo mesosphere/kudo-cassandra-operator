@@ -97,8 +97,8 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.uid
-            - name: METRICS_ENABLED
-              value: "{{ .Params.METRICS_ENABLED }}"
+            - name: PROMETHEUS_EXPORTER_ENABLED
+              value: "{{ .Params.PROMETHEUS_EXPORTER_ENABLED }}"
           resources:
             requests:
               memory: "{{ .Params.NODE_MEM_MIB }}Mi"
@@ -135,8 +135,8 @@ spec:
             - name: jvm-options
               mountPath: /etc/cassandra/jvm.options
               subPath: jvm.options
-        {{ if eq .Params.METRICS_ENABLED "true" }}
-        - name: metrics
+        {{ if eq .Params.PROMETHEUS_EXPORTER_ENABLED "true" }}
+        - name: prometheus-exporter
           imagePullPolicy: Always
           image: viivek46/cassandra:3.11.4
           securityContext:
@@ -182,11 +182,11 @@ spec:
                   fieldPath: metadata.uid
           resources:
             requests:
-              memory: "{{ .Params.METRICS_MEM_MIB }}Mi"
-              cpu: "{{ .Params.METRICS_CPU_MC }}m"
+              memory: "{{ .Params.PROMETHEUS_EXPORTER_MEM_MIB }}Mi"
+              cpu: "{{ .Params.PROMETHEUS_EXPORTER_CPU_MC }}m"
             limits:
-              memory: "{{ .Params.METRICS_MEM_LIMIT_MIB }}Mi"
-              cpu: "{{ .Params.METRICS_CPU_LIMIT_MC }}m"
+              memory: "{{ .Params.PROMETHEUS_EXPORTER_MEM_LIMIT_MIB }}Mi"
+              cpu: "{{ .Params.PROMETHEUS_EXPORTER_CPU_LIMIT_MC }}m"
           volumeMounts:
             - name: cassandra-exporter-config-yml
               mountPath: /etc/cassandra/cassandra-exporter-config.yml
@@ -205,7 +205,7 @@ spec:
         - name: jvm-options
           configMap:
             name: {{ .Name }}-jvm-options
-        {{ if eq .Params.METRICS_ENABLED "true" }}
+        {{ if eq .Params.PROMETHEUS_EXPORTER_ENABLED "true" }}
         - name: cassandra-exporter-config-yml
           configMap:
             name: {{ .Name }}-cassandra-exporter-config-yml
