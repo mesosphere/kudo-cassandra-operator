@@ -62,6 +62,13 @@ spec:
                 command:
                   - nodetool
                   - drain
+          readinessProbe:
+            exec:
+              command:
+                - nodetool status -p {{ .Params.JMX_PORT }}
+            initialDelaySeconds: {{ .Params.READINESS_CHECK_INITIAL_DELAY }}
+            periodSeconds: {{ .Params.READINESS_CHECK_PERIOD }}
+            timeoutSeconds: {{ .Params.READINESS_CHECK_TIMEOUT }}
           command:
             - cassandra
             - -f
@@ -133,6 +140,9 @@ spec:
             - name: jvm-options
               mountPath: /etc/cassandra/jvm.options
               subPath: jvm.options
+            - name: cassandra-healthcheck-sh
+              mountPath: /etc/cassandra/cassandra-healthcheck.sh
+              subPath: cassandra-healthcheck.sh
       volumes:
         # Overwriting /etc/cassandra/ available in the Docker image.
         - name: etc-cassandra
@@ -146,6 +156,9 @@ spec:
         - name: jvm-options
           configMap:
             name: {{ .Name }}-jvm-options
+        - name: cassandra-healthcheck-sh
+          configMap:
+            name: {{ .Name }}-cassandra-healthcheck-sh
   volumeClaimTemplates:
     - metadata:
         name: var-lib-cassandra

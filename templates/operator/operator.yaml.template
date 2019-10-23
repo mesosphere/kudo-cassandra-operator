@@ -16,6 +16,7 @@ tasks:
       - cassandra-env-sh.yaml
       - jvm-options.yaml
       - stateful-set.yaml
+      - cassandra-healthcheck-sh.yaml
 
 plans:
   deploy:

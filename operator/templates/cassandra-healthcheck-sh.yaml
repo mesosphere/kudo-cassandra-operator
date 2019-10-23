@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cassandra-healthcheck-sh
+data:
+  cassandra-healthcheck.sh: |
+    echo "Hello!"
