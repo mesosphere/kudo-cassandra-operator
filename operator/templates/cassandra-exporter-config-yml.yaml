@@ -3,7 +3,7 @@ kind: ConfigMap
 metadata:
   name: cassandra-exporter-config-yml
 data:
-  cassandra-exporter-config.yml: |
+  config.yml: |
     host: localhost:{{ .Params.JMX_PORT }}
     ssl: False
     user:
