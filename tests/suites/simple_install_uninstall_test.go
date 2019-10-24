@@ -11,8 +11,8 @@ import (
 
 	// log "github.com/sirupsen/logrus"
 
-	kubectl "github.com/mesosphere/kudo-cassandra-operator/tests/utils/kubectl"
 	k8s "github.com/mesosphere/kudo-cassandra-operator/tests/utils/k8s"
+	kubectl "github.com/mesosphere/kudo-cassandra-operator/tests/utils/kubectl"
 	kudo "github.com/mesosphere/kudo-cassandra-operator/tests/utils/kudo"
 )
 

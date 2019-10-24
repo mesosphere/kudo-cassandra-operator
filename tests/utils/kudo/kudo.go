@@ -19,7 +19,7 @@ import (
 
 var (
 	kubectlOptions *kubectl.KubectlOptions
-	kudo *versioned.Clientset
+	kudo           *versioned.Clientset
 )
 
 // TODO(mpereira) return err?
@@ -88,7 +88,7 @@ func WaitForOperatorDeployStatus(
 
 			if err != nil {
 				log.Errorf(
-					"Error attempting to get operator (instance='%s', namespace='%s') " +
+					"Error attempting to get operator (instance='%s', namespace='%s') "+
 						"deploy status: %s",
 					instanceName,
 					namespaceName,
@@ -99,7 +99,7 @@ func WaitForOperatorDeployStatus(
 
 			if status == nil {
 				log.Warnf(
-					"Waiting for operator (instance='%s', namespace='%s') deploy status " +
+					"Waiting for operator (instance='%s', namespace='%s') deploy status "+
 						"to be '%s', is not available",
 					instanceName,
 					namespaceName,
@@ -111,7 +111,7 @@ func WaitForOperatorDeployStatus(
 
 			if expectedStatus != *status {
 				log.Infof(
-					"Waiting for '%s' (instance='%s', namespace='%s') deploy status " +
+					"Waiting for '%s' (instance='%s', namespace='%s') deploy status "+
 						"to be '%s', is '%s'",
 					instanceName,
 					namespaceName,
@@ -138,7 +138,7 @@ func WaitForOperatorDeployStatus(
 func WaitForOperatorDeployInProgress(
 	namespaceName string, instanceName string,
 ) error {
-	retryDelay := time.Second*2
+	retryDelay := time.Second * 2
 	var retryAttempts uint = 10
 
 	return WaitForOperatorDeployStatus(
@@ -153,7 +153,7 @@ func WaitForOperatorDeployInProgress(
 func WaitForOperatorDeployComplete(
 	namespaceName string, instanceName string,
 ) error {
-	retryDelay := time.Second*10
+	retryDelay := time.Second * 10
 	var retryAttempts uint = 12
 
 	return WaitForOperatorDeployStatus(

@@ -3,16 +3,16 @@ package k8s
 import (
 	log "github.com/sirupsen/logrus"
 
-	"k8s.io/client-go/kubernetes"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
 
 	kubectl "github.com/mesosphere/kudo-cassandra-operator/tests/utils/kubectl"
 )
 
 var (
-	clientset *kubernetes.Clientset
+	clientset      *kubernetes.Clientset
 	kubectlOptions *kubectl.KubectlOptions
 )
 
