@@ -104,14 +104,13 @@ func WaitForOperatorDeployStatus(
 					instanceName,
 					namespaceName,
 					expectedStatus,
-					*status,
 				)
 				return errors.New("")
 			}
 
 			if expectedStatus != *status {
 				log.Infof(
-					"Waiting for '%s' (instance='%s', namespace='%s') deploy status "+
+					"Waiting for operator (instance='%s', namespace='%s') deploy status "+
 						"to be '%s', is '%s'",
 					instanceName,
 					namespaceName,
