@@ -153,9 +153,9 @@ func WaitForOperatorDeployInProgress(
 func WaitForOperatorDeployComplete(
 	namespaceName string, instanceName string,
 ) error {
-	// 4 minutes.
+	// 10 minutes.
 	retryDelay := time.Second * 10
-	var retryAttempts uint = 24
+	var retryAttempts uint = 60
 
 	return WaitForOperatorDeployStatus(
 		v1alpha1.ExecutionComplete,
