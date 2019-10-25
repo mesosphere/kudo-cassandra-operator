@@ -9,17 +9,4 @@ When Cassandra operator deployed with parameter `PROMETHEUS_EXPORTER_ENABLED=tru
 - Each Pod will be added with `prometheus-exporter` container which will export metrics at parameter `PROMETHEUS_EXPORTER_PORT`, by default its set to `7200`
 - Adds a port named `prometheus-exporter-port` to the Cassandra Service
 - Adds a label `kudo.dev/servicemonitor: "true"` for the service monitor discovery.
-
-```
-kubectl describe svc cassandra-svc
-...
-Port:              prometheus-exporter-port  7200/TCP
-TargetPort:        7200/TCP
-...
-```
-
-If the Cassandra Service in the default namespace, we will need to use the next example of the service-monitor to see metrics in Prometheus.
-
-```
-kubectl create -f resources/service-monitor.yaml
-```
+- Operator will run service monitor object which will make metrics available at Prometheus.

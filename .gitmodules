@@ -1,6 +1,3 @@
 [submodule "shared"]
 	path = shared
 	url = git@github.com:mesosphere/data-services-kudo.git
-[submodule "vendor/cassandra_exporter"]
-	path = vendor/cassandra_exporter
-	url = https://github.com/criteo/cassandra_exporter.git

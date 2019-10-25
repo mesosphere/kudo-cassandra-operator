@@ -4,7 +4,7 @@ metadata:
   name: svc
   {{ if eq .Params.PROMETHEUS_EXPORTER_ENABLED "true" }}
   labels:
-    "kudo.dev/servicemonitor": "true"
+    kudo.dev/servicemonitor: "true"
   {{ end }}
 spec:
   ports:
