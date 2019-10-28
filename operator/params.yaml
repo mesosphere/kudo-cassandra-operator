@@ -703,7 +703,7 @@ JVM_OPT_G1R_SET_UPDATING_PAUSE_TIME_PERCENT:
   default:
 
 READINESS_CHECK_INITIAL_DELAY:
-  description: "An amount of time in seconds to wait before starting the readiness check attempts."
+  description: "Number of seconds after the container has started before the readiness check is initiated."
   default: "0"
 
 READINESS_CHECK_PERIOD:
