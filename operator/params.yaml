@@ -707,7 +707,7 @@ READINESS_CHECK_INITIAL_DELAY:
   default: "0"
 
 READINESS_CHECK_PERIOD:
-  description: "The period in seconds to wait after the last readiness check has completed to start the next check."
+  description: "How often (in seconds) to perform the readiness check."
   default: "5"
 
 READINESS_CHECK_TIMEOUT:
