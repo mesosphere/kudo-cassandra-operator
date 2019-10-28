@@ -18,7 +18,7 @@ import (
 
 var (
 	TestName          = "simple-install-uninstall-test"
-	OperatorName      = "cassandra"
+	OperatorName      = os.Getenv("OPERATOR_NAME")
 	TestNamespace     = fmt.Sprintf("%s-namespace", TestName)
 	TestInstance      = fmt.Sprintf("%s-instance", OperatorName)
 	KubeConfigPath    = os.Getenv("KUBECONFIG")
