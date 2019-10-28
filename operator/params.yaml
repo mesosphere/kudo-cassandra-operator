@@ -30,15 +30,15 @@ NODE_STORAGE_CLASS:
   description: "The storage class to be used in volumeClaimTemplates. By default, it is not required and the default storage class is used."
   required: false
 
-NODE_READINESS_PROBE_INITIAL_DELAY:
+NODE_READINESS_PROBE_INITIAL_DELAY_S:
   description: "Number of seconds after the container has started before the readiness probe is initiated."
   default: "0"
 
-NODE_READINESS_PROBE_PERIOD:
+NODE_READINESS_PROBE_PERIOD_S:
   description: "How often (in seconds) to perform the readiness probe."
   default: "5"
 
-NODE_READINESS_PROBE_TIMEOUT:
+NODE_READINESS_PROBE_TIMEOUT_S:
   description: "How long (in seconds) to wait for a readiness probe to succeed."
   default: "60"
 
