@@ -714,10 +714,10 @@ READINESS_CHECK_TIMEOUT:
   description: "An amount of time in seconds to wait for a readiness check to succeed."
   default: "60"
 
-READINESS_SUCCESS_THRESHOLD:
+READINESS_CHECK_SUCCESS_THRESHOLD:
   description: "Minimum consecutive successes for the probe to be considered successful after having failed."
   default: "1"
 
-READINESS_FAILURE_THRESHOLD:
+READINESS_CHECK_FAILURE_THRESHOLD:
   description: "When a Pod starts and the check fails, Kubernetes will try failure_threshold times before giving up. Giving up means marking the pod Unready."
   default: "3"

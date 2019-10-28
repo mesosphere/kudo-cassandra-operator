@@ -70,8 +70,8 @@ spec:
             initialDelaySeconds: {{ .Params.READINESS_CHECK_INITIAL_DELAY }}
             periodSeconds: {{ .Params.READINESS_CHECK_PERIOD }}
             timeoutSeconds: {{ .Params.READINESS_CHECK_TIMEOUT }}
-            successThreshold: {{ .Params.READINESS_SUCCESS_THRESHOLD }}
-            failureThreshold: {{ .Params.READINESS_FAILURE_THRESHOLD }}
+            successThreshold: {{ .Params.READINESS_CHECK_SUCCESS_THRESHOLD }}
+            failureThreshold: {{ .Params.READINESS_CHECK_FAILURE_THRESHOLD }}
           command:
             - cassandra
             - -f
