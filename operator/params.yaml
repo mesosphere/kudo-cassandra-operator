@@ -31,15 +31,15 @@ NODE_STORAGE_CLASS:
   required: false
 
 NODE_READINESS_PROBE_INITIAL_DELAY:
-  description: "Number of seconds after the container has started before the readiness check is initiated."
+  description: "Number of seconds after the container has started before the readiness probe is initiated."
   default: "0"
 
 NODE_READINESS_PROBE_PERIOD:
-  description: "How often (in seconds) to perform the readiness check."
+  description: "How often (in seconds) to perform the readiness probe."
   default: "5"
 
 NODE_READINESS_PROBE_TIMEOUT:
-  description: "An amount of time in seconds to wait for a readiness check to succeed."
+  description: "How long (in seconds) to wait for a readiness probe to succeed."
   default: "60"
 
 NODE_READINESS_PROBE_SUCCESS_THRESHOLD:
@@ -47,7 +47,7 @@ NODE_READINESS_PROBE_SUCCESS_THRESHOLD:
   default: "1"
 
 NODE_READINESS_PROBE_FAILURE_THRESHOLD:
-  description: "When a Pod starts and the check fails, Kubernetes will try failure_threshold times before giving up. Giving up means marking the pod Unready."
+  description: "When a pod starts and the probe fails, `failure_threshold` attempts will be made before marking the pod as 'unready'."
   default: "3"
 
 OVERRIDE_CLUSTER_NAME:
