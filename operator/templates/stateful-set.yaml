@@ -67,11 +67,11 @@ spec:
               command:
                   - /bin/bash
                   - /etc/cassandra/cassandra-readiness-probe.sh
-            initialDelaySeconds: {{ .Params.READINESS_CHECK_INITIAL_DELAY }}
-            periodSeconds: {{ .Params.READINESS_CHECK_PERIOD }}
-            timeoutSeconds: {{ .Params.READINESS_CHECK_TIMEOUT }}
-            successThreshold: {{ .Params.READINESS_CHECK_SUCCESS_THRESHOLD }}
-            failureThreshold: {{ .Params.READINESS_CHECK_FAILURE_THRESHOLD }}
+            initialDelaySeconds: {{ .Params.READINESS_PROBE_INITIAL_DELAY }}
+            periodSeconds: {{ .Params.READINESS_PROBE_PERIOD }}
+            timeoutSeconds: {{ .Params.READINESS_PROBE_TIMEOUT }}
+            successThreshold: {{ .Params.READINESS_PROBE_SUCCESS_THRESHOLD }}
+            failureThreshold: {{ .Params.READINESS_PROBE_FAILURE_THRESHOLD }}
           command:
             - cassandra
             - -f
