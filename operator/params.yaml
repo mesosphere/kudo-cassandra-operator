@@ -719,5 +719,5 @@ READINESS_SUCCESS_THRESHOLD:
   default: "1"
 
 READINESS_FAILURE_THRESHOLD:
-  description: "When a Pod starts and the probe fails, Kubernetes will try failureThreshold times before giving up. Giving up means marking pod Unready."
+  description: "When a Pod starts and the check fails, Kubernetes will try failure_threshold times before giving up. Giving up means marking the pod Unready."
   default: "3"
