@@ -704,20 +704,20 @@ JVM_OPT_G1R_SET_UPDATING_PAUSE_TIME_PERCENT:
 
 READINESS_PROBE_INITIAL_DELAY:
   description: "Number of seconds after the container has started before the readiness check is initiated."
-  default: "0"
+  default: 0
 
 READINESS_PROBE_PERIOD:
   description: "How often (in seconds) to perform the readiness check."
-  default: "5"
+  default: 5
 
 READINESS_PROBE_TIMEOUT:
   description: "An amount of time in seconds to wait for a readiness check to succeed."
-  default: "60"
+  default: 60
 
 READINESS_PROBE_SUCCESS_THRESHOLD:
   description: "Minimum consecutive successes for the probe to be considered successful after having failed."
-  default: "1"
+  default: 1
 
 READINESS_PROBE_FAILURE_THRESHOLD:
   description: "When a Pod starts and the check fails, Kubernetes will try failure_threshold times before giving up. Giving up means marking the pod Unready."
-  default: "3"
+  default: 3
