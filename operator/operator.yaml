@@ -20,7 +20,6 @@ tasks:
       - service-monitor-yaml.yaml
       - node-readiness-probe-sh.yaml
 
-
 plans:
   deploy:
     strategy: serial

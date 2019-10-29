@@ -46,7 +46,7 @@ spec:
           imagePullPolicy: Always
           # Dockerfile based on:
           # https://github.com/docker-library/cassandra/blob/master/3.11/Dockerfile
-          image: mesosphere/cassandra:0.1.0-3.11.4
+          image: mesosphere/cassandra:0.1.0-3.11.4-SNAPSHOT
           securityContext:
             capabilities:
               add:
@@ -145,10 +145,13 @@ spec:
             - name: jvm-options
               mountPath: /etc/cassandra/jvm.options
               subPath: jvm.options
+            - name: node-readiness-probe-sh
+              mountPath: /etc/cassandra/node-readiness-probe.sh
+              subPath: node-readiness-probe.sh
         {{ if eq .Params.PROMETHEUS_EXPORTER_ENABLED "true" }}
         - name: prometheus-exporter
           imagePullPolicy: Always
-          image: mesosphere/prometheus-exporter:0.1.0-2.2.1
+          image: mesosphere/cassandra-prometheus-exporter:0.1.0-2.2.1-SNAPSHOT
           env:
             - name: NODE_NAME
               valueFrom:
@@ -186,9 +189,6 @@ spec:
               mountPath: /etc/cassandra_exporter/config.yml
               subPath: config.yml
         {{ end }}
-            - name: node-readiness-probe-sh
-              mountPath: /etc/cassandra/node-readiness-probe.sh
-              subPath: node-readiness-probe.sh
       volumes:
         # Overwriting /etc/cassandra/ available in the Docker image.
         - name: etc-cassandra
@@ -202,14 +202,14 @@ spec:
         - name: jvm-options
           configMap:
             name: {{ .Name }}-jvm-options
+        - name: node-readiness-probe-sh
+          configMap:
+            name: {{ .Name }}-node-readiness-probe-sh
         {{ if eq .Params.PROMETHEUS_EXPORTER_ENABLED "true" }}
         - name: cassandra-exporter-config-yml
           configMap:
             name: {{ .Name }}-cassandra-exporter-config-yml
         {{ end }}
-        - name: node-readiness-probe-sh
-          configMap:
-            name: {{ .Name }}-node-readiness-probe-sh
   volumeClaimTemplates:
     - metadata:
         name: var-lib-cassandra
