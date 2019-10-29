@@ -13,8 +13,8 @@
 - [KUDO](https://github.com/kudobuilder/kudo/releases) (check `KUDO_VERSION` in
   `metadata.sh` to see the last tested version)
 - Kubernetes cluster (last tested on
-  [Konvoy](https://github.com/mesosphere/konvoy/releases)) ((check
-  `KUBERNETES_VERSION` in `metadata.sh` to see the last tested version))
+  [Konvoy](https://github.com/mesosphere/konvoy/releases)) (check
+  `KUBERNETES_VERSION` in `metadata.sh` to see the last tested version)
 
 ## Installing
 
