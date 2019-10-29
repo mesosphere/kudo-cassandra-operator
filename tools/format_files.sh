@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2039
 
+# Dependencies:
+# - prettier
+# - goimports
+
 # YAML #########################################################################
 
 # FIXME(mpereira): can't use Prettier for now since it doesn't support templated
@@ -14,6 +18,15 @@
 
 # readonly yaml_exit_code=$?
 
+# FIXME(mpereira): see FIXME above.
+readonly yaml_exit_code=0
+
+# Go ###########################################################################
+
+goimports -l -w .
+
+readonly go_exit_code=$?
+
 ################################################################################
 
-# ! ((yaml_exit_code))
+! ((yaml_exit_code | go_exit_code))

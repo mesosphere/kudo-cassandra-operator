@@ -14,7 +14,7 @@ spec:
       name: ssl-storage
     - port: {{ .Params.NATIVE_TRANSPORT_PORT }}
       name: native-transport
-    {{ if .Params.START_RPC }}
+    {{ if eq .Params.START_RPC "true" }}
     - port: {{ .Params.RPC_PORT }}
       name: rpc
     {{ end }}

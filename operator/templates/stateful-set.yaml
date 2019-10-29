@@ -114,7 +114,7 @@ spec:
               name: ssl-storage
             - containerPort: {{ .Params.NATIVE_TRANSPORT_PORT }}
               name: native
-            {{ if .Params.START_RPC }}
+            {{ if eq .Params.START_RPC "true" }}
             - containerPort: {{ .Params.RPC_PORT }}
               name: rpc
             {{ end }}
@@ -207,6 +207,6 @@ spec:
         resources:
           requests:
             storage: "{{ .Params.NODE_DISK_SIZE_GIB }}Gi"
-        {{ if .Params.NODE_STORAGE_CLASS }}
+        {{ if eq .Params.NODE_STORAGE_CLASS "true" }}
         storageClassName: {{ .Params.NODE_STORAGE_CLASS }}
         {{ end }}
