@@ -62,6 +62,16 @@ spec:
                 command:
                   - nodetool
                   - drain
+          readinessProbe:
+            exec:
+              command:
+                  - /bin/bash
+                  - /etc/cassandra/node-readiness-probe.sh
+            initialDelaySeconds: {{ .Params.NODE_READINESS_PROBE_INITIAL_DELAY_S }}
+            periodSeconds: {{ .Params.NODE_READINESS_PROBE_PERIOD_S }}
+            timeoutSeconds: {{ .Params.NODE_READINESS_PROBE_TIMEOUT_S }}
+            successThreshold: {{ .Params.NODE_READINESS_PROBE_SUCCESS_THRESHOLD }}
+            failureThreshold: {{ .Params.NODE_READINESS_PROBE_FAILURE_THRESHOLD }}
           command:
             - cassandra
             - -f
@@ -133,6 +143,9 @@ spec:
             - name: jvm-options
               mountPath: /etc/cassandra/jvm.options
               subPath: jvm.options
+            - name: node-readiness-probe-sh
+              mountPath: /etc/cassandra/node-readiness-probe.sh
+              subPath: node-readiness-probe.sh
       volumes:
         # Overwriting /etc/cassandra/ available in the Docker image.
         - name: etc-cassandra
@@ -146,6 +159,9 @@ spec:
         - name: jvm-options
           configMap:
             name: {{ .Name }}-jvm-options
+        - name: node-readiness-probe-sh
+          configMap:
+            name: {{ .Name }}-node-readiness-probe-sh
   volumeClaimTemplates:
     - metadata:
         name: var-lib-cassandra
