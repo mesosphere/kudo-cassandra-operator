@@ -128,9 +128,10 @@ kubectl exec "${kudo_cassandra_pod_0}" \
 ./tools/check_files.sh
 ```
 
-### Building Docker image
+### Building Docker images
 
 ```bash
+./images/build.sh
 ```
 
 ### Running tests
