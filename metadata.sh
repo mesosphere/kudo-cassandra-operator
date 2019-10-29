@@ -43,10 +43,17 @@ export KUBERNETES_VERSION="1.15.0"
 ############################## Docker images ###################################
 ################################################################################
 
-export CASSANDRA_DOCKER_IMAGE_NAMESPACE="mesosphere"
+export CASSANDRA_DOCKER_IMAGE_FROM="cassandra:${CASSANDRA_VERSION}"
+export CASSANDRA_DOCKER_IMAGE_NAMESPACE="mpereira"
 export CASSANDRA_DOCKER_IMAGE_NAME="${OPERATOR_NAME}"
 export CASSANDRA_DOCKER_IMAGE_TAG="${OPERATOR_VERSION}-${CASSANDRA_VERSION}"
 export CASSANDRA_DOCKER_IMAGE="${CASSANDRA_DOCKER_IMAGE_NAMESPACE}/${CASSANDRA_DOCKER_IMAGE_NAME}:${CASSANDRA_DOCKER_IMAGE_TAG}"
+
+export PROMETHEUS_EXPORTER_DOCKER_IMAGE_FROM="criteord/cassandra_exporter:2.2.1"
+export PROMETHEUS_EXPORTER_DOCKER_IMAGE_NAMESPACE="viivek46"
+export PROMETHEUS_EXPORTER_DOCKER_IMAGE_NAME="prometheus-exporter"
+export PROMETHEUS_EXPORTER_DOCKER_IMAGE_TAG="v1.0"
+export PROMETHEUS_EXPORTER_DOCKER_IMAGE="${PROMETHEUS_EXPORTER_DOCKER_IMAGE_NAMESPACE}/${PROMETHEUS_EXPORTER_DOCKER_IMAGE_NAME}:${PROMETHEUS_EXPORTER_DOCKER_IMAGE_TAG}"
 
 ################################################################################
 ################################# Testing ######################################

@@ -46,7 +46,7 @@ spec:
           imagePullPolicy: Always
           # Dockerfile based on:
           # https://github.com/docker-library/cassandra/blob/master/3.11/Dockerfile
-          image: mpereira/cassandra:0.1.0-3.11.4
+          image: ${CASSANDRA_DOCKER_IMAGE}
           securityContext:
             capabilities:
               add:
@@ -138,7 +138,7 @@ spec:
         {{ if eq .Params.PROMETHEUS_EXPORTER_ENABLED "true" }}
         - name: prometheus-exporter
           imagePullPolicy: Always
-          image: viivek46/prometheus-exporter:v1.0
+          image: ${PROMETHEUS_EXPORTER_DOCKER_IMAGE}
           env:
             - name: NODE_NAME
               valueFrom:

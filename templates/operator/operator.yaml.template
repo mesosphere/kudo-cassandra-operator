@@ -16,6 +16,8 @@ tasks:
       - cassandra-env-sh.yaml
       - jvm-options.yaml
       - stateful-set.yaml
+      - cassandra-exporter-config-yml.yaml
+      - service-monitor-yaml.yaml
 
 plans:
   deploy:
