@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2039
 
+# Dependencies:
+# - prettier
+# - goimports
+
 readonly DEBUG="${DEBUG:=false}"
 readonly COLOR="${COLOR:=true}"
 
@@ -25,6 +29,9 @@ fi
 
 # readonly yaml_exit_code=$?
 
+# FIXME(mpereira): see FIXME above.
+readonly yaml_exit_code=0
+
 # Shell scripts ################################################################
 
 declare -a shellcheck_options
@@ -39,6 +46,16 @@ shellcheck -ax -e SC1091 "${shellcheck_options[@]}" "${shell_scripts[@]}"
 
 readonly shell_scripts_exit_code=$?
 
+# Go ###########################################################################
+
+readonly goimports_output="$(goimports -l -d .)"
+go_exit_code=0
+
+if [[ "${goimports_output}" != "" ]]; then
+  echo "${goimports_output}"
+  go_exit_code=1
+fi
+
 ################################################################################
 
-! ((shell_scripts_exit_code))
+! ((yaml_exit_code | shell_scripts_exit_code | go_exit_code))
