@@ -145,6 +145,9 @@ spec:
             - name: jvm-options
               mountPath: /etc/cassandra/jvm.options
               subPath: jvm.options
+            - name: node-readiness-probe-sh
+              mountPath: /etc/cassandra/node-readiness-probe.sh
+              subPath: node-readiness-probe.sh
         {{ if eq .Params.PROMETHEUS_EXPORTER_ENABLED "true" }}
         - name: prometheus-exporter
           imagePullPolicy: Always
@@ -186,9 +189,6 @@ spec:
               mountPath: /etc/cassandra_exporter/config.yml
               subPath: config.yml
         {{ end }}
-            - name: node-readiness-probe-sh
-              mountPath: /etc/cassandra/node-readiness-probe.sh
-              subPath: node-readiness-probe.sh
       volumes:
         # Overwriting /etc/cassandra/ available in the Docker image.
         - name: etc-cassandra
