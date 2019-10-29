@@ -10,9 +10,11 @@
 - [Docker daemon running under a non-root
   user](https://docs.docker.com/install/linux/linux-postinstall/) (only for
   Linux)
-- [KUDO](https://github.com/kudobuilder/kudo/releases) (last tested on 0.7.2)
-- Kubernetes cluster (last tested on [Konvoy
-  v1.1.5](https://github.com/mesosphere/konvoy/releases))
+- [KUDO](https://github.com/kudobuilder/kudo/releases) (check `KUDO_VERSION` in
+  `metadata.sh` to see the last tested version)
+- Kubernetes cluster (last tested on
+  [Konvoy](https://github.com/mesosphere/konvoy/releases)) (check
+  `KUBERNETES_VERSION` in `metadata.sh` to see the last tested version)
 
 ## Installing
 
@@ -96,16 +98,19 @@ kubectl exec "${kudo_cassandra_pod_0}" \
 ### Uninstalling the KUDO Cassandra operator
 
 ```bash
-./scripts/uninstall_kudo_cassandra.sh \
+./scripts/uninstall_operator.sh \
   --instance "${kudo_cassandra_instance_name}" \
   --namespace "${kudo_cassandra_instance_namespace}"
 ```
 
 ## Development
 
-### Requirements
+### Additional requirements
 
-- [bash 4](https://www.tldp.org/LDP/abs/html/bashver4.html)
+- bash 4+ ([macOS](https://formulae.brew.sh/formula/bash))
+- envsubst ([macOS](https://formulae.brew.sh/formula/gettext))
+- [shellcheck](https://www.shellcheck.net/)
+- [goimports](https://godoc.org/golang.org/x/tools/cmd/goimports)
 
 ### Compiling templates
 
@@ -127,9 +132,10 @@ kubectl exec "${kudo_cassandra_pod_0}" \
 ./tools/check_files.sh
 ```
 
-### Building Docker image
+### Building Docker images
 
 ```bash
+./images/build.sh
 ```
 
 ### Running tests

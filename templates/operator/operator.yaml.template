@@ -1,5 +1,5 @@
 name: "cassandra"
-version: "${KUDO_CASSANDRA_VERSION}"
+version: "${OPERATOR_VERSION}"
 kudoVersion: "${KUDO_VERSION}"
 kubernetesVersion: "${KUBERNETES_VERSION}"
 appVersion: "${CASSANDRA_VERSION}"
