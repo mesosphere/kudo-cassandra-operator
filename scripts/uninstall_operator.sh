@@ -14,6 +14,15 @@ operator_version=
 operator_instance_name=
 operator_instance_namespace=
 
+usage() {
+  echo -n "Usage: ${0} " >&2
+  echo -n "--operator OPERATOR_NAME " >&2
+  echo -n "--version OPERATOR_VERSION " >&2
+  echo -n "--instance OPERATOR_INSTANCE_NAME " >&2
+  echo -n "--namespace OPERATOR_INSTANCE_NAMESPACE" >&2
+  echo >&2
+}
+
 while [[ ${#} -gt 0 ]]; do
   # TODO(mpereira): handle parameters passed in as "parameter=value";
   parameter="${1}"
@@ -35,7 +44,13 @@ while [[ ${#} -gt 0 ]]; do
       operator_instance_namespace="${2}"
       shift
       ;;
+    --help|-h)
+      usage
+      exit 0
+      ;;
     *)
+      echo "Invalid parameter: ${parameter}" >&2
+      exit 1
       ;;
   esac
 
@@ -52,7 +67,9 @@ for parameter in operator_name \
                    operator_instance_name \
                    operator_instance_namespace; do
   if [[ -z ${!parameter} ]]; then
-    echo "--${parameter} parameter is required" >&2
+    echo "Missing ${parameter}" >&2
+    echo >&2
+    usage
     exit 1
   fi
 done
