@@ -766,3 +766,11 @@ parameters:
   - name: JVM_OPT_G1R_SET_UPDATING_PAUSE_TIME_PERCENT
     description: "Have the JVM do less remembered set work during STW, instead preferring concurrent GC. Reduces p99.9 latency."
     default: ""
+
+  - name: CUSTOM_CASSANDRA_YAML_BASE64
+    description: "Base64 encoded Cassandra properties appended to cassandra.yaml."
+    default: ""
+
+  - name: CUSTOM_JVM_OPTIONS_BASE64
+    description: "Base64 encoded JVM Options appended to jvm.options."
+    default: ""

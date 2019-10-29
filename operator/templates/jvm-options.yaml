@@ -345,3 +345,7 @@ data:
     ### Cassandra 4.0 which will use JDK 11.
     -XX:+UnlockExperimentalVMOptions
     -XX:+UseCGroupMemoryLimitForHeap
+
+    {{ if .Params.CUSTOM_JVM_OPTIONS_BASE64 }}
+    {{ .Params.CUSTOM_JVM_OPTIONS_BASE64 | b64dec }}
+    {{ end }}

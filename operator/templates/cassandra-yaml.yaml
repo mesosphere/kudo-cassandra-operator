@@ -1352,3 +1352,7 @@ data:
     {{ if .Params.OTC_BACKLOG_EXPIRATION_INTERVAL_MS }}
     otc_backlog_expiration_interval_ms: {{ .Params.OTC_BACKLOG_EXPIRATION_INTERVAL_MS }}
     {{ end }}
+
+    {{ if .Params.CUSTOM_CASSANDRA_YAML_BASE64 }}
+        {{ .Params.CUSTOM_CASSANDRA_YAML_BASE64 | b64dec }}
+    {{ end }}
