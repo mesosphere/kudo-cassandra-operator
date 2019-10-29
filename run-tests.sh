@@ -3,32 +3,32 @@
 
 set -euxo pipefail
 
-readonly SCRIPT_DIRECTORY="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
-readonly PROJECT_DIRECTORY="$(readlink -f "${SCRIPT_DIRECTORY}")"
+readonly script_directory="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+readonly project_directory="$(readlink -f "${script_directory}")"
 
 # shellcheck source=metadata.sh
-source "${PROJECT_DIRECTORY}/metadata.sh"
+source "${project_directory}/metadata.sh"
 
-readonly KUBECONFIG="${KUBECONFIG:-${HOME}/.kube/config}"
+readonly kubeconfig="${KUBECONFIG:-${HOME}/.kube/config}"
 
-readonly CONTAINER_KUBECONFIG="/root/.kube/config"
-readonly CONTAINER_PROJECT_DIRECTORY="/${PROJECT_NAME}"
-readonly CONTAINER_OPERATOR_DIRECTORY="${CONTAINER_PROJECT_DIRECTORY}/operator"
-readonly CONTAINER_VENDOR_DIRECTORY="${CONTAINER_PROJECT_DIRECTORY}/shared/vendor"
+readonly container_kubeconfig="/root/.kube/config"
+readonly container_project_directory="/${PROJECT_NAME}"
+readonly container_operator_directory="${container_project_directory}/operator"
+readonly container_vendor_directory="${container_project_directory}/shared/vendor"
 
-# DS_KUDO_VERSION is used by the shared tooling.
+# Note: DS_KUDO_VERSION is used by the shared data-services-kudo tooling.
 
 docker run \
        --rm \
-       -e "KUBECONFIG=${CONTAINER_KUBECONFIG}" \
-       -e "KUBECTL_PATH=${CONTAINER_VENDOR_DIRECTORY}/kubectl.sh"  \
+       -e "KUBECONFIG=${container_kubeconfig}" \
+       -e "KUBECTL_PATH=${container_vendor_directory}/kubectl.sh"  \
        -e "DS_KUDO_VERSION=v${KUDO_VERSION}" \
-       -e "OPERATOR_DIRECTORY=${CONTAINER_OPERATOR_DIRECTORY}" \
-       -e "VENDOR_DIRECTORY=${CONTAINER_VENDOR_DIRECTORY}" \
-       -v "${KUBECONFIG}:${CONTAINER_KUBECONFIG}:ro" \
-       -v "${OPERATOR_DIRECTORY}:${CONTAINER_OPERATOR_DIRECTORY}:ro" \
-       -v "${PROJECT_DIRECTORY}:${CONTAINER_PROJECT_DIRECTORY}" \
-       -v "${VENDOR_DIRECTORY}:${CONTAINER_VENDOR_DIRECTORY}" \
-       -w "${CONTAINER_PROJECT_DIRECTORY}" \
+       -e "OPERATOR_DIRECTORY=${container_operator_directory}" \
+       -e "VENDOR_DIRECTORY=${container_vendor_directory}" \
+       -v "${kubeconfig}:${container_kubeconfig}:ro" \
+       -v "${OPERATOR_DIRECTORY}:${container_operator_directory}:ro" \
+       -v "${project_directory}:${container_project_directory}" \
+       -v "${VENDOR_DIRECTORY}:${container_vendor_directory}" \
+       -w "${container_project_directory}" \
        "${INTEGRATION_TESTS_DOCKER_IMAGE}" \
-       bash -c "${CONTAINER_PROJECT_DIRECTORY}/tests/run.sh"
+       bash -c "${container_project_directory}/tests/run.sh"

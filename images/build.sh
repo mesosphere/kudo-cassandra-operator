@@ -3,17 +3,24 @@
 
 set -euxo pipefail
 
-readonly SCRIPT_DIRECTORY="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
-readonly PROJECT_DIRECTORY="$(readlink -f "${SCRIPT_DIRECTORY}/..")"
+readonly script_directory="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+readonly project_directory="$(readlink -f "${script_directory}/..")"
 
 # shellcheck source=../metadata.sh
-source "${PROJECT_DIRECTORY}/metadata.sh"
+source "${project_directory}/metadata.sh"
+
+readonly cassandra_docker_image="${CASSANDRA_DOCKER_IMAGE:-}"
+
+if [[ -z ${cassandra_docker_image} ]]; then
+  echo "Missing CASSANDRA_DOCKER_IMAGE" >&2
+  exit 1
+fi
 
 docker image build \
-       -t "${CASSANDRA_DOCKER_IMAGE}" \
-       -f "${PROJECT_DIRECTORY}/images/Dockerfile" \
-       "${PROJECT_DIRECTORY}/images"
+       -t "${cassandra_docker_image}" \
+       -f "${project_directory}/images/Dockerfile" \
+       "${project_directory}/images"
 
 if [[ "${1:-}" == "push" ]]; then
-  docker push "${CASSANDRA_DOCKER_IMAGE}"
+  docker push "${cassandra_docker_image}"
 fi

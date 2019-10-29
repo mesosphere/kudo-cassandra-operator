@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2039
 
-readonly SCRIPT_DIRECTORY="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
-readonly PROJECT_DIRECTORY="$(readlink -f "${SCRIPT_DIRECTORY}/..")"
+readonly script_directory="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+readonly project_directory="$(readlink -f "${script_directory}/..")"
 
 # shellcheck source=../metadata.sh
-source "${PROJECT_DIRECTORY}/metadata.sh"
+source "${project_directory}/metadata.sh"
 
-kubectl="${KUBECTL_PATH:-kubectl}"
+readonly kubectl="${KUBECTL_PATH:-kubectl}"
 
 operator_name=
 operator_version=
@@ -44,19 +44,34 @@ done
 
 operator_name="${operator_name:-${OPERATOR_NAME}}"
 operator_version="${operator_version:-${OPERATOR_VERSION}}"
+operator_instance_name="${operator_instance_name:-${OPERATOR_INSTANCE_NAME}}"
+operator_instance_namespace="${operator_instance_namespace:-${OPERATOR_INSTANCE_NAMESPACE}}"
+
+for parameter in operator_name \
+                   operator_version \
+                   operator_instance_name \
+                   operator_instance_namespace; do
+  if [[ -z ${!parameter} ]]; then
+    echo "--${parameter} parameter is required" >&2
+    exit 1
+  fi
+done
 
 ${kubectl} delete instance \
            "${operator_instance_name}" \
            -n "${operator_instance_namespace}"
 
+# TODO(mpereira): add a flag to skip operatorversion deletion?
 ${kubectl} delete operatorversion \
            "${operator_name}-${operator_version}" \
            -n "${operator_instance_namespace}"
 
+# TODO(mpereira): add a flag to skip operator deletion?
 ${kubectl} delete operator \
         "${operator_name}" \
         -n "${operator_instance_namespace}"
 
+# TODO(mpereira): add a flag to skip pvc deletion?
 declare -a PVCS
 mapfile -t PVCS < <(
   ${kubectl} get pvc \

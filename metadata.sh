@@ -3,8 +3,10 @@
 # This script contains metadata that is either used in other scripts or expanded
 # into templates via `tools/compile_templates.sh`.
 
-script_directory="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
-project_directory="$(readlink -f "${script_directory}")"
+# "Shadowing" these two environment variables so that they don't affect
+# similarly named environment variables in other scripts loading this script.
+_script_directory="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+_project_directory="$(readlink -f "${_script_directory}")"
 
 ################################################################################
 ################################# Operator #####################################
@@ -20,8 +22,8 @@ export OPERATOR_NAME="cassandra"
 # - https://github.com/kudobuilder/kudo/issues/163
 export OPERATOR_VERSION="0.1.0"
 
-export OPERATOR_DIRECTORY="${project_directory}/operator"
-export VENDOR_DIRECTORY="${project_directory}/shared/vendor"
+export OPERATOR_DIRECTORY="${_project_directory}/operator"
+export VENDOR_DIRECTORY="${_project_directory}/shared/vendor"
 
 ################################################################################
 ############################### Dependencies ###################################
