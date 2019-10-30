@@ -150,7 +150,7 @@ spec:
               subPath: node-readiness-probe.sh
         {{ if eq .Params.PROMETHEUS_EXPORTER_ENABLED "true" }}
         - name: prometheus-exporter
-          image: {{ PROMETHEUS_EXPORTER_DOCKER_IMAGE }}
+          image: {{ .Params.PROMETHEUS_EXPORTER_DOCKER_IMAGE }}
           imagePullPolicy: {{ PROMETHEUS_EXPORTER_DOCKER_IMAGE_PULL_POLICY }}
           env:
             - name: NODE_NAME
