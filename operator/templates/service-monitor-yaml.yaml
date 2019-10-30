@@ -2,10 +2,11 @@
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
+  name: {{ .Name }}-monitor
+  namespace: {{ .Namespace }}
   labels:
     app: prometheus-operator
     release: prometheus-kubeaddons
-  name: {{ .Name }}-monitor
 spec:
   endpoints:
     - interval: 30s
