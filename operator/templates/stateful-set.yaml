@@ -151,7 +151,7 @@ spec:
         {{ if eq .Params.PROMETHEUS_EXPORTER_ENABLED "true" }}
         - name: prometheus-exporter
           image: {{ .Params.PROMETHEUS_EXPORTER_DOCKER_IMAGE }}
-          imagePullPolicy: {{ PROMETHEUS_EXPORTER_DOCKER_IMAGE_PULL_POLICY }}
+          imagePullPolicy: {{ .Params.PROMETHEUS_EXPORTER_DOCKER_IMAGE_PULL_POLICY }}
           env:
             - name: NODE_NAME
               valueFrom:
