@@ -22,22 +22,6 @@ NODE_MEM_LIMIT_MIB:
   description: "Memory limit (in MiB) for the Cassandra node pods."
   default: 4096
 
-PROMETHEUS_EXPORTER_CPU_MC:
-  description: "CPU request (in millicores) for the prometheus-exporter pods."
-  default: 200
-
-PROMETHEUS_EXPORTER_CPU_LIMIT_MC:
-  description: "CPU limit (in millicores) for the prometheus-exporter pods."
-  default: 200
-
-PROMETHEUS_EXPORTER_MEM_MIB:
-  description: "Memory request (in MiB) for the prometheus-exporter pods."
-  default: 500
-
-PROMETHEUS_EXPORTER_MEM_LIMIT_MIB:
-  description: "Memory limit (in MiB) for the prometheus-exporters pods."
-  default: 500
-
 NODE_DISK_SIZE_GIB:
   description: "Disk size (in GiB) for the Cassandra node pods."
   default: 20
@@ -69,6 +53,33 @@ NODE_READINESS_PROBE_FAILURE_THRESHOLD:
 OVERRIDE_CLUSTER_NAME:
   description: "Override the name of the Cassandra cluster set by the operator. This shouldn't be explicit set, unless you know what you're doing."
   default: ""
+
+################################################################################
+######################### Prometheus exporter settings #########################
+################################################################################
+
+PROMETHEUS_EXPORTER_ENABLED:
+  default: "true"
+
+PROMETHEUS_EXPORTER_PORT:
+  description: "Prometheus Exporter port."
+  default: 7200
+
+PROMETHEUS_EXPORTER_CPU_MC:
+  description: "CPU request (in millicores) for the prometheus-exporter pods."
+  default: 200
+
+PROMETHEUS_EXPORTER_CPU_LIMIT_MC:
+  description: "CPU limit (in millicores) for the prometheus-exporter pods."
+  default: 200
+
+PROMETHEUS_EXPORTER_MEM_MIB:
+  description: "Memory request (in MiB) for the prometheus-exporter pods."
+  default: 500
+
+PROMETHEUS_EXPORTER_MEM_LIMIT_MIB:
+  description: "Memory limit (in MiB) for the prometheus-exporters pods."
+  default: 500
 
 ################################################################################
 ########################### Cassandra node settings ############################
@@ -109,13 +120,6 @@ NODE_NEW_GENERATION_HEAP_SIZE_MB:
 SEED_PROVIDER_CLASS:
   description: "The class within Cassandra that handles the seed logic."
   default: "org.apache.cassandra.locator.SimpleSeedProvider"
-
-PROMETHEUS_EXPORTER_ENABLED:
-  default: "true"
-
-PROMETHEUS_EXPORTER_PORT:
-  description: "Prometheus exporter Port"
-  default: 7200
 
 NUM_TOKENS:
   description: "The number of tokens assigned to each node."
