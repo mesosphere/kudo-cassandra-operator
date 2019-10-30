@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2155
 
 # This script contains metadata that is either used in other scripts or expanded
 # into templates via `tools/compile_templates.sh`.
@@ -53,3 +54,10 @@ export CASSANDRA_DOCKER_IMAGE="${CASSANDRA_DOCKER_IMAGE_NAMESPACE}/${CASSANDRA_D
 ################################################################################
 
 export INTEGRATION_TESTS_DOCKER_IMAGE="golang:1.13.1-stretch"
+
+################################################################################
+############################### Git revision ###################################
+################################################################################
+
+export GIT_REF="$(git rev-parse HEAD)"
+export GIT_DIRTY="$(git diff --quiet || echo 'dirty')"
