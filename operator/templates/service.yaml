@@ -25,7 +25,6 @@ spec:
     - port: {{ .Params.PROMETHEUS_EXPORTER_PORT }}
       name: prometheus-exporter-port
     {{ end }}
-  clusterIP: None
   selector:
     app: cassandra
     kudo.dev/instance: {{ .Name }}
