@@ -46,6 +46,14 @@ NODE_STORAGE_CLASS:
   description: "The storage class to be used in volumeClaimTemplates. By default, it is not required and the default storage class is used."
   required: false
 
+NODE_DOCKER_IMAGE:
+  description: "Cassandra node Docker image."
+  default: "mesosphere/cassandra:0.1.0-3.11.4-SNAPSHOT"
+
+NODE_DOCKER_IMAGE_PULL_POLICY:
+  description: "Cassandra node Docker image pull policy."
+  default: "Always"
+
 NODE_READINESS_PROBE_INITIAL_DELAY_S:
   description: "Number of seconds after the container has started before the readiness probe is initiated."
   default: "0"
@@ -69,14 +77,6 @@ NODE_READINESS_PROBE_FAILURE_THRESHOLD:
 OVERRIDE_CLUSTER_NAME:
   description: "Override the name of the Cassandra cluster set by the operator. This shouldn't be explicit set, unless you know what you're doing."
   default: ""
-
-NODE_DOCKER_IMAGE:
-  description: "Cassandra Docker Image."
-  default: "mesosphere/cassandra:0.1.0-3.11.4-SNAPSHOT"
-
-NODE_DOCKER_IMAGE_PULL_POLICY:
-  description: "Docker image pulling policy."
-  default: "Always"
 
 ################################################################################
 ########################### Cassandra node settings ############################
