@@ -26,5 +26,5 @@ spec:
       name: prometheus-exporter-port
     {{ end }}
   selector:
-    app: cassandra
+    app: {{ .Name }}
     kudo.dev/instance: {{ .Name }}
