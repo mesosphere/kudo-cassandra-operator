@@ -54,6 +54,14 @@ OVERRIDE_CLUSTER_NAME:
   description: "Override the name of the Cassandra cluster set by the operator. This shouldn't be explicit set, unless you know what you're doing."
   default: ""
 
+DOCKER_IMAGE:
+  description: "Cassandra Docker Image."
+  default: "mpereira/cassandra:3.11.4"
+
+IMAGE_PULL_POLICY:
+  description: "Docker image pulling policy."
+  default: "Always"
+
 ################################################################################
 ########################### Cassandra node settings ############################
 ################################################################################

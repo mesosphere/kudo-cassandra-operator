@@ -43,10 +43,10 @@ spec:
       containers:
         - name: node
           # imagePullPolicy: IfNotPresent
-          imagePullPolicy: Always
+          imagePullPolicy: {{ .Params.IMAGE_PULL_POLICY }}
           # Dockerfile based on:
           # https://github.com/docker-library/cassandra/blob/master/3.11/Dockerfile
-          image: mpereira/cassandra:3.11.4
+          image: {{ .Params.DOCKER_IMAGE }}
           securityContext:
             capabilities:
               add:
