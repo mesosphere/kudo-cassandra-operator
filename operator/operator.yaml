@@ -1,6 +1,6 @@
 name: "cassandra"
 version: "0.1.0"
-kudoVersion: "0.7.4"
+kudoVersion: "0.7.5"
 kubernetesVersion: "1.15.0"
 appVersion: "3.11.4"
 maintainers:
