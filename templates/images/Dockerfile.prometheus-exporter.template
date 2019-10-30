@@ -1,0 +1,3 @@
+FROM ${PROMETHEUS_EXPORTER_DOCKER_IMAGE_FROM}
+
+RUN chown 999:999 /opt/cassandra_exporter/cassandra_exporter.jar

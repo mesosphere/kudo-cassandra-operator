@@ -1,4 +1,4 @@
-FROM cassandra:${CASSANDRA_VERSION}
+FROM ${CASSANDRA_DOCKER_IMAGE_FROM}
 
 RUN set -eux; \
   apt-get update; \

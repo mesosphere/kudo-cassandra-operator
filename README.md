@@ -2,14 +2,12 @@
 
 ## Requirements
 
-- [GitHub SSH
-  access](https://help.github.com/en/articles/connecting-to-github-with-ssh)
+- [GitHub SSH access](https://help.github.com/en/articles/connecting-to-github-with-ssh)
 - Docker ([macOS](https://docs.docker.com/docker-for-mac/),
   [Ubuntu](https://docs.docker.com/install/linux/docker-ce/ubuntu/). Last tested
   on 19.03.2)
-- [Docker daemon running under a non-root
-  user](https://docs.docker.com/install/linux/linux-postinstall/) (only for
-  Linux)
+- [Docker daemon running under a non-root user](https://docs.docker.com/install/linux/linux-postinstall/)
+  (only for Linux)
 - [KUDO](https://github.com/kudobuilder/kudo/releases) (check `KUDO_VERSION` in
   `metadata.sh` to see the last tested version)
 - Kubernetes cluster (last tested on
@@ -155,6 +153,7 @@ with the PR, why is it needed, rationale regarding decisions that were made,
 possibly with pointers to actual commits.
 
 Example:
+
 ```
 To make it possible for the new thing we had to:
 - Prepare this other thing (5417f75)
