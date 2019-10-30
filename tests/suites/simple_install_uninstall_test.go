@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"testing"
+	"time"
 
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/reporters"
@@ -60,6 +61,7 @@ var _ = AfterSuite(func() {
 })
 
 func TestService(t *testing.T) {
+	time.Sleep(2000 * time.Second)
 	RegisterFailHandler(Fail)
 	junitReporter := reporters.NewJUnitReporter(fmt.Sprintf(
 		"%s-junit.xml", TestName,
