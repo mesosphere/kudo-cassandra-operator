@@ -1354,5 +1354,5 @@ data:
     {{ end }}
 
     {{ if .Params.CUSTOM_CASSANDRA_YAML_BASE64 }}
-        {{ .Params.CUSTOM_CASSANDRA_YAML_BASE64 | b64dec }}
+    {{ .Params.CUSTOM_CASSANDRA_YAML_BASE64 | b64dec }}
     {{ end }}
