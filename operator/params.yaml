@@ -81,6 +81,14 @@ PROMETHEUS_EXPORTER_MEM_LIMIT_MIB:
   description: "Memory limit (in MiB) for the prometheus-exporters pods."
   default: 500
 
+PROMETHEUS_EXPORTER_DOCKER_IMAGE:
+  description: "Prometheus Exporter Docker image."
+  default: "mesosphere/cassandra-prometheus-exporter:0.1.0-2.2.1-SNAPSHOT"
+
+PROMETHEUS_EXPORTER_DOCKER_IMAGE_PULL_POLICY:
+  description: "Prometheus Exporter Docker image pull policy."
+  default: "Always"
+
 ################################################################################
 ########################### Cassandra node settings ############################
 ################################################################################
