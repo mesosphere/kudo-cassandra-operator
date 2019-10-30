@@ -42,11 +42,8 @@ spec:
         #     value: "1"
       containers:
         - name: node
-          # imagePullPolicy: IfNotPresent
-          imagePullPolicy: {{ .Params.NODE_DOCKER_IMAGE_PULL_POLICY }}
-          # Dockerfile based on:
-          # https://github.com/docker-library/cassandra/blob/master/3.11/Dockerfile
           image: {{ .Params.NODE_DOCKER_IMAGE }}
+          imagePullPolicy: {{ .Params.NODE_DOCKER_IMAGE_PULL_POLICY }}
           securityContext:
             capabilities:
               add:
