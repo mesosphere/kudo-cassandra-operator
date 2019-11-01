@@ -41,7 +41,7 @@ spec:
         #   - name: vm.swapiness
         #     value: "1"
       containers:
-        - name: node
+        - name: cassandra
           image: {{ .Params.NODE_DOCKER_IMAGE }}
           imagePullPolicy: {{ .Params.NODE_DOCKER_IMAGE_PULL_POLICY }}
           securityContext:
