@@ -1,6 +1,7 @@
 package kudo
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"time"
@@ -14,6 +15,7 @@ import (
 	"github.com/kudobuilder/kudo/pkg/client/clientset/versioned"
 
 	cmd "github.com/mesosphere/kudo-cassandra-operator/tests/utils/cmd"
+	k8s "github.com/mesosphere/kudo-cassandra-operator/tests/utils/k8s"
 	kubectl "github.com/mesosphere/kudo-cassandra-operator/tests/utils/kubectl"
 )
 
@@ -319,4 +321,18 @@ func UninstallOperator(
 	)
 
 	return nil
+}
+
+func GetPodContainerLogs(
+	namespaceName string,
+	instanceName string,
+	podName string,
+	podInstance int,
+	containerName string,
+) (*bytes.Buffer, error) {
+	return k8s.GetPodContainerLogs(
+		namespaceName,
+		fmt.Sprintf("%s-%s-%d", instanceName, podName, podInstance),
+		containerName,
+	)
 }
