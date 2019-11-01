@@ -17,7 +17,7 @@ import (
 )
 
 var (
-	TestName          = "simple-install-uninstall-test"
+	TestName          = "sanity-test"
 	OperatorName      = os.Getenv("OPERATOR_NAME")
 	TestNamespace     = fmt.Sprintf("%s-namespace", TestName)
 	TestInstance      = fmt.Sprintf("%s-instance", OperatorName)
@@ -41,6 +41,14 @@ var _ = Describe(TestName, func() {
 		Expect(err).To(BeNil())
 		// TODO(mpereira) Assert that it is running.
 	})
+
+	It("Scales the number of nodes", func() {
+		err := kudo.UpdateInstanceParameters(
+			TestNamespace, TestInstance, map[string]string{"NODE_COUNT": "4"},
+		)
+		Expect(err).To(BeNil())
+	})
+
 	It("Uninstalls the operator", func() {
 		err := kudo.UninstallOperator(OperatorName, TestNamespace, TestInstance)
 		Expect(err).To(BeNil())
