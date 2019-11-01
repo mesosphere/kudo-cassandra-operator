@@ -2,6 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: cassandra-env-sh
+  namespace: {{ .Namespace }}
 data:
   cassandra-env.sh: |
     # Licensed to the Apache Software Foundation (ASF) under one
