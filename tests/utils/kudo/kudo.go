@@ -256,7 +256,9 @@ func InstallOperatorFromDirectory(
 		)
 	}
 
-	_, _, _, err := cmd.Exec(kubectlOptions.KubectlPath, kubectlParameters, nil)
+	_, _, _, err := cmd.Exec(
+		kubectlOptions.KubectlPath, kubectlParameters, nil, false,
+	)
 	if err != nil {
 		log.Errorf("Error trying to install operator from path: %s", err)
 		return err
@@ -297,8 +299,11 @@ func UninstallOperator(
 		operatorName, instanceName, namespaceName,
 	)
 
-	_, _, _, err := cmd.Exec(uninstallScript, uninstallScriptParameters,
+	_, _, _, err := cmd.Exec(
+		uninstallScript,
+		uninstallScriptParameters,
 		[]string{fmt.Sprintf("KUBECTL_PATH=%s", kubectlOptions.KubectlPath)},
+		false,
 	)
 	if err != nil {
 		log.Errorf(

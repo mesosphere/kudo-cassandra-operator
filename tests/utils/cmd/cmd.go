@@ -10,7 +10,10 @@ import (
 )
 
 func Exec(
-	command string, arguments []string, environment []string,
+	command string,
+	arguments []string,
+	environment []string,
+	suppressOutput bool,
 ) (int, *bytes.Buffer, *bytes.Buffer, error) {
 	if arguments == nil {
 		arguments = []string{}
@@ -47,17 +50,21 @@ func Exec(
 
 		exitStatus = -1
 		log.Errorf("Error while running '%s': %s", cmd, err)
-		log.Errorf(
-			"exit status: %d\nstdout:\n%s\nstderr:\n%s",
-			exitStatus, stdout.String(), stderr.String(),
-		)
+		if !suppressOutput {
+			log.Errorf(
+				"exit status: %d\nstdout:\n%s\nstderr:\n%s",
+				exitStatus, stdout.String(), stderr.String(),
+			)
+		}
 		return exitStatus, &stdout, &stderr, err
 	}
 
 	exitStatus = 0
-	log.Infof(
-		"exit status: %d\nstdout:\n%s\nstderr:\n%s",
-		exitStatus, stdout.String(), stderr.String(),
-	)
+	if !suppressOutput {
+		log.Infof(
+			"exit status: %d\nstdout:\n%s\nstderr:\n%s",
+			exitStatus, stdout.String(), stderr.String(),
+		)
+	}
 	return exitStatus, &stdout, &stderr, nil
 }
