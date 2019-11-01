@@ -1,8 +1,13 @@
 package k8s
 
 import (
+	"errors"
+	"fmt"
+	"time"
+
 	log "github.com/sirupsen/logrus"
 
+	"k8s.io/api/apps/v1beta2"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -60,4 +65,48 @@ func DeleteNamespace(namespaceName string) error {
 
 	log.Infof("Deleted namespace '%s'", namespaceName)
 	return nil
+}
+
+func GetStatefulSetCount(name, namespace string) int {
+	statefulSet := GetStatefulSet(name, namespace)
+	if statefulSet == nil {
+		log.Warningf("Found 0 replicas for statefulset %s in namespace %s .", name, namespace)
+		return 0
+	}
+	log.Infof("Found %d  replicas of the %s in %s namespace", *statefulSet.Spec.Replicas, name, namespace)
+	return int(*statefulSet.Spec.Replicas)
+}
+
+func GetStatefulSet(name, namespace string) *v1beta2.StatefulSet {
+	statefulSet, err := clientset.AppsV1beta2().StatefulSets(namespace).Get(name, metav1.GetOptions{})
+	if err != nil {
+		log.Warningf("%v", err)
+		return nil
+	}
+	return statefulSet
+}
+
+func WaitForStatefulSetReadyReplicasCount(name, namespace string, count int, timeoutSeconds time.Duration) error {
+	timeout := time.After(timeoutSeconds * time.Second)
+	tick := time.Tick(2 * time.Second)
+	for {
+		select {
+		case <-timeout:
+			return errors.New(fmt.Sprintf("Timeout while waiting for statefulset [%s/%s] ready replicas count to be %d", namespace, name, count))
+		case <-tick:
+			if count == GetStatefulSetReadyReplicasCount(name, namespace) {
+				return nil
+			}
+		}
+	}
+}
+
+func GetStatefulSetReadyReplicasCount(name, namespace string) int {
+	statefulSet := GetStatefulSet(name, namespace)
+	if statefulSet == nil {
+		log.Warningf("Found 0 replicas for statefulset %s in %s namespace.", name, namespace)
+		return 0
+	}
+	log.Infof("Found %d/%d ready replicas of the %s in %s namespace.", statefulSet.Status.ReadyReplicas, *statefulSet.Spec.Replicas, name, namespace)
+	return int(statefulSet.Status.ReadyReplicas)
 }

@@ -31,6 +31,49 @@ func Init(_kubectlOptions *kubectl.KubectlOptions) {
 	kudo, _ = versioned.NewForConfig(kubeconfig)
 }
 
+func UpdateInstancesParam(
+	namespaceName string, instanceName string, paramName string, paramValue string,
+) error {
+	instances := kudo.KudoV1alpha1().Instances(namespaceName)
+	instance, err := instances.Get(instanceName, metav1.GetOptions{})
+
+	if err != nil {
+		log.Errorf(
+			"Error getting KUDO instance (namespace='%s', name='%s'): %v",
+			namespaceName,
+			instanceName,
+			err,
+		)
+		return err
+	}
+
+	if instance == nil {
+		log.Warnf(
+			"No KUDO instance found (namespace='%s', name='%s')",
+			namespaceName,
+			instanceName,
+		)
+		return err
+	}
+
+	params := make(map[string]string)
+	for k, v := range instance.Spec.Parameters {
+		params[k] = v
+	}
+
+	params[paramName] = paramValue
+	instance.Spec.Parameters = params
+
+	_, err = instances.Update(instance)
+	if err != nil {
+		log.Errorf("error updating kudo instance in namespace %s for instance %s kubernetes client: %v", namespaceName, instanceName, err)
+		return err
+	}
+	log.Infof("Updated the instances of %s/%s with param %s value %s ", namespaceName, instanceName, paramName, paramValue)
+
+	return err
+}
+
 func GetInstance(
 	namespaceName string, instanceName string,
 ) (*v1alpha1.Instance, error) {

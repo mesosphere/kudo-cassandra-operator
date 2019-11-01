@@ -8,6 +8,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/reporters"
 	. "github.com/onsi/gomega"
+	log "github.com/sirupsen/logrus"
 
 	// log "github.com/sirupsen/logrus"
 
@@ -39,6 +40,17 @@ var _ = Describe(TestName, func() {
 			OperatorDirectory, TestNamespace, TestInstance, []string{},
 		)
 		Expect(err).To(BeNil())
+		// TODO(mpereira) Assert that it is running.
+	})
+	It("Installs the operator from a directory", func() {
+		// TODO(mpereira) Assert that it isn't running.
+		err := kudo.UpdateInstancesParam(
+			TestNamespace, TestInstance, "NODE_COUNT", "4",
+		)
+		Expect(err).To(BeNil())
+		err = k8s.WaitForStatefulSetReadyReplicasCount(TestInstance, TestNamespace, 3, 240)
+		Expect(err).To(BeNil())
+		log.Printf("error %v", err)
 		// TODO(mpereira) Assert that it is running.
 	})
 	It("Uninstalls the operator", func() {
