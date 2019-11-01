@@ -184,6 +184,14 @@ func UpdateInstanceParameters(
 		return err
 	}
 
+	if instance == nil {
+		log.Warnf(
+			"Instance not found (instance='%s', namespace='%s')",
+			namespaceName, instanceName,
+		)
+		return errors.New("Instance not found")
+	}
+
 	newParameters := make(map[string]string)
 	for k, v := range instance.Spec.Parameters {
 		newParameters[k] = v
