@@ -147,8 +147,8 @@ spec:
               subPath: node-readiness-probe.sh
         {{ if eq .Params.PROMETHEUS_EXPORTER_ENABLED "true" }}
         - name: prometheus-exporter
-          imagePullPolicy: Always
-          image: mesosphere/cassandra-prometheus-exporter:0.1.0-2.2.1-SNAPSHOT
+          image: {{ .Params.PROMETHEUS_EXPORTER_DOCKER_IMAGE }}
+          imagePullPolicy: {{ .Params.PROMETHEUS_EXPORTER_DOCKER_IMAGE_PULL_POLICY }}
           env:
             - name: NODE_NAME
               valueFrom:
