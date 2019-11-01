@@ -166,6 +166,66 @@ func WaitForOperatorDeployComplete(
 	)
 }
 
+func UpdateInstanceParameters(
+	namespaceName string, instanceName string, parameters map[string]string,
+) error {
+	log.Infof(
+		"Updating instance (instance='%s', namespace='%s')",
+		namespaceName, instanceName,
+	)
+
+	instances := kudo.KudoV1alpha1().Instances(namespaceName)
+	instance, err := instances.Get(instanceName, metav1.GetOptions{})
+	if err != nil {
+		log.Errorf(
+			"Error getting instance (instance='%s', namespace='%s'): %v",
+			namespaceName, instanceName, err,
+		)
+		return err
+	}
+
+	newParameters := make(map[string]string)
+	for k, v := range instance.Spec.Parameters {
+		newParameters[k] = v
+	}
+
+	for k, v := range parameters {
+		log.Infof(
+			"Will update '%s' from '%s' to '%s'", k, instance.Spec.Parameters[k], v,
+		)
+		newParameters[k] = v
+	}
+	instance.Spec.Parameters = newParameters
+
+	_, err = instances.Update(instance)
+	if err != nil {
+		log.Errorf(
+			"Error updating instance (instance='%s', namespace='%s'): %v",
+			namespaceName, instanceName, err,
+		)
+		return err
+	}
+
+	err = WaitForOperatorDeployInProgress(namespaceName, instanceName)
+	if err != nil {
+		log.Errorf("Error waiting for operator deploy to be in-progress: %s", err)
+		return err
+	}
+
+	err = WaitForOperatorDeployComplete(namespaceName, instanceName)
+	if err != nil {
+		log.Errorf("Error waiting for operator deploy to complete: %s", err)
+		return err
+	}
+
+	log.Infof(
+		"Updated instance (instance='%s', namespace='%s')",
+		instanceName, namespaceName,
+	)
+
+	return nil
+}
+
 func InstallOperatorFromDirectory(
 	directory string, namespace string, instance string, parameters []string,
 ) error {
