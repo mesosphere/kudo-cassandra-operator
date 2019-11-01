@@ -54,6 +54,15 @@ var _ = Describe(TestName, func() {
 		Expect(err).To(BeNil())
 	})
 
+	It("Changes parameters", func() {
+		err := kudo.UpdateInstanceParameters(
+			TestNamespace,
+			TestInstance,
+			map[string]string{"DISK_FAILURE_POLICY": "ignore"},
+		)
+		Expect(err).To(BeNil())
+	})
+
 	It("Uninstalls the operator", func() {
 		err := kudo.UninstallOperator(OperatorName, TestNamespace, TestInstance)
 		Expect(err).To(BeNil())
