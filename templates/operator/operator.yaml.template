@@ -1,3 +1,4 @@
+apiVersion: kudo.dev/v1beta1
 name: "cassandra"
 version: "${OPERATOR_VERSION}"
 kudoVersion: "${KUDO_VERSION}"
@@ -9,16 +10,18 @@ maintainers:
 url: http://cassandra.apache.org/
 
 tasks:
-  node:
-    resources:
-      - service.yaml
-      - cassandra-yaml.yaml
-      - cassandra-env-sh.yaml
-      - jvm-options.yaml
-      - stateful-set.yaml
-      - cassandra-exporter-config-yml.yaml
-      - service-monitor-yaml.yaml
-      - node-readiness-probe-sh.yaml
+  - name: node
+    kind: Apply
+    spec:
+      resources:
+        - service.yaml
+        - cassandra-yaml.yaml
+        - cassandra-env-sh.yaml
+        - jvm-options.yaml
+        - stateful-set.yaml
+        - cassandra-exporter-config-yml.yaml
+        - service-monitor-yaml.yaml
+        - node-readiness-probe-sh.yaml
 
 plans:
   deploy:
