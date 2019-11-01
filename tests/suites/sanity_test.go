@@ -3,6 +3,7 @@ package suites
 import (
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 
 	. "github.com/onsi/ginkgo"
@@ -11,6 +12,7 @@ import (
 
 	// log "github.com/sirupsen/logrus"
 
+	cassandra "github.com/mesosphere/kudo-cassandra-operator/tests/utils/cassandra"
 	k8s "github.com/mesosphere/kudo-cassandra-operator/tests/utils/k8s"
 	kubectl "github.com/mesosphere/kudo-cassandra-operator/tests/utils/kubectl"
 	kudo "github.com/mesosphere/kudo-cassandra-operator/tests/utils/kudo"
@@ -47,20 +49,36 @@ var _ = Describe(TestName, func() {
 		}
 	})
 
-	It("Scales the number of nodes", func() {
+	It("Scales the instance's number of nodes", func() {
 		err := kudo.UpdateInstanceParameters(
 			TestNamespace, TestInstance, map[string]string{"NODE_COUNT": "4"},
 		)
 		Expect(err).To(BeNil())
 	})
 
-	It("Changes parameters", func() {
-		err := kudo.UpdateInstanceParameters(
-			TestNamespace,
-			TestInstance,
-			map[string]string{"DISK_FAILURE_POLICY": "ignore"},
+	It("Updates the instance's parameters", func() {
+		parameter := "disk_failure_policy"
+		initialValue := "stop"
+		desiredValue := "ignore"
+
+		configuration, err := cassandra.ClusterConfiguration(
+			TestNamespace, TestInstance,
 		)
 		Expect(err).To(BeNil())
+		Expect(configuration[parameter]).To(Equal(initialValue))
+
+		err = kudo.UpdateInstanceParameters(
+			TestNamespace,
+			TestInstance,
+			map[string]string{strings.ToUpper(parameter): desiredValue},
+		)
+		Expect(err).To(BeNil())
+
+		configuration, err = cassandra.ClusterConfiguration(
+			TestNamespace, TestInstance,
+		)
+		Expect(err).To(BeNil())
+		Expect(configuration[parameter]).To(Equal(desiredValue))
 	})
 
 	It("Uninstalls the operator", func() {
