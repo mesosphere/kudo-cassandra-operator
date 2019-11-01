@@ -40,6 +40,11 @@ var _ = Describe(TestName, func() {
 		)
 		Expect(err).To(BeNil())
 		// TODO(mpereira) Assert that it is running.
+		if err != nil {
+			Fail(
+				"Failed to install operator instance that the following tests depend on",
+			)
+		}
 	})
 
 	It("Scales the number of nodes", func() {
