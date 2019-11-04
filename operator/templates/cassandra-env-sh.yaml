@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: cassandra-env-sh
+  name: {{ .Name }}-cassandra-env-sh
   namespace: {{ .Namespace }}
 data:
   cassandra-env.sh: |
