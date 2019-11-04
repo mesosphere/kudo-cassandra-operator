@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/avast/retry-go"
+	retry "github.com/avast/retry-go"
 	log "github.com/sirupsen/logrus"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/kudobuilder/kudo/pkg/apis/kudo/v1alpha1"
+	"github.com/kudobuilder/kudo/pkg/apis/kudo/v1beta1"
 	"github.com/kudobuilder/kudo/pkg/client/clientset/versioned"
 
 	cmd "github.com/mesosphere/kudo-cassandra-operator/tests/utils/cmd"
@@ -33,8 +33,8 @@ func Init(_kubectlOptions *kubectl.KubectlOptions) {
 
 func GetInstance(
 	namespaceName string, instanceName string,
-) (*v1alpha1.Instance, error) {
-	instances := kudo.KudoV1alpha1().Instances(namespaceName)
+) (*v1beta1.Instance, error) {
+	instances := kudo.KudoV1beta1().Instances(namespaceName)
 	instance, err := instances.Get(instanceName, metav1.GetOptions{})
 
 	if err != nil {
@@ -61,7 +61,7 @@ func GetInstance(
 
 func GetInstanceAggregatedStatus(
 	namespaceName string, instanceName string,
-) (*v1alpha1.ExecutionStatus, error) {
+) (*v1beta1.ExecutionStatus, error) {
 	instance, err := GetInstance(namespaceName, instanceName)
 
 	if err != nil {
@@ -76,7 +76,7 @@ func GetInstanceAggregatedStatus(
 }
 
 func WaitForOperatorDeployStatus(
-	expectedStatus v1alpha1.ExecutionStatus,
+	expectedStatus v1beta1.ExecutionStatus,
 	namespaceName string,
 	instanceName string,
 	retryDelay time.Duration,
@@ -142,7 +142,7 @@ func WaitForOperatorDeployInProgress(
 	var retryAttempts uint = 10
 
 	return WaitForOperatorDeployStatus(
-		v1alpha1.ExecutionInProgress,
+		v1beta1.ExecutionInProgress,
 		namespaceName,
 		instanceName,
 		retryDelay,
@@ -158,7 +158,7 @@ func WaitForOperatorDeployComplete(
 	var retryAttempts uint = 30
 
 	return WaitForOperatorDeployStatus(
-		v1alpha1.ExecutionComplete,
+		v1beta1.ExecutionComplete,
 		namespaceName,
 		instanceName,
 		retryDelay,

@@ -1,11 +1,13 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: node
+  name: {{ .Name }}-node
   namespace: {{ .Namespace }}
   labels:
     cassandra: {{ .OperatorName }}
     app: {{ .Name }}
+  annotations:
+    reloader.kudo.dev/auto: "true"
 spec:
   selector:
     matchLabels:

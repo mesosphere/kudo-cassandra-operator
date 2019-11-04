@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: cassandra-exporter-config-yml
+  name: {{ .Name }}-cassandra-exporter-config-yml
   namespace: {{ .Namespace }}
 data:
   config.yml: |
