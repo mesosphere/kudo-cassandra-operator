@@ -176,7 +176,7 @@ func UpdateInstanceParameters(
 		namespaceName, instanceName,
 	)
 
-	instances := kudo.KudoV1alpha1().Instances(namespaceName)
+	instances := kudo.KudoV1beta1().Instances(namespaceName)
 	instance, err := instances.Get(instanceName, metav1.GetOptions{})
 	if err != nil {
 		log.Errorf(
