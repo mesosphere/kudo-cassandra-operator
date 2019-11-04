@@ -1,6 +1,7 @@
 package kudo
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"time"
@@ -14,6 +15,7 @@ import (
 	"github.com/kudobuilder/kudo/pkg/client/clientset/versioned"
 
 	cmd "github.com/mesosphere/kudo-cassandra-operator/tests/utils/cmd"
+	k8s "github.com/mesosphere/kudo-cassandra-operator/tests/utils/k8s"
 	kubectl "github.com/mesosphere/kudo-cassandra-operator/tests/utils/kubectl"
 )
 
@@ -166,6 +168,74 @@ func WaitForOperatorDeployComplete(
 	)
 }
 
+func UpdateInstanceParameters(
+	namespaceName string, instanceName string, parameters map[string]string,
+) error {
+	log.Infof(
+		"Updating instance (instance='%s', namespace='%s')",
+		namespaceName, instanceName,
+	)
+
+	instances := kudo.KudoV1beta1().Instances(namespaceName)
+	instance, err := instances.Get(instanceName, metav1.GetOptions{})
+	if err != nil {
+		log.Errorf(
+			"Error getting instance (instance='%s', namespace='%s'): %v",
+			namespaceName, instanceName, err,
+		)
+		return err
+	}
+
+	if instance == nil {
+		log.Warnf(
+			"Instance not found (instance='%s', namespace='%s')",
+			namespaceName, instanceName,
+		)
+		return errors.New("Instance not found")
+	}
+
+	newParameters := make(map[string]string)
+	for k, v := range instance.Spec.Parameters {
+		newParameters[k] = v
+	}
+
+	for k, v := range parameters {
+		log.Infof(
+			"Will update '%s' from '%s' to '%s'", k, instance.Spec.Parameters[k], v,
+		)
+		newParameters[k] = v
+	}
+	instance.Spec.Parameters = newParameters
+
+	_, err = instances.Update(instance)
+	if err != nil {
+		log.Errorf(
+			"Error updating instance (instance='%s', namespace='%s'): %v",
+			namespaceName, instanceName, err,
+		)
+		return err
+	}
+
+	err = WaitForOperatorDeployInProgress(namespaceName, instanceName)
+	if err != nil {
+		log.Errorf("Error waiting for operator deploy to be in-progress: %s", err)
+		return err
+	}
+
+	err = WaitForOperatorDeployComplete(namespaceName, instanceName)
+	if err != nil {
+		log.Errorf("Error waiting for operator deploy to complete: %s", err)
+		return err
+	}
+
+	log.Infof(
+		"Updated instance (instance='%s', namespace='%s')",
+		instanceName, namespaceName,
+	)
+
+	return nil
+}
+
 func InstallOperatorFromDirectory(
 	directory string, namespace string, instance string, parameters []string,
 ) error {
@@ -188,7 +258,9 @@ func InstallOperatorFromDirectory(
 		)
 	}
 
-	_, _, _, err := cmd.Exec(kubectlOptions.KubectlPath, kubectlParameters, nil)
+	_, _, _, err := cmd.Exec(
+		kubectlOptions.KubectlPath, kubectlParameters, nil, false,
+	)
 	if err != nil {
 		log.Errorf("Error trying to install operator from path: %s", err)
 		return err
@@ -229,8 +301,11 @@ func UninstallOperator(
 		operatorName, instanceName, namespaceName,
 	)
 
-	_, _, _, err := cmd.Exec(uninstallScript, uninstallScriptParameters,
+	_, _, _, err := cmd.Exec(
+		uninstallScript,
+		uninstallScriptParameters,
 		[]string{fmt.Sprintf("KUBECTL_PATH=%s", kubectlOptions.KubectlPath)},
+		false,
 	)
 	if err != nil {
 		log.Errorf(
@@ -246,4 +321,18 @@ func UninstallOperator(
 	)
 
 	return nil
+}
+
+func GetPodContainerLogs(
+	namespaceName string,
+	instanceName string,
+	podName string,
+	podInstance int,
+	containerName string,
+) (*bytes.Buffer, error) {
+	return k8s.GetPodContainerLogs(
+		namespaceName,
+		fmt.Sprintf("%s-%s-%d", instanceName, podName, podInstance),
+		containerName,
+	)
 }
