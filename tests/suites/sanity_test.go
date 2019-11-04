@@ -3,6 +3,7 @@ package suites
 import (
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 
 	. "github.com/onsi/ginkgo"
@@ -11,13 +12,14 @@ import (
 
 	// log "github.com/sirupsen/logrus"
 
+	cassandra "github.com/mesosphere/kudo-cassandra-operator/tests/utils/cassandra"
 	k8s "github.com/mesosphere/kudo-cassandra-operator/tests/utils/k8s"
 	kubectl "github.com/mesosphere/kudo-cassandra-operator/tests/utils/kubectl"
 	kudo "github.com/mesosphere/kudo-cassandra-operator/tests/utils/kudo"
 )
 
 var (
-	TestName          = "simple-install-uninstall-test"
+	TestName          = "sanity-test"
 	OperatorName      = os.Getenv("OPERATOR_NAME")
 	TestNamespace     = fmt.Sprintf("%s-namespace", TestName)
 	TestInstance      = fmt.Sprintf("%s-instance", OperatorName)
@@ -38,9 +40,51 @@ var _ = Describe(TestName, func() {
 		err := kudo.InstallOperatorFromDirectory(
 			OperatorDirectory, TestNamespace, TestInstance, []string{},
 		)
-		Expect(err).To(BeNil())
 		// TODO(mpereira) Assert that it is running.
+		if err != nil {
+			Fail(
+				"Failing the full suite: failed to install operator instance that the " +
+					"following tests depend on",
+			)
+		}
+		Expect(err).To(BeNil())
 	})
+
+	It("Scales the instance's number of nodes", func() {
+		err := kudo.UpdateInstanceParameters(
+			TestNamespace, TestInstance, map[string]string{"NODE_COUNT": "4"},
+		)
+		if err != nil {
+			Fail("Failing the full suite: failed to scale the number of nodes")
+		}
+		Expect(err).To(BeNil())
+	})
+
+	It("Updates the instance's parameters", func() {
+		parameter := "disk_failure_policy"
+		initialValue := "stop"
+		desiredValue := "ignore"
+
+		configuration, err := cassandra.ClusterConfiguration(
+			TestNamespace, TestInstance,
+		)
+		Expect(err).To(BeNil())
+		Expect(configuration[parameter]).To(Equal(initialValue))
+
+		err = kudo.UpdateInstanceParameters(
+			TestNamespace,
+			TestInstance,
+			map[string]string{strings.ToUpper(parameter): desiredValue},
+		)
+		Expect(err).To(BeNil())
+
+		configuration, err = cassandra.ClusterConfiguration(
+			TestNamespace, TestInstance,
+		)
+		Expect(err).To(BeNil())
+		Expect(configuration[parameter]).To(Equal(desiredValue))
+	})
+
 	It("Uninstalls the operator", func() {
 		err := kudo.UninstallOperator(OperatorName, TestNamespace, TestInstance)
 		Expect(err).To(BeNil())

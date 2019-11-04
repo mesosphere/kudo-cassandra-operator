@@ -1,6 +1,9 @@
 package k8s
 
 import (
+	"bytes"
+	"fmt"
+
 	log "github.com/sirupsen/logrus"
 
 	corev1 "k8s.io/api/core/v1"
@@ -8,6 +11,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 
+	cmd "github.com/mesosphere/kudo-cassandra-operator/tests/utils/cmd"
 	kubectl "github.com/mesosphere/kudo-cassandra-operator/tests/utils/kubectl"
 )
 
@@ -60,4 +64,32 @@ func DeleteNamespace(namespaceName string) error {
 
 	log.Infof("Deleted namespace '%s'", namespaceName)
 	return nil
+}
+
+// TODO(mpereira): use client libraries instead of shelling out.
+// See: https://github.com/kubernetes/dashboard/blob/377842ddda5ce5a58e2d5397dffb14de9522ddb4/src/app/backend/resource/container/logs.go#L116
+func GetPodContainerLogs(
+	namespaceName string,
+	podName string,
+	containerName string,
+) (*bytes.Buffer, error) {
+	kubectlParameters := []string{
+		"logs",
+		podName,
+		fmt.Sprintf("--namespace=%s", namespaceName),
+		fmt.Sprintf("--container=%s", containerName),
+	}
+
+	_, stdout, _, err := cmd.Exec(
+		kubectlOptions.KubectlPath, kubectlParameters, nil, true,
+	)
+	if err != nil {
+		log.Errorf(
+			"Error getting logs (container='%s', pod='%s', namespace='%s'): %s",
+			containerName, podName, namespaceName, err,
+		)
+		return &bytes.Buffer{}, err
+	}
+
+	return stdout, nil
 }
