@@ -40,19 +40,23 @@ var _ = Describe(TestName, func() {
 		err := kudo.InstallOperatorFromDirectory(
 			OperatorDirectory, TestNamespace, TestInstance, []string{},
 		)
-		Expect(err).To(BeNil())
 		// TODO(mpereira) Assert that it is running.
 		if err != nil {
 			Fail(
-				"Failed to install operator instance that the following tests depend on",
+				"Failing the full suite: failed to install operator instance that the " +
+					"following tests depend on",
 			)
 		}
+		Expect(err).To(BeNil())
 	})
 
 	It("Scales the instance's number of nodes", func() {
 		err := kudo.UpdateInstanceParameters(
 			TestNamespace, TestInstance, map[string]string{"NODE_COUNT": "4"},
 		)
+		if err != nil {
+			Fail("Failing the full suite: failed to scale the number of nodes")
+		}
 		Expect(err).To(BeNil())
 	})
 
