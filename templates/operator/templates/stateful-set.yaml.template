@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: node
+  name: {{ .Name }}-node
   namespace: {{ .Namespace }}
   labels:
     cassandra: {{ .OperatorName }}
@@ -44,11 +44,8 @@ spec:
         #     value: "1"
       containers:
         - name: node
-          # imagePullPolicy: IfNotPresent
-          imagePullPolicy: Always
-          # Dockerfile based on:
-          # https://github.com/docker-library/cassandra/blob/master/3.11/Dockerfile
-          image: ${CASSANDRA_DOCKER_IMAGE}
+          image: {{ .Params.NODE_DOCKER_IMAGE }}
+          imagePullPolicy: {{ .Params.NODE_DOCKER_IMAGE_PULL_POLICY }}
           securityContext:
             capabilities:
               add:
@@ -152,8 +149,8 @@ spec:
               subPath: node-readiness-probe.sh
         {{ if eq .Params.PROMETHEUS_EXPORTER_ENABLED "true" }}
         - name: prometheus-exporter
-          imagePullPolicy: Always
-          image: ${PROMETHEUS_EXPORTER_DOCKER_IMAGE}
+          image: {{ .Params.PROMETHEUS_EXPORTER_DOCKER_IMAGE }}
+          imagePullPolicy: {{ .Params.PROMETHEUS_EXPORTER_DOCKER_IMAGE_PULL_POLICY }}
           env:
             - name: NODE_NAME
               valueFrom:
