@@ -21,7 +21,7 @@ export OPERATOR_NAME="cassandra"
 # out:
 # - https://github.com/kudobuilder/kudo/pull/889
 # - https://github.com/kudobuilder/kudo/issues/163
-export OPERATOR_VERSION="0.1.0"
+export OPERATOR_VERSION="0.1.1"
 export OPERATOR_VERSION_SNAPSHOT="-SNAPSHOT"
 
 export OPERATOR_DIRECTORY="${_project_directory}/operator"
@@ -31,10 +31,10 @@ export VENDOR_DIRECTORY="${_project_directory}/shared/vendor"
 ############################### Dependencies ###################################
 ################################################################################
 
-# http://www.apache.org/dyn/closer.lua/cassandra/3.11.4
+# http://www.apache.org/dyn/closer.lua/cassandra/3.11.5
 # https://hub.docker.com/_/cassandra
 # https://github.com/docker-library/cassandra/blob/master/3.11/Dockerfile
-export CASSANDRA_VERSION="3.11.4"
+export CASSANDRA_VERSION="3.11.5"
 
 # https://github.com/kudobuilder/kudo/releases/tag/v0.8.0-pre.2
 export KUDO_VERSION="0.8.0-pre.2"
