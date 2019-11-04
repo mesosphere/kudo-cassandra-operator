@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ .Name }}-jvm-options
+  name: jvm-options
   namespace: {{ .Namespace }}
 data:
   jvm.options: |
