@@ -77,19 +77,19 @@ parameters:
 
   - name: PROMETHEUS_EXPORTER_CPU_MC
     description: "CPU request (in millicores) for the prometheus-exporter pods."
-    default: "200"
+    default: "1000"
 
   - name: PROMETHEUS_EXPORTER_CPU_LIMIT_MC
     description: "CPU limit (in millicores) for the prometheus-exporter pods."
-    default: "200"
+    default: "1000"
 
   - name: PROMETHEUS_EXPORTER_MEM_MIB
     description: "Memory request (in MiB) for the prometheus-exporter pods."
-    default: "500"
+    default: "512"
 
   - name: PROMETHEUS_EXPORTER_MEM_LIMIT_MIB
     description: "Memory limit (in MiB) for the prometheus-exporters pods."
-    default: "500"
+    default: "512"
 
   - name: PROMETHEUS_EXPORTER_DOCKER_IMAGE
     description: "Prometheus Exporter Docker image."
