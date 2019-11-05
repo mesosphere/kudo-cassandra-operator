@@ -569,7 +569,9 @@ data:
     #
     # For more details see https://issues.apache.org/jira/browse/CASSANDRA-14096.
     #
-    # repair_session_max_tree_depth: 18
+    {{ if .Params.REPAIR_SESSION_MAX_TREE_DEPTH }}
+    repair_session_max_tree_depth: {{ .Params.REPAIR_SESSION_MAX_TREE_DEPTH }}
+    {{ end }}
 
     # Total space to use for commit logs on disk.
     #
@@ -1372,4 +1374,6 @@ data:
 
     # Enables SASI index creation on this node.
     # SASI indexes are considered experimental and are not recommended for production use.
-    #enable_sasi_indexes: true
+    {{ if .Params.ENABLE_SASI_INDEXES }}
+    enable_sasi_indexes: {{ .Params.ENABLE_SASI_INDEXES }}
+    {{ end }}
