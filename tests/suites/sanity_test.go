@@ -1,6 +1,7 @@
 package suites
 
 import (
+	"encoding/base64"
 	"fmt"
 	"os"
 	"strings"
@@ -75,6 +76,32 @@ var _ = Describe(TestName, func() {
 			TestNamespace,
 			TestInstance,
 			map[string]string{strings.ToUpper(parameter): desiredValue},
+		)
+		Expect(err).To(BeNil())
+
+		configuration, err = cassandra.ClusterConfiguration(
+			TestNamespace, TestInstance,
+		)
+		Expect(err).To(BeNil())
+		Expect(configuration[parameter]).To(Equal(desiredValue))
+	})
+
+	It("Customize cassandra.yaml", func() {
+		parameter := "otc_backlog_expiration_interval_ms"
+		initialValue := "200"
+		desiredValue := "300"
+		desiredValueBase64 := base64.StdEncoding.EncodeToString([]byte("otc_backlog_expiration_interval_ms: 300"))
+
+		configuration, err := cassandra.ClusterConfiguration(
+			TestNamespace, TestInstance,
+		)
+		Expect(err).To(BeNil())
+		Expect(configuration[parameter]).To(Equal(initialValue))
+
+		err = kudo.UpdateInstanceParameters(
+			TestNamespace,
+			TestInstance,
+			map[string]string{"CUSTOM_CASSANDRA_YAML_BASE64": desiredValueBase64},
 		)
 		Expect(err).To(BeNil())
 
