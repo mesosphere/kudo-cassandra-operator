@@ -768,7 +768,7 @@ parameters:
     default: ""
 
   - name: CUSTOM_CASSANDRA_YAML_BASE64
-    description: "Base64 encoded Cassandra properties appended to cassandra.yaml."
+    description: "Base64-encoded Cassandra properties appended to cassandra.yaml."
     default: ""
 
   - name: CUSTOM_JVM_OPTIONS_BASE64
