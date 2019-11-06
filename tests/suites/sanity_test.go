@@ -13,10 +13,10 @@ import (
 
 	// log "github.com/sirupsen/logrus"
 
-	cassandra "github.com/mesosphere/kudo-cassandra-operator/tests/utils/cassandra"
-	k8s "github.com/mesosphere/kudo-cassandra-operator/tests/utils/k8s"
-	kubectl "github.com/mesosphere/kudo-cassandra-operator/tests/utils/kubectl"
-	kudo "github.com/mesosphere/kudo-cassandra-operator/tests/utils/kudo"
+	"github.com/mesosphere/kudo-cassandra-operator/tests/utils/cassandra"
+	"github.com/mesosphere/kudo-cassandra-operator/tests/utils/k8s"
+	"github.com/mesosphere/kudo-cassandra-operator/tests/utils/kubectl"
+	"github.com/mesosphere/kudo-cassandra-operator/tests/utils/kudo"
 )
 
 var (
@@ -90,7 +90,7 @@ var _ = Describe(TestName, func() {
 		parameter := "otc_backlog_expiration_interval_ms"
 		initialValue := "200"
 		desiredValue := "300"
-		desiredEncodedProperties := base64.StdEncoding.EncodeToString([]byte("otc_backlog_expiration_interval_ms: 300"))
+		desiredEncodedProperties := base64.StdEncoding.EncodeToString([]byte(parameter + ": " + desiredValue))
 
 		configuration, err := cassandra.ClusterConfiguration(
 			TestNamespace, TestInstance,
@@ -101,11 +101,38 @@ var _ = Describe(TestName, func() {
 		err = kudo.UpdateInstanceParameters(
 			TestNamespace,
 			TestInstance,
-			map[string]string{"CUSTOM_CASSANDRA_YAML_BASE64": desiredValueBase64},
+			map[string]string{"CUSTOM_CASSANDRA_YAML_BASE64": desiredEncodedProperties},
 		)
 		Expect(err).To(BeNil())
 
 		configuration, err = cassandra.ClusterConfiguration(
+			TestNamespace, TestInstance,
+		)
+		Expect(err).To(BeNil())
+		Expect(configuration[parameter]).To(Equal(desiredValue))
+	})
+
+	It("Configures Cassandra JVM properties through custom YAML", func() {
+		parameter := "-XX:CMSWaitDuration"
+		initialValue := "10000"
+		desiredValue := "11000"
+		desiredEncodedProperties := base64.StdEncoding.EncodeToString([]byte(parameter + "=" + desiredValue))
+
+		configuration, err := cassandra.ClusterJvmConfiguration(
+			TestNamespace, TestInstance,
+		)
+
+		Expect(err).To(BeNil())
+		Expect(configuration[parameter]).To(Equal(initialValue))
+
+		err = kudo.UpdateInstanceParameters(
+			TestNamespace,
+			TestInstance,
+			map[string]string{"CUSTOM_JVM_OPTIONS_BASE64": desiredEncodedProperties},
+		)
+		Expect(err).To(BeNil())
+
+		configuration, err = cassandra.ClusterJvmConfiguration(
 			TestNamespace, TestInstance,
 		)
 		Expect(err).To(BeNil())
