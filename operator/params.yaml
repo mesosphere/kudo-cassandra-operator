@@ -772,5 +772,5 @@ parameters:
     default: ""
 
   - name: CUSTOM_JVM_OPTIONS_BASE64
-    description: "Base64 encoded JVM Options appended to jvm.options."
+    description: "Base64-encoded JVM options appended to jvm.options."
     default: ""
