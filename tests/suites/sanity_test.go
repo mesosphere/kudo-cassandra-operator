@@ -86,7 +86,7 @@ var _ = Describe(TestName, func() {
 		Expect(configuration[parameter]).To(Equal(desiredValue))
 	})
 
-	It("Customize cassandra.yaml", func() {
+	It("Configures Cassandra properties through custom YAML", func() {
 		parameter := "otc_backlog_expiration_interval_ms"
 		initialValue := "200"
 		desiredValue := "300"
