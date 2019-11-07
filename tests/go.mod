@@ -5,7 +5,7 @@ go 1.13
 require (
 	github.com/avast/retry-go v2.4.1+incompatible
 	github.com/imdario/mergo v0.3.8 // indirect
-	github.com/kudobuilder/kudo v0.8.0-pre.2
+	github.com/kudobuilder/kudo v0.8.0-pre.3
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/onsi/ginkgo v1.10.1
 	github.com/onsi/gomega v1.7.0
