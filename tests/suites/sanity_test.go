@@ -90,7 +90,9 @@ var _ = Describe(TestName, func() {
 		parameter := "otc_backlog_expiration_interval_ms"
 		initialValue := "200"
 		desiredValue := "300"
-		desiredEncodedProperties := base64.StdEncoding.EncodeToString([]byte(parameter + ": " + desiredValue))
+		desiredEncodedProperties := base64.StdEncoding.EncodeToString(
+			[]byte(parameter + ": " + desiredValue),
+		)
 
 		configuration, err := cassandra.ClusterConfiguration(
 			TestNamespace, TestInstance,
@@ -116,7 +118,9 @@ var _ = Describe(TestName, func() {
 		parameter := "-XX:CMSWaitDuration"
 		initialValue := "10000"
 		desiredValue := "11000"
-		desiredEncodedProperties := base64.StdEncoding.EncodeToString([]byte(parameter + "=" + desiredValue))
+		desiredEncodedProperties := base64.StdEncoding.EncodeToString(
+			[]byte(parameter + "=" + desiredValue),
+		)
 
 		configuration, err := cassandra.NodeJvmOptions(
 			TestNamespace, TestInstance,
