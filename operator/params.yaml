@@ -10,11 +10,11 @@ parameters:
 
   - name: NODE_CPU_MC
     description: "CPU request (in millicores) for the Cassandra node containers."
-    default: "2000"
+    default: "1000"
 
   - name: NODE_CPU_LIMIT_MC
     description: "CPU limit (in millicores) for the Cassandra node containers."
-    default: "2000"
+    default: "1000"
 
   - name: NODE_MEM_MIB
     description: "Memory request (in MiB) for the Cassandra node containers."
