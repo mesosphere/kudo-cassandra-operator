@@ -112,7 +112,7 @@ var _ = Describe(TestName, func() {
 		Expect(configuration[parameter]).To(Equal(desiredValue))
 	})
 
-	It("Configures Cassandra JVM properties through custom YAML", func() {
+	It("Configures Cassandra JVM options through custom options", func() {
 		parameter := "-XX:CMSWaitDuration"
 		initialValue := "10000"
 		desiredValue := "11000"
