@@ -118,7 +118,7 @@ var _ = Describe(TestName, func() {
 		desiredValue := "11000"
 		desiredEncodedProperties := base64.StdEncoding.EncodeToString([]byte(parameter + "=" + desiredValue))
 
-		configuration, err := cassandra.ClusterJvmConfiguration(
+		configuration, err := cassandra.NodeJvmOptions(
 			TestNamespace, TestInstance,
 		)
 
@@ -132,7 +132,7 @@ var _ = Describe(TestName, func() {
 		)
 		Expect(err).To(BeNil())
 
-		configuration, err = cassandra.ClusterJvmConfiguration(
+		configuration, err = cassandra.NodeJvmOptions(
 			TestNamespace, TestInstance,
 		)
 		Expect(err).To(BeNil())

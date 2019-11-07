@@ -16,7 +16,7 @@ func ClusterConfiguration(
 	return getConfigurationFromNodeLogs(namespaceName, instanceName, "org.apache.cassandra.config.Config - Node configuration:\\[(.+)\\]", ";")
 }
 
-func ClusterJvmConfiguration(
+func NodeJvmOptions(
 	namespaceName string, instanceName string,
 ) (map[string]string, error) {
 	return getConfigurationFromNodeLogs(namespaceName, instanceName, "o.a.c.service.CassandraDaemon - JVM Arguments: \\[(.+)\\]", ",")
