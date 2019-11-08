@@ -13,25 +13,36 @@ import (
 func ClusterConfiguration(
 	namespaceName string, instanceName string,
 ) (map[string]string, error) {
-	return getConfigurationFromNodeLogs(namespaceName, instanceName, "org.apache.cassandra.config.Config - Node configuration:\\[(.+)\\]", ";")
+	return getConfigurationFromNodeLogs(
+		namespaceName,
+		instanceName,
+		"org.apache.cassandra.config.Config - Node configuration:\\[(.+)\\]",
+		";",
+	)
 }
 
-func ClusterJvmConfiguration(
+func NodeJvmOptions(
 	namespaceName string, instanceName string,
 ) (map[string]string, error) {
-	return getConfigurationFromNodeLogs(namespaceName, instanceName, "o.a.c.service.CassandraDaemon - JVM Arguments: \\[(.+)\\]", ",")
+	return getConfigurationFromNodeLogs(
+		namespaceName,
+		instanceName,
+		"o.a.c.service.CassandraDaemon - JVM Arguments: \\[(.+)\\]",
+		",",
+	)
 }
 
 func getConfigurationFromNodeLogs(
-	namespaceName string, instanceName string,
-	regexpr string, separator string,
+	namespaceName string,
+	instanceName string,
+	regexpr string,
+	separator string,
 ) (map[string]string, error) {
 	configuration := make(map[string]string)
 
 	logs, err := kudo.GetPodContainerLogs(
 		namespaceName, instanceName, "node", 0, "cassandra",
 	)
-
 	if err != nil {
 		log.Errorf(
 			"Error getting Cassandra node logs (instance='%s', namespace='%s'): %s",

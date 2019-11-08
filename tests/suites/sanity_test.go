@@ -86,11 +86,13 @@ var _ = Describe(TestName, func() {
 		Expect(configuration[parameter]).To(Equal(desiredValue))
 	})
 
-	It("Configures Cassandra properties through custom YAML", func() {
+	It("Configures Cassandra properties through custom properties", func() {
 		parameter := "otc_backlog_expiration_interval_ms"
 		initialValue := "200"
 		desiredValue := "300"
-		desiredEncodedProperties := base64.StdEncoding.EncodeToString([]byte(parameter + ": " + desiredValue))
+		desiredEncodedProperties := base64.StdEncoding.EncodeToString(
+			[]byte(parameter + ": " + desiredValue),
+		)
 
 		configuration, err := cassandra.ClusterConfiguration(
 			TestNamespace, TestInstance,
@@ -112,13 +114,15 @@ var _ = Describe(TestName, func() {
 		Expect(configuration[parameter]).To(Equal(desiredValue))
 	})
 
-	It("Configures Cassandra JVM properties through custom YAML", func() {
+	It("Configures Cassandra JVM options through custom options", func() {
 		parameter := "-XX:CMSWaitDuration"
 		initialValue := "10000"
 		desiredValue := "11000"
-		desiredEncodedProperties := base64.StdEncoding.EncodeToString([]byte(parameter + "=" + desiredValue))
+		desiredEncodedProperties := base64.StdEncoding.EncodeToString(
+			[]byte(parameter + "=" + desiredValue),
+		)
 
-		configuration, err := cassandra.ClusterJvmConfiguration(
+		configuration, err := cassandra.NodeJvmOptions(
 			TestNamespace, TestInstance,
 		)
 
@@ -132,7 +136,7 @@ var _ = Describe(TestName, func() {
 		)
 		Expect(err).To(BeNil())
 
-		configuration, err = cassandra.ClusterJvmConfiguration(
+		configuration, err = cassandra.NodeJvmOptions(
 			TestNamespace, TestInstance,
 		)
 		Expect(err).To(BeNil())
