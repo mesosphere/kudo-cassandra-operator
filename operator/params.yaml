@@ -659,6 +659,10 @@ parameters:
     description: "How many milliseconds to wait between two expiration runs on the backlog (queue) of the OutboundTcpConnection."
     default: ""
 
+  - name: CUSTOM_CASSANDRA_YAML_BASE64
+    description: "Base64-encoded Cassandra properties appended to cassandra.yaml."
+    default: ""
+
   ################################################################################
   ################################ JVM Options ###################################
   ################################################################################
@@ -765,4 +769,8 @@ parameters:
 
   - name: JVM_OPT_G1R_SET_UPDATING_PAUSE_TIME_PERCENT
     description: "Have the JVM do less remembered set work during STW, instead preferring concurrent GC. Reduces p99.9 latency."
+    default: ""
+
+  - name: CUSTOM_JVM_OPTIONS_BASE64
+    description: "Base64-encoded JVM options appended to jvm.options."
     default: ""

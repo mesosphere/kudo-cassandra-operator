@@ -7,11 +7,36 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	kudo "github.com/mesosphere/kudo-cassandra-operator/tests/utils/kudo"
+	"github.com/mesosphere/kudo-cassandra-operator/tests/utils/kudo"
 )
 
 func ClusterConfiguration(
 	namespaceName string, instanceName string,
+) (map[string]string, error) {
+	return getConfigurationFromNodeLogs(
+		namespaceName,
+		instanceName,
+		"org.apache.cassandra.config.Config - Node configuration:\\[(.+)\\]",
+		";",
+	)
+}
+
+func NodeJvmOptions(
+	namespaceName string, instanceName string,
+) (map[string]string, error) {
+	return getConfigurationFromNodeLogs(
+		namespaceName,
+		instanceName,
+		"o.a.c.service.CassandraDaemon - JVM Arguments: \\[(.+)\\]",
+		",",
+	)
+}
+
+func getConfigurationFromNodeLogs(
+	namespaceName string,
+	instanceName string,
+	regexpr string,
+	separator string,
 ) (map[string]string, error) {
 	configuration := make(map[string]string)
 
@@ -27,9 +52,7 @@ func ClusterConfiguration(
 	}
 
 	scanner := bufio.NewScanner(logs)
-	configurationLinePattern := regexp.MustCompile(
-		"org.apache.cassandra.config.Config - Node configuration:\\[(.+)\\]",
-	)
+	configurationLinePattern := regexp.MustCompile(regexpr)
 	var configurationLine string
 	for scanner.Scan() {
 		match := configurationLinePattern.FindStringSubmatch(scanner.Text())
@@ -47,7 +70,7 @@ func ClusterConfiguration(
 		return configuration, err
 	}
 
-	for _, kv := range strings.Split(configurationLine, ";") {
+	for _, kv := range strings.Split(configurationLine, separator) {
 		parts := strings.Split(strings.TrimSpace(kv), "=")
 		if len(parts) == 2 {
 			configuration[parts[0]] = parts[1]
