@@ -9,23 +9,23 @@ parameters:
     default: "3"
 
   - name: NODE_CPU_MC
-    description: "CPU request (in millicores) for the Cassandra node pods."
-    default: "2000"
+    description: "CPU request (in millicores) for the Cassandra node containers."
+    default: "1000"
 
   - name: NODE_CPU_LIMIT_MC
-    description: "CPU limit (in millicores) for the Cassandra node pods."
-    default: "2000"
+    description: "CPU limit (in millicores) for the Cassandra node containers."
+    default: "1000"
 
   - name: NODE_MEM_MIB
-    description: "Memory request (in MiB) for the Cassandra node pods."
+    description: "Memory request (in MiB) for the Cassandra node containers."
     default: "4096"
 
   - name: NODE_MEM_LIMIT_MIB
-    description: "Memory limit (in MiB) for the Cassandra node pods."
+    description: "Memory limit (in MiB) for the Cassandra node containers."
     default: "4096"
 
   - name: NODE_DISK_SIZE_GIB
-    description: "Disk size (in GiB) for the Cassandra node pods."
+    description: "Disk size (in GiB) for the Cassandra node containers."
     default: "20"
 
   - name: NODE_STORAGE_CLASS
@@ -72,31 +72,31 @@ parameters:
     default: "true"
 
   - name: PROMETHEUS_EXPORTER_PORT
-    description: "Prometheus Exporter port."
+    description: "Prometheus exporter port."
     default: "7200"
 
   - name: PROMETHEUS_EXPORTER_CPU_MC
-    description: "CPU request (in millicores) for the prometheus-exporter pods."
-    default: "200"
+    description: "CPU request (in millicores) for the Prometheus exporter containers."
+    default: "1000"
 
   - name: PROMETHEUS_EXPORTER_CPU_LIMIT_MC
-    description: "CPU limit (in millicores) for the prometheus-exporter pods."
-    default: "200"
+    description: "CPU limit (in millicores) for the Prometheus exporter containers."
+    default: "1000"
 
   - name: PROMETHEUS_EXPORTER_MEM_MIB
-    description: "Memory request (in MiB) for the prometheus-exporter pods."
-    default: "500"
+    description: "Memory request (in MiB) for the Prometheus exporter containers."
+    default: "512"
 
   - name: PROMETHEUS_EXPORTER_MEM_LIMIT_MIB
-    description: "Memory limit (in MiB) for the prometheus-exporters pods."
-    default: "500"
+    description: "Memory limit (in MiB) for the Prometheus exporter containers."
+    default: "512"
 
   - name: PROMETHEUS_EXPORTER_DOCKER_IMAGE
-    description: "Prometheus Exporter Docker image."
+    description: "Prometheus exporter Docker image."
     default: "mesosphere/cassandra-prometheus-exporter:0.1.0-2.2.1-SNAPSHOT"
 
   - name: PROMETHEUS_EXPORTER_DOCKER_IMAGE_PULL_POLICY
-    description: "Prometheus Exporter Docker image pull policy."
+    description: "Prometheus exporter Docker image pull policy."
     default: "Always"
 
   ################################################################################
