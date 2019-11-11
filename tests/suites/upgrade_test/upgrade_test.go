@@ -34,7 +34,7 @@ var (
 
 var _ = Describe(TestName, func() {
 	It("Upgrade the operator", func() {
-		err := kudo.UpgradeOperatorFromDirectory(
+		err := kudo.UpgradeOperator(
 			"https://infinity-artifacts.s3-us-west-2.amazonaws.com/cassandra/cassandra-0.1.1.tgz", TestNamespace, TestInstance, []string{},
 		)
 		// TODO(mpereira) Assert that it is running.
