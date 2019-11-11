@@ -1,4 +1,4 @@
-package suites
+package sanity_test
 
 import (
 	"encoding/base64"
