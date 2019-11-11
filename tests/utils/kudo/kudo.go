@@ -286,6 +286,56 @@ func InstallOperatorFromDirectory(
 	return nil
 }
 
+func UpgradeOperatorFromDirectory(
+	directory string, namespace string, instance string, parameters []string,
+) error {
+	log.Infof(
+		"Upgrading operator from path: '%s' (instance='%s', namespace='%s')",
+		directory, instance, namespace,
+	)
+
+	kubectlParameters := []string{
+		"kudo",
+		"upgrade",
+		directory,
+		fmt.Sprintf("--namespace=%s", namespace),
+		fmt.Sprintf("--instance=%s", instance),
+	}
+
+	for _, parameter := range parameters {
+		kubectlParameters = append(
+			kubectlParameters, "--parameter", string(parameter),
+		)
+	}
+
+	_, _, _, err := cmd.Exec(
+		kubectlOptions.KubectlPath, kubectlParameters, nil, false,
+	)
+	if err != nil {
+		log.Errorf("Error trying to install operator from path: %s", err)
+		return err
+	}
+
+	log.Infof(
+		"Started operator Upgradation from path: '%s' (instance='%s', namespace='%s')",
+		directory, instance, namespace,
+	)
+
+	err = WaitForOperatorDeployInProgress(namespace, instance)
+	if err != nil {
+		log.Errorf("Error waiting for operator deploy to be in-progress: %s", err)
+		return err
+	}
+
+	err = WaitForOperatorDeployComplete(namespace, instance)
+	if err != nil {
+		log.Errorf("Error waiting for operator deploy to complete: %s", err)
+		return err
+	}
+
+	return nil
+}
+
 func UninstallOperator(
 	operatorName string, namespaceName string, instanceName string,
 ) error {
