@@ -286,11 +286,11 @@ func InstallOperatorFromDirectory(
 	return nil
 }
 
-func UpgradeOperatorFromDirectory(
+func UpgradeOperator(
 	directory string, namespace string, instance string, parameters []string,
 ) error {
 	log.Infof(
-		"Upgrading operator from path: '%s' (instance='%s', namespace='%s')",
+		"Upgrading operator from : '%s' (instance='%s', namespace='%s')",
 		directory, instance, namespace,
 	)
 
@@ -312,12 +312,12 @@ func UpgradeOperatorFromDirectory(
 		kubectlOptions.KubectlPath, kubectlParameters, nil, false,
 	)
 	if err != nil {
-		log.Errorf("Error trying to install operator from path: %s", err)
+		log.Errorf("Error trying to install operator from : %s", err)
 		return err
 	}
 
 	log.Infof(
-		"Started operator Upgradation from path: '%s' (instance='%s', namespace='%s')",
+		"Started operator Upgradation from : '%s' (instance='%s', namespace='%s')",
 		directory, instance, namespace,
 	)
 
