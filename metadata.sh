@@ -22,7 +22,7 @@ export OPERATOR_NAME="cassandra"
 # - https://github.com/kudobuilder/kudo/pull/889
 # - https://github.com/kudobuilder/kudo/issues/163
 export OPERATOR_VERSION="0.1.0"
-export OPERATOR_VERSION_SNAPSHOT="-SNAPSHOT"
+export OPERATOR_VERSION_SNAPSHOT=""
 
 export OPERATOR_DIRECTORY="${_project_directory}/operator"
 export VENDOR_DIRECTORY="${_project_directory}/shared/vendor"
