@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
 
+from http import HTTPStatus
+from pathlib import Path
 from typing import Tuple, Optional, List
+from urllib.parse import urlparse
+import http
+import http.client
+import json
 import logging
 import os.path as path
 import subprocess
 import uuid
-import http
-import http.client
-import json
 
 
 log = logging.getLogger(__name__)
@@ -171,23 +174,19 @@ def configure_git_user(
 
 
 def clone_repository(
-    repository: str,
-    reference: str,
-    user: str,
-    token: str,
-    base_directory: str,
-    debug: bool,
+    repository_url: str, reference: str, base_directory: str, debug: bool
 ) -> (int, str, str):
+    repository = Path(urlparse(repository_url).path).stem
     target_directory = path.join(base_directory, repository.split("/")[-1])
 
     rc, stdout, stderr = run(
         f"git clone --depth 1 --branch {reference} "
-        + f"https://{user}:{token}@github.com/{repository} {target_directory}",
+        + f"{repository_url} {target_directory}",
         debug=debug,
     )
     if rc != 0:
         error_message = (
-            f"Error cloning '{repository}@{reference}':"
+            f"Error cloning '{repository_url}@{reference}':"
             + f"\nstdout:\n{stdout}\nstderr:\n{stderr}"
         )
 
@@ -198,29 +197,38 @@ def clone_repository(
 
 def create_pull_request(
     repository: str,
+    base_branch: str,
     branch: str,
     title: str,
     description: str,
     github_token: str,
     user_agent: str,
     debug: bool,
-) -> http.client.HTTPResponse:
+) -> (bool, http.client.HTTPResponse):
     headers = {
         "User-Agent": user_agent,
         "Content-Type": "application/json",
-        f"Authorization": "Basic {github_token}",
+        "Authorization": f"Token {github_token}",
     }
     payload = {
         "title": title,
         "head": branch,
-        "base": branch,
+        "base": base_branch,
         "body": description,
     }
     connection = http.client.HTTPSConnection("api.github.com")
-    connection.request(
-        "POST",
-        "/repos/{}/pulls".format(repository),
-        body=json.dumps(payload).encode("utf-8"),
-        headers=headers,
-    )
-    return connection.getresponse()
+    url = "/repos/{}/pulls".format(repository)
+    method = "POST"
+    body = json.dumps(payload).encode("utf-8")
+
+    if debug:
+        log.info(f"HTTP request: {method} {url}\n{headers}\n\n{body}")
+
+    connection.request(method, url, body=body, headers=headers)
+    response = connection.getresponse()
+
+    if debug:
+        log.info(f"HTTP response: {response.status}")
+
+    success = response.status in [HTTPStatus.CREATED]
+    return success, response
