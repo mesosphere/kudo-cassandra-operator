@@ -1,12 +1,23 @@
 #!/usr/bin/env python3
 
 from os import path
-from typing import Tuple, Optional, List
 import argparse
 import logging
 import re
-import subprocess
 import sys
+
+from utils import (
+    run,
+    repository_dirty,
+    remote_exists,
+    matching_remote_branches,
+    local_tag_exists,
+    remote_tag_exists,
+    local_branch_matches_remote_branch,
+    create_local_tag,
+    valid_git_tag,
+    push_tag,
+)
 
 __directory__ = path.dirname(__file__)
 
@@ -27,111 +38,8 @@ RELEASE_TAG_PATTERN = f"v{SEMVER_PATTERN}-{SEMVER_PATTERN}"
 STABLE_BRANCH_NAME_PATTERN = f"release-v{SEMVER_MAJOR_MINOR_PATTERN}"
 
 
-def run(
-    command: str,
-    debug: bool = False,
-    check: bool = False,
-    timeout_seconds: Optional[int] = None,
-) -> Tuple[int, str, str]:
-    result = subprocess.run(
-        [command],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        shell=True,
-        check=check,
-        timeout=timeout_seconds,
-    )
-
-    if result.stdout:
-        stdout = result.stdout.decode("utf-8")
-    else:
-        stdout = ""
-
-    if result.stderr:
-        stderr = result.stderr.decode("utf-8")
-    else:
-        stderr = ""
-
-    if debug:
-        log.info(
-            "Command '{}' exited with '{}'".format(command, result.returncode)
-        )
-        if stdout:
-            log.info("stdout:\n{}".format(stdout))
-        if stderr:
-            log.info("stderr:\n{}".format(stderr))
-
-    return result.returncode, stdout, stderr
-
-
-def repository_dirty(debug: bool) -> bool:
-    rc, stdout, stderr = run("git diff --quiet", debug=debug)
-    return rc != 0
-
-
-def remote_exists(remote: str, debug: bool) -> bool:
-    rc, stdout, stderr = run(f"git remote show {remote}", debug=debug)
-    return rc == 0
-
-
-def matching_remote_branches(
-    remote: str, branch: str, debug: bool
-) -> (int, List[str], str):
-    rc, stdout, stderr = run("git branch -r", debug=debug)
-    if rc != 0:
-        return (
-            rc,
-            [],
-            "Error listing remote branches:"
-            + f"\nstdout:\n{stdout}\nstderr:\n{stderr}",
-        )
-
-    remote_branches = [l.strip() for l in stdout.split("\n") if l]
-
-    return (
-        0,
-        [
-            b
-            for b in remote_branches
-            if branch_exists_in_remote(b, remote, branch)
-        ],
-        "",
-    )
-
-
-def local_tag_exists(tag: str, debug: bool) -> bool:
-    rc, stdout, stderr = run(f"git rev-parse refs/tags/{tag}", debug=debug)
-    return rc == 0
-
-
-def remote_tag_exists(remote: str, tag: str, debug: bool) -> bool:
-    rc, stdout, stderr = run(
-        f"git ls-remote --tags {remote} refs/tags/{tag}", debug=debug
-    )
-    return rc == 0 and "refs/tags/{tag}" in stdout
-
-
-def valid_git_tag(tag: str) -> bool:
-    return bool(re.match(RELEASE_TAG_PATTERN, tag))
-
-
 def valid_stable_branch_name(branch: str) -> bool:
     return bool(re.match(STABLE_BRANCH_NAME_PATTERN, branch))
-
-
-def branch_exists_in_remote(
-    remote_branch: str, remote: str, branch: str
-) -> bool:
-    return remote_branch == f"{remote}/{branch}"
-
-
-def local_branch_matches_remote_branch(
-    remote: str, branch: str, debug: bool
-) -> bool:
-    rc, stdout, stderr = run(
-        f"git diff {branch}...{remote}/{branch} --quiet", debug=debug
-    )
-    return rc == 0
 
 
 def build_and_push_docker_images(debug: bool) -> (int, str):
@@ -140,31 +48,6 @@ def build_and_push_docker_images(debug: bool) -> (int, str):
     )
     if rc != 0:
         return rc, f"stdout:\n{stdout}\nstderr:\n{stderr}"
-
-    return 0, ""
-
-
-def create_local_tag(tag: str, debug: str) -> (int, str):
-    rc, stdout, stderr = run(
-        f"git tag -a {tag} -m 'KUDO Cassandra Operator {tag}'", debug=debug
-    )
-    if rc != 0:
-        return (
-            rc,
-            f"Error creating local tag '{tag}'"
-            + f"\nstdout:\n{stdout}\nstderr:\n{stderr}",
-        )
-
-    return 0, ""
-
-
-def push_tag(remote: str, tag: str, debug: str) -> (int, str):
-    rc, stdout, stderr = run(f"git push {remote} {tag}", debug=debug)
-    if rc != 0:
-        return (
-            rc,
-            f"Error pushing tag '{tag}'\nstdout:\n{stdout}\nstderr:\n{stderr}",
-        )
 
     return 0, ""
 
