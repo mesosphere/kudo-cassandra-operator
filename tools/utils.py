@@ -126,7 +126,7 @@ def local_branch_matches_remote_branch(
 
 def create_local_tag(tag: str, debug: str) -> (int, str):
     rc, stdout, stderr = run(
-        f"git tag -a {tag} -m 'KUDO Cassandra Operator {tag}'", debug=debug
+        f"git tag {tag}", debug=debug
     )
     if rc != 0:
         return (
