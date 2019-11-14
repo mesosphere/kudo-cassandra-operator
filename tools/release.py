@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-from os import path
 import argparse
 import logging
 import re
@@ -19,8 +18,6 @@ from utils import (
     push_tag,
 )
 
-__directory__ = path.dirname(__file__)
-
 log = logging.getLogger(__name__)
 logging.basicConfig(
     level=logging.INFO,
@@ -38,7 +35,7 @@ RELEASE_TAG_PATTERN = f"v{SEMVER_PATTERN}-{SEMVER_PATTERN}"
 STABLE_BRANCH_NAME_PATTERN = f"release-v{SEMVER_MAJOR_MINOR_PATTERN}"
 
 
-def valid_git_tag(tag: str) -> bool:
+def valid_release_tag(tag: str) -> bool:
     return bool(re.match(RELEASE_TAG_PATTERN, tag))
 
 
@@ -57,10 +54,7 @@ def validate_arguments_and_environment(
         return 1
 
     if not remote_exists(git_remote, debug):
-        log.info(
-            f"Invalid stable branch name: '{git_branch}'. Stable branch names "
-            + f"should follow the pattern: {STABLE_BRANCH_NAME_PATTERN}"
-        )
+        log.info(f"Remote '{git_remote}' doesn't exist")
         return 1
 
     if not valid_stable_branch_name(git_branch):
@@ -70,9 +64,9 @@ def validate_arguments_and_environment(
         )
         return 1
 
-    if not valid_git_tag(git_tag):
+    if not valid_release_tag(git_tag):
         log.info(
-            f"Invalid release tag: {git_tag}. Release tags should follow the "
+            f"Invalid release tag: '{git_tag}'. Release tags should follow the "
             + f"pattern: {RELEASE_TAG_PATTERN}"
         )
         return 1
@@ -120,8 +114,8 @@ def validate_arguments_and_environment(
     if remote_tag_exists(git_remote, git_tag, debug):
         log.error(
             f"Remote tag already exists: 'refs/tags/{git_tag}'. "
-            + "Can't release a version when a remote tag "
-            + "already has been published"
+            + "Can't release a version when a remote tag has "
+            + "already been published"
         )
         return 1
 
@@ -150,19 +144,38 @@ def validate_arguments_and_environment(
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(
-        description="Releases the KUDO Cassandra Operator"
+    parser = argparse.ArgumentParser(description="Release KUDO Operators")
+
+    parser.add_argument(
+        "--git-branch",
+        type=str,
+        required=True,
+        help="The name of the KUDO Operator repository git branch",
+    )
+    parser.add_argument(
+        "--git-tag",
+        type=str,
+        required=True,
+        help="The desired git tag that will be created in the KUDO Operator "
+        + "repository from the head of the GIT_BRANCH",
+    )
+    parser.add_argument(
+        "--git-remote",
+        type=str,
+        default="origin",
+        help="The name of the git remote for the KUDO Operator repository",
+    )
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        default=False,
+        help="Show debug output from all operations performed",
     )
 
-    parser.add_argument("--git-remote", type=str, default="origin", help="")
-    parser.add_argument("--git-branch", type=str, help="")
-    parser.add_argument("--git-tag", type=str, help="")
-    parser.add_argument("--debug", action="store_true", default=False, help="")
-
     args = parser.parse_args()
-    git_remote = args.git_remote
     git_branch = args.git_branch
     git_tag = args.git_tag
+    git_remote = args.git_remote
     debug = args.debug
 
     rc = validate_arguments_and_environment(

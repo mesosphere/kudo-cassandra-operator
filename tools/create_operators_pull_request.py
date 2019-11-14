@@ -30,32 +30,72 @@ KUDOBUILDER_OPERATORS_REPOSITORY = "kudobuilder/operators"
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Interacts with the kudobuilder/operators repository"
+        description="Open a PR bringing a KUDO Operator's files to the "
+        + "kudobuilder/operators repository"
     )
 
     parser.add_argument(
-        "--operators-base-branch", type=str, default="master", help=""
+        "--operator-repository",
+        type=str,
+        required=True,
+        help="The KUDO Operator repository to bring the files from "
+        + "(e.g., mesosphere/kudo-cassandra-operator)",
     )
-    parser.add_argument("--git-user", type=str, default="git", help="")
-    parser.add_argument("--github-token", type=str, required=True, help="")
     parser.add_argument(
-        "--operator-repository", type=str, required=True, help=""
+        "--operator-name",
+        type=str,
+        required=True,
+        help="The name of the KUDO operator (e.g., cassandra, kafka, spark)",
     )
-    parser.add_argument("--operator-name", type=str, required=True, help="")
-    parser.add_argument("--operator-git-tag", type=str, required=True, help="")
-    parser.add_argument("--git-commit-message", type=str, help="")
-    parser.add_argument("--debug", action="store_true", default=False, help="")
+    parser.add_argument(
+        "--operator-git-tag",
+        type=str,
+        required=True,
+        help="The git tag in the KUDO operator repository to bring the "
+        + "files from. This is also the directory name in "
+        + "kudobuilder/operators, e.g., repository/cassandra/$OPERATOR_GIT_TAG",
+    )
+    parser.add_argument(
+        "--github-token",
+        type=str,
+        required=True,
+        help="The GitHub token used for opening the PR against kudobuilder/operators",
+    )
+    parser.add_argument(
+        "--git-commit-message",
+        type=str,
+        help="The git commit message in the kudobuilder/operators PR branch. "
+        + "This will also be the PR title",
+    )
+    parser.add_argument(
+        "--operators-base-branch",
+        type=str,
+        default="master",
+        help="The kudobuilder/operators branch to open a PR against",
+    )
+    parser.add_argument(
+        "--git-user",
+        type=str,
+        default="git",
+        help="The git user for cloning and pushing via SSH",
+    )
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        default=False,
+        help="Show debug output from all operations performed",
+    )
 
     args = parser.parse_args()
-    operators_base_branch = args.operators_base_branch
-    git_user = args.git_user
-    github_token = args.github_token
     operator_repository = args.operator_repository
     operator_name = args.operator_name
     operator_git_tag = args.operator_git_tag
+    github_token = args.github_token
     git_commit_message = args.git_commit_message or (
         f"Release {operator_name} {operator_git_tag} (automated commit)."
     )
+    operators_base_branch = args.operators_base_branch
+    git_user = args.git_user
     debug = args.debug
 
     base_directory = tempfile.mkdtemp("_kudo_operator_tools")
