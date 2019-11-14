@@ -14,6 +14,7 @@ from utils import (
     local_tag_exists,
     remote_tag_exists,
     local_branch_matches_remote_branch,
+    configure_git_user,
     create_local_tag,
     push_tag,
 )
@@ -168,6 +169,35 @@ def main() -> int:
         git_remote, git_branch, git_tag, debug
     )
     if rc != 0:
+        return rc
+
+    rc, stdout, stderr = run(
+        f"git show -s --format='%an' {git_branch}", debug=debug
+    )
+    if rc != 0:
+        return (
+            rc,
+            f"Failed to get git user name:"
+            + f"\nstdout:\n{stdout}\nstderr:\n{stderr}",
+        )
+    git_user_name = stdout.strip()
+
+    rc, stdout, stderr = run(
+        f"git show -s --format='%ae' {git_branch}", debug=debug
+    )
+    if rc != 0:
+        return (
+            rc,
+            f"Failed to get git user email:"
+            + f"\nstdout:\n{stdout}\nstderr:\n{stderr}",
+        )
+    git_user_email = stdout.strip()
+
+    rc, error_message = configure_git_user(
+        ".", git_user_name, git_user_email, debug
+    )
+    if rc != 0:
+        log.error(error_message)
         return rc
 
     rc, error_message = create_local_tag(git_tag, debug)
