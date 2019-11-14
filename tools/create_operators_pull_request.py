@@ -131,7 +131,7 @@ def main() -> int:
         return rc
 
     versioned_operator_directory = (
-        f"{operators_directory}/{operator_name}/{operator_git_tag}"
+        f"{operators_directory}/repository/{operator_name}/{operator_git_tag}"
     )
 
     command = " && ".join(
