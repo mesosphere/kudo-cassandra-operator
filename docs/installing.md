@@ -128,6 +128,25 @@ UN  192.168.246.123  193.24 KiB  256          66.2%             38a639d0-6ead-4d
 UN  192.168.144.100  191.78 KiB  256          65.1%             18c470c3-f210-4ced-8512-c720bd2828d8  rack1
 ```
 
-Check out the [configuration parameters](./configuration.md) page for a complete
-list of configurable parameters, and the [debugging](./debugging.md) page for
-help when things go wrong.
+The operator deploys a service that provides a DNS record for containers to
+interact with the Cassandra cluster.
+
+```bash
+kubectl exec -it pod/analytics-cassandra-node-0 \
+        -n production \
+        -c cassandra \
+        -- \
+        bash -c 'cqlsh analytics-cassandra-svc.production.svc.cluster.local'
+```
+
+```text
+Connected to analytics-cassandra at analytics-cassandra-svc.production.svc.cluster.local:9042.
+[cqlsh 5.0.1 | Cassandra 3.11.4 | CQL spec 3.4.4 | Native protocol v4]
+Use HELP for help.
+cqlsh>
+```
+
+Check out the [configuration parameters](./configuration.md) page for help with
+changing an operator instance's parameters and the [operating](./operating.md)
+page for help with managing Cassandra operators and their underlying Cassandra
+clusters.
