@@ -9,7 +9,9 @@ and this project adheres to
 ## [Unreleased]
 
 ### Added
-- Apache 2.0 license ([c792f72d](https://github.com/mesosphere/kudo-cassandra-operator/commit/c792f72d132ad01dd02859f3dc266f3e54142e32))
+
+- Apache 2.0 license
+  ([c792f72d](https://github.com/mesosphere/kudo-cassandra-operator/commit/c792f72d132ad01dd02859f3dc266f3e54142e32))
 
 ## [3.11.4-0.1.0] - 2019-11-13
 
@@ -27,7 +29,7 @@ and this project adheres to
   ([#6](https://github.com/mesosphere/kudo-cassandra-operator/pull/6))
 - Unpriviledged container execution
 
-[Unreleased]:
+[unreleased]:
   https://github.com/mesosphere/kudo-cassandra-operator/compare/v3.11.4-0.1.0...HEAD
 [3.11.4-0.1.0]:
   https://github.com/mesosphere/kudo-cassandra-operator/releases/tag/v3.11.4-0.1.0
