@@ -15,7 +15,6 @@ from utils import (
     remote_tag_exists,
     local_branch_matches_remote_branch,
     create_local_tag,
-    valid_git_tag,
     push_tag,
 )
 
@@ -38,18 +37,12 @@ RELEASE_TAG_PATTERN = f"v{SEMVER_PATTERN}-{SEMVER_PATTERN}"
 STABLE_BRANCH_NAME_PATTERN = f"release-v{SEMVER_MAJOR_MINOR_PATTERN}"
 
 
+def valid_git_tag(tag: str) -> bool:
+    return bool(re.match(RELEASE_TAG_PATTERN, tag))
+
+
 def valid_stable_branch_name(branch: str) -> bool:
     return bool(re.match(STABLE_BRANCH_NAME_PATTERN, branch))
-
-
-def build_and_push_docker_images(debug: bool) -> (int, str):
-    rc, stdout, stderr = run(
-        f"{__directory__}/../images/build.sh push", debug=debug
-    )
-    if rc != 0:
-        return rc, f"stdout:\n{stdout}\nstderr:\n{stderr}"
-
-    return 0, ""
 
 
 def validate_arguments_and_environment(
@@ -163,16 +156,12 @@ def main() -> int:
     parser.add_argument("--git-remote", type=str, default="origin", help="")
     parser.add_argument("--git-branch", type=str, help="")
     parser.add_argument("--git-tag", type=str, help="")
-    parser.add_argument(
-        "--skip-docker-images", action="store_true", default=False, help=""
-    )
     parser.add_argument("--debug", action="store_true", default=False, help="")
 
     args = parser.parse_args()
     git_remote = args.git_remote
     git_branch = args.git_branch
     git_tag = args.git_tag
-    skip_docker_images = args.skip_docker_images
     debug = args.debug
 
     rc = validate_arguments_and_environment(
@@ -180,12 +169,6 @@ def main() -> int:
     )
     if rc != 0:
         return rc
-
-    if not skip_docker_images:
-        rc, error_message = build_and_push_docker_images(debug)
-        if rc != 0:
-            log.error(error_message)
-            return rc
 
     rc, error_message = create_local_tag(git_tag, debug)
     if rc != 0:
