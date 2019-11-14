@@ -31,10 +31,18 @@ The KUDO Cassandra Operator makes it easy to deploy and manage
 
 ## Getting started
 
-## Documentation
+The KUDO Cassandra operator requires KUDO 0.8.0 and Kubernetes 1.15.0.
+
+To install it run
+
+```bash
+kubectl kudo install cassandra
+```
+
+## [Documentation](./docs)
 
 ## Version Chart
 
-| Apache Cassandra version | Operator version | Minimum KUDO Version | Status |
-| ------------------------ | ---------------- | -------------------- | ------ |
-| 3.11.4                   | 0.1.0            | 0.8.0                | beta   |
+| Version                                                                                          | Apache Cassandra version | Operator version | Minimum KUDO Version | Status | Release date |
+| -------                                                                                          | ------------------------ | ---------------- | -------------------- | ------ | ------------ |
+| [3.11.4-0.1.0](https://github.com/mesosphere/kudo-cassandra-operator/releases/tag/v3.11.4-0.1.0) | 3.11.4                   | 0.1.0            | 0.8.0                | beta   | 2019-11-13   |
