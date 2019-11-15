@@ -1,17 +1,30 @@
+#!/usr/bin/env python3
+
 import argparse
 import logging
+import os.path as path
+import sys
 import yaml
 from pytablewriter import MarkdownTableWriter
 from pytablewriter.style import Style
 
-DEFAULT_PARAMS_YAML = '../operator/params.yaml'
-DEFAULT_PARAMS_MD = 'PARAMETERS.md'
+
+SCRIPT_DIRECTORY = path.dirname(__file__)
+
+DEFAULT_PARAMS_YAML = path.join(SCRIPT_DIRECTORY, "../operator/params.yaml")
+
+log = logging.getLogger(__name__)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%SZ",
+)
 
 
-def generateMarkdownTable(params_yaml, params_md):
+def generate_markdown_table(input_params_yaml, output_markdown_file_path):
     try:
-        with open(params_yaml, 'r') as stream:
-            params = yaml.safe_load(stream)['parameters']
+        with open(input_params_yaml, "r") as stream:
+            params = yaml.safe_load(stream)["parameters"]
 
             writer = MarkdownTableWriter()
             writer.table_name = "Parameters"
@@ -24,17 +37,44 @@ def generateMarkdownTable(params_yaml, params_md):
 
             writer.value_matrix = [list(d.values()) for d in params]
 
-            with open(params_md, "w") as file:
-                writer.stream = file
-                writer.write_table()
+            if output_markdown_file_path:
+                with open(output_markdown_file_path, "w") as file:
+                    writer.stream = file
+                    writer.write_table()
+            else:
+                print(writer.dumps())
+
+            return 0
     except Exception as e:
-        logging.error("Failed to generate PARAMETERS Markdown Table", e)
+        logging.error(f"Failed to generate Markdown for {input_params_yaml}", e)
+        return 1
 
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-params_yaml', help='Params YAML input file.', default=DEFAULT_PARAMS_YAML)
-    parser.add_argument('-params_md', help='Params markdown output file.', default=DEFAULT_PARAMS_MD)
+def main() -> int:
+    parser = argparse.ArgumentParser(
+        description="Generate a markdown table of all parameters in a KUDO "
+        + "Operator params.yaml file"
+    )
+
+    parser.add_argument(
+        "--input-params-yaml",
+        help=f"params.yaml input file. Defaults to {DEFAULT_PARAMS_YAML}",
+        default=DEFAULT_PARAMS_YAML,
+    )
+    parser.add_argument(
+        "--output-markdown-file",
+        help="Relative path for output file with markdown table",
+    )
+
     args = parser.parse_args()
+    output_markdown_file_path = path.join(
+        SCRIPT_DIRECTORY, args.output_markdown_file
+    )
 
-    generateMarkdownTable(args.params_yaml, args.params_md)
+    return generate_markdown_table(
+        args.input_params_yaml, output_markdown_file_path
+    )
+
+
+if __name__ == "__main__":
+    sys.exit(main())
