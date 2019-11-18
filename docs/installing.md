@@ -1,5 +1,10 @@
 # Installing the KUDO Cassandra Operator
 
+**Table of Contents**
+
+- [Requirements](#requirements)
+- [Installing the operator](#installing-the-operator)
+
 ## Requirements
 
 - The [KUDO CLI](https://kudo.dev/docs/#install-kudo-cli) installed on your
@@ -146,7 +151,11 @@ Use HELP for help.
 cqlsh>
 ```
 
-Check out the [configuration parameters](./configuration.md) page for help with
-changing an operator instance's parameters and the [operating](./operating.md)
-page for help with managing Cassandra operators and their underlying Cassandra
-clusters.
+Check out the [parameters reference](./parameters.md) for a complete list of all
+configurable settings.
+
+Check out the
+["configuration" section in the "managing" page](./managing.md#configuration)
+for help with changing an existing operator instance's parameters and the
+[operating](./operating.md) page for help with managing Cassandra operators and
+their underlying Cassandra clusters.
