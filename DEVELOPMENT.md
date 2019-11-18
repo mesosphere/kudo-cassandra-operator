@@ -254,6 +254,13 @@ Eventually, the reset target will become `1.0.0`.
 | T6   | 3.12.0             | 1.0.0            | v1               | KUDO API version change                    | Operator major version bump |
 | T6   | 4.0.0              | 1.0.0            | v1               | KUDO API version change                    | Operator major version bump |
 
+It's important to note that **operator versions for different app versions are
+unrelated**. e.g., in the example above both `3.11.4-0.1.0` and `4.0.0-0.1.0`
+have `0.1.0` as the _operator version_, but wouldn't necessarily share any
+commonality with regards to the operator itself. The operator version
+progression is only meaningful within an app version's `major.minor` family,
+i.e. `3.11.x` and `4.0.x`.
+
 ### Development Cycle
 
 Development happens in feature branches which are merged into the master branch
