@@ -239,20 +239,20 @@ Eventually, the reset target will become `1.0.0`.
 
 ##### Example hypothetical timeline for releases
 
-| Time | Apache C\* version | Operator version          | KUDO API version | Comment                                    | Change                      |
-| ---- | ------------------ | ------------------------- | ---------------- | ------------------------------------------ | --------------------------- |
-| T0   | 3.11.4             | 0.1.0                     | v1beta1          | Initial release based on Apache C\* 3.11.x | -                           |
-| T1   | 3.11.4             | 0.1.1                     | v1beta1          | Bug fix in operator-related code           | Operator patch version bump |
-| T2   | 3.12.0             | 0.1.0                     | v1beta1          | Apache C\* 3.12.x release                  | Operator version reset      |
-| T3   | 3.11.4             | 0.2.0                     | v1beta1          | Operator-related feature A added to 3.11.x | Operator minor version bump |
-| T3   | 3.12.0             | 0.3.0                     | v1beta1          | Operator-related feature A added to 3.12.x | Operator minor version bump |
-| T4   | 4.0.0              | 0.1.0                     | v1beta1          | Apache C\* 4.0.x release                   | Operator version reset      |
-| T5   | 3.11.4             | 0.3.0                     | v1beta1          | Operator-related feature B added to 3.11.x | Operator minor version bump |
-| T5   | 3.12.0             | 0.4.0                     | v1beta1          | Operator-related feature B added to 3.12.x | Operator minor version bump |
-| T5   | 4.0.0              | 0.2.0                     | v1beta1          | Operator-related feature B added to 4.0.x  | Operator minor version bump |
-| T6   | 3.11.4             | 1.0.0                     | v1               | KUDO API version change                    | Operator major version bump |
-| T6   | 3.12.0             | 1.0.0                     | v1               | KUDO API version change                    | Operator major version bump |
-| T6   | 4.0.0              | 1.0.0                     | v1               | KUDO API version change                    | Operator major version bump |
+| Time | Apache C\* version | Operator version | KUDO API version | Comment                                    | Change                      |
+| ---- | ------------------ | ---------------- | ---------------- | ------------------------------------------ | --------------------------- |
+| T0   | 3.11.4             | 0.1.0            | v1beta1          | Initial release based on Apache C\* 3.11.x | -                           |
+| T1   | 3.11.4             | 0.1.1            | v1beta1          | Bug fix in operator-related code           | Operator patch version bump |
+| T2   | 3.12.0             | 0.1.0            | v1beta1          | Apache C\* 3.12.x release                  | Operator version reset      |
+| T3   | 3.11.4             | 0.2.0            | v1beta1          | Operator-related feature A added to 3.11.x | Operator minor version bump |
+| T3   | 3.12.0             | 0.3.0            | v1beta1          | Operator-related feature A added to 3.12.x | Operator minor version bump |
+| T4   | 4.0.0              | 0.1.0            | v1beta1          | Apache C\* 4.0.x release                   | Operator version reset      |
+| T5   | 3.11.4             | 0.3.0            | v1beta1          | Operator-related feature B added to 3.11.x | Operator minor version bump |
+| T5   | 3.12.0             | 0.4.0            | v1beta1          | Operator-related feature B added to 3.12.x | Operator minor version bump |
+| T5   | 4.0.0              | 0.2.0            | v1beta1          | Operator-related feature B added to 4.0.x  | Operator minor version bump |
+| T6   | 3.11.4             | 1.0.0            | v1               | KUDO API version change                    | Operator major version bump |
+| T6   | 3.12.0             | 1.0.0            | v1               | KUDO API version change                    | Operator major version bump |
+| T6   | 4.0.0              | 1.0.0            | v1               | KUDO API version change                    | Operator major version bump |
 
 ### Development Cycle
 
