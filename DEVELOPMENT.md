@@ -27,9 +27,11 @@
     - [Merging pull requests](#merging-pull-requests)
 - [Releasing](#releasing)
   - [Versioning](#versioning)
+    - [-](#-)
   - [Development Cycle](#development-cycle)
   - [Release Workflow](#release-workflow)
   - [Backport Workflow](#backport-workflow)
+  - [Snapshots](#snapshots)
 
 ## Requirements
 
@@ -228,11 +230,29 @@ descriptions.
 ### Versioning
 
 The current versioning scheme for the current KUDO Cassandra Operator follows
-[Semantic Versioning 2.0.0](https://semver.org/). The _combined version_ is
-composed of the underlying Apache Cassandra version (_app version_) concatenated
-with the _operator version_. For example, in the combined version
-`3.11.4-0.1.0`, `3.11.4` is the Apache Cassandra version and `0.1.0` is the
-operator version.
+[Semantic Versioning 2.0.0](https://semver.org/). The _version_ is composed of
+the underlying Apache Cassandra version (_app version_) concatenated with the
+_operator version_. For example, in `3.11.4-0.1.0`, `3.11.4` is the Apache
+Cassandra version and `0.1.0` is the operator version. **The operator version is
+reset on every minor app version release.** The current reset target is `0.1.0`.
+Eventually, the reset target will become `1.0.0`.
+
+##### Example hypothetical timeline for releases
+
+| Time | Apache C\* version | Operator version          | KUDO API version | Comment                                    | Change                      |
+| ---- | ------------------ | ------------------------- | ---------------- | ------------------------------------------ | --------------------------- |
+| T0   | 3.11.4             | 0.1.0                     | v1beta1          | Initial release based on Apache C\* 3.11.x | -                           |
+| T1   | 3.11.4             | 0.1.1                     | v1beta1          | Bug fix in operator-related code           | Operator patch version bump |
+| T2   | 3.12.0             | 0.1.0                     | v1beta1          | Apache C\* 3.12.x release                  | Operator version reset      |
+| T3   | 3.11.4             | 0.2.0                     | v1beta1          | Operator-related feature A added to 3.11.x | Operator minor version bump |
+| T3   | 3.12.0             | 0.3.0                     | v1beta1          | Operator-related feature A added to 3.12.x | Operator minor version bump |
+| T4   | 4.0.0              | 0.1.0                     | v1beta1          | Apache C\* 4.0.x release                   | Operator version reset      |
+| T5   | 3.11.4             | 0.3.0                     | v1beta1          | Operator-related feature B added to 3.11.x | Operator minor version bump |
+| T5   | 3.12.0             | 0.4.0                     | v1beta1          | Operator-related feature B added to 3.12.x | Operator minor version bump |
+| T5   | 4.0.0              | 0.2.0                     | v1beta1          | Operator-related feature B added to 4.0.x  | Operator minor version bump |
+| T6   | 3.11.4             | 1.0.0                     | v1               | KUDO API version change                    | Operator major version bump |
+| T6   | 3.12.0             | 1.0.0                     | v1               | KUDO API version change                    | Operator major version bump |
+| T6   | 4.0.0              | 1.0.0                     | v1               | KUDO API version change                    | Operator major version bump |
 
 ### Development Cycle
 
@@ -240,10 +260,11 @@ Development happens in feature branches which are merged into the master branch
 via GitHub PRs. When it is deciced that a release needs to be done, a _stable
 branch_ is created based off of the master branch. In this branch all operator
 dependencies (Docker images, KUDO version, Golang libraries, etc.) are made to
-be _stable_, as in no SNAPSHOTs are used. The app version and operator version
-are also updated to be the desired version to be released. After the git commits
-doing the above are made, a git tag is created with the desired version to be
-released.
+be _stable_, as in no _running versions_ (SNAPSHOT, latest, etc.) are used. The
+app version is set to the underlying Apache Cassandra version and the operator
+version is updated according to the versioning scheme shown above. After these
+changes are committed to the stable branch, a git tag is created with the
+version to be released.
 
 ### Release Workflow
 
@@ -266,3 +287,17 @@ above:
 Any further releases based on Apache Cassandra `3.11.x` should originate from
 backported changes from the master branch to the existing `release-v3.11`
 branch, and then released to tags.
+
+### Snapshots
+
+Snapshot release versions will have the following format:
+
+```
+${app_version}-0.0.0-YYYYMMDDHHmmss-${git_sha}
+```
+
+Example:
+
+```
+3.11.4-0.0.0-20191225000000-1909e93ffa56
+```
