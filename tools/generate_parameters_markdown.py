@@ -25,8 +25,9 @@ logging.basicConfig(
 
 def generate_markdown_table(input_params_yaml, output_markdown_file_path):
     try:
-        with open(input_params_yaml, "r") as stream:
-            params = yaml.safe_load(stream)["parameters"]
+        with open(input_params_yaml, "r") as input:
+            parameters = yaml.safe_load(input)["parameters"]
+            parameter_fields = ["name", "description", "default"]
 
             writer = MarkdownTableWriter()
             writer.table_name = "Parameters"
@@ -35,20 +36,33 @@ def generate_markdown_table(input_params_yaml, output_markdown_file_path):
                 Style(align="left"),
                 Style(align="right"),
             ]
-            writer.headers = ["Name", "Description", "Default"]
+            writer.headers = [field.capitalize() for field in parameter_fields]
+            writer.margin = 1
 
-            writer.value_matrix = [list(d.values()) for d in params]
+            writer.value_matrix = [
+                list([parameter.get(field) for field in parameter_fields])
+                for parameter in parameters
+            ]
 
             if output_markdown_file_path:
-                with open(output_markdown_file_path, "w") as file:
-                    writer.stream = file
-                    writer.write_table()
+                try:
+                    with open(output_markdown_file_path, "w") as output:
+                        writer.stream = output
+                        writer.write_table()
+                except Exception as e:
+                    logging.error(
+                        f"Failed to output Markdown to {output_markdown_file_path}",
+                        e,
+                    )
+                    return 1
             else:
                 print(writer.dumps())
 
             return 0
     except Exception as e:
-        logging.error(f"Failed to generate Markdown for {input_params_yaml}", e)
+        logging.error(
+            f"Failed to generate Markdown from {input_params_yaml}", e
+        )
         return 1
 
 
