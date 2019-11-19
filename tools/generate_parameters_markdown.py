@@ -2,16 +2,18 @@
 
 import argparse
 import logging
+import os
 import os.path as path
 import sys
 import yaml
 from pytablewriter import MarkdownTableWriter
 from pytablewriter.style import Style
 
+SCRIPT_DIRECTORY = path.dirname(path.realpath(__file__))
 
-SCRIPT_DIRECTORY = path.dirname(__file__)
-
-DEFAULT_PARAMS_YAML = path.join(SCRIPT_DIRECTORY, "../operator/params.yaml")
+DEFAULT_PARAMS_YAML = path.realpath(
+    path.join(SCRIPT_DIRECTORY, "../operator/params.yaml")
+)
 
 log = logging.getLogger(__name__)
 logging.basicConfig(
@@ -67,12 +69,19 @@ def main() -> int:
     )
 
     args = parser.parse_args()
-    output_markdown_file_path = path.join(
-        SCRIPT_DIRECTORY, args.output_markdown_file
+
+    input_params_yaml_path = path.realpath(
+        path.join(os.getcwd(), args.input_params_yaml)
+    )
+
+    output_markdown_file_path = (
+        path.realpath(path.join(os.getcwd(), args.output_markdown_file))
+        if args.output_markdown_file
+        else None
     )
 
     return generate_markdown_table(
-        args.input_params_yaml, output_markdown_file_path
+        input_params_yaml_path, output_markdown_file_path
     )
 
 
