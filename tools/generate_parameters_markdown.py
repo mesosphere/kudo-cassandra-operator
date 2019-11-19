@@ -34,7 +34,7 @@ def generate_markdown_table(input_params_yaml, output_markdown_file_path):
             writer.styles = [
                 Style(align="left", font_weight="bold"),
                 Style(align="left"),
-                Style(align="right"),
+                Style(align="left"),
             ]
             writer.headers = [field.capitalize() for field in parameter_fields]
             writer.margin = 1
