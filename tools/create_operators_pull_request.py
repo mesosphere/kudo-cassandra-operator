@@ -97,7 +97,6 @@ def main() -> int:
     git_user = args.git_user
     debug = args.debug
 
-    base_directory = tempfile.mkdtemp("_kudo_operator_tools")
     operators_repository = KUDOBUILDER_OPERATORS_REPOSITORY
     operators_repository_url = (
         f"{git_user}@github.com:{operators_repository}.git"
@@ -106,24 +105,28 @@ def main() -> int:
         f"{operator_name}_{operator_git_tag}_{random_short_string()}"
     )
 
-    rc, operators_directory, error_message = clone_repository(
-        operators_repository_url, operators_base_branch, base_directory, debug
-    )
-    if rc != 0:
-        log.error(error_message)
-        return rc
+    with tempfile.mkdtemp("_kudo_operator_tools") as base_directory:
+        rc, operators_directory, error_message = clone_repository(
+            operators_repository_url,
+            operators_base_branch,
+            base_directory,
+            debug,
+        )
+        if rc != 0:
+            log.error(error_message)
+            return rc
 
-    operator_repository_url = (
-        f"https://{git_user}:{github_token}@github.com"
-        + f"/{operator_repository}.git"
-    )
+        operator_repository_url = (
+            f"https://{git_user}:{github_token}@github.com"
+            + f"/{operator_repository}.git"
+        )
 
-    rc, operator_directory, error_message = clone_repository(
-        operator_repository_url, operator_git_tag, base_directory, debug
-    )
-    if rc != 0:
-        log.error(error_message)
-        return rc
+        rc, operator_directory, error_message = clone_repository(
+            operator_repository_url, operator_git_tag, base_directory, debug
+        )
+        if rc != 0:
+            log.error(error_message)
+            return rc
 
     rc, stdout, stderr = run(
         f"cd {operators_directory} && git checkout -b {operators_branch}",
