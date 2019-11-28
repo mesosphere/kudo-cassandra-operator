@@ -26,7 +26,7 @@ KUDOBUILDER_OPERATORS_REPOSITORY = "kudobuilder/operators"
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Open a PR bringing a KUDO Operator's files to the "
-        + "kudobuilder/operators repository"
+        + f"{KUDOBUILDER_OPERATORS_REPOSITORY} repository"
     )
 
     parser.add_argument(
@@ -46,27 +46,31 @@ def main() -> int:
         "--operator-git-tag",
         type=str,
         required=True,
-        help="The git tag in the KUDO operator repository to bring the "
-        + "files from. This is also the directory name in "
-        + "kudobuilder/operators, e.g., repository/cassandra/$OPERATOR_GIT_TAG",
+        help="The git tag in the KUDO operator repository to bring the files "
+        + "from. This is also the directory name in "
+        + f"{KUDOBUILDER_OPERATORS_REPOSITORY}, "
+        + "e.g., repository/cassandra/$OPERATOR_GIT_TAG",
     )
     parser.add_argument(
         "--github-token",
         type=str,
         required=True,
-        help="The GitHub token used for opening the PR against kudobuilder/operators",
+        help="The GitHub token used for opening the PR against "
+        + f"{KUDOBUILDER_OPERATORS_REPOSITORY}",
     )
     parser.add_argument(
         "--git-commit-message",
         type=str,
-        help="The git commit message in the kudobuilder/operators PR branch. "
+        help="The git commit message in the "
+        + f"{KUDOBUILDER_OPERATORS_REPOSITORY} PR branch. "
         + "This will also be the PR title",
     )
     parser.add_argument(
         "--operators-base-branch",
         type=str,
         default="master",
-        help="The kudobuilder/operators branch to open a PR against",
+        help=f"The {KUDOBUILDER_OPERATORS_REPOSITORY} branch "
+        + "to open a PR against",
     )
     parser.add_argument(
         "--git-user",
@@ -128,7 +132,7 @@ def main() -> int:
     if rc != 0:
         return (
             rc,
-            f"Failed to create kudobuilder/operators branch: "
+            f"Failed to create {KUDOBUILDER_OPERATORS_REPOSITORY} branch: "
             + f"{operators_branch}\nstdout:\n{stdout}\nstderr:\n{stderr}",
         )
 
