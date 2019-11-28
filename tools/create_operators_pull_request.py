@@ -126,7 +126,7 @@ def main() -> int:
             return rc
 
     rc, stdout, stderr = run(
-        f"cd {operators_directory} && git checkout -b {operators_branch}",
+        f"git -C {operators_directory} checkout -b {operators_branch}",
         debug=debug,
     )
     if rc != 0:
@@ -137,7 +137,7 @@ def main() -> int:
         )
 
     rc, stdout, stderr = run(
-        f"cd {operator_directory} && git show -s --format='%an' {operator_git_tag}",
+        f"git -C {operators_directory} show -s --format='%an' {operator_git_tag}",
         debug=debug,
     )
     if rc != 0:
@@ -150,7 +150,7 @@ def main() -> int:
     git_user_name = stdout.strip()
 
     rc, stdout, stderr = run(
-        f"cd {operator_directory} && git show -s --format='%ae' {operator_git_tag}",
+        f"git -C {operators_directory} show -s --format='%ae' {operator_git_tag}",
         debug=debug,
     )
     if rc != 0:
@@ -185,27 +185,25 @@ def main() -> int:
     if rc != 0:
         return rc, f"stdout:\n{stdout}\nstderr:\n{stderr}"
 
-    rc, stdout, stderr = run(
-        f"cd {operators_directory} && git add .", debug=debug
-    )
+    rc, stdout, stderr = run(f"git -C {operators_directory} add .", debug=debug)
     if rc != 0:
         return rc, f"stdout:\n{stdout}\nstderr:\n{stderr}"
 
     rc, stdout, stderr = run(
-        f"cd {operators_directory} && git commit -am '{git_commit_message}'",
+        f"git -C {operators_directory} commit -am '{git_commit_message}'",
         debug=debug,
     )
     if rc != 0:
         return rc, f"stdout:\n{stdout}\nstderr:\n{stderr}"
 
     rc, stdout, stderr = run(
-        f"cd {operators_directory} && git log -n 1", debug=debug
+        f"git -C {operators_directory} log -n 1", debug=debug
     )
     if rc != 0:
         return rc, f"stdout:\n{stdout}\nstderr:\n{stderr}"
 
     rc, stdout, stderr = run(
-        f"cd {operators_directory} && git push origin {operators_branch}",
+        f"git -C {operators_directory} push origin {operators_branch}",
         debug=debug,
     )
     if rc != 0:
