@@ -20,13 +20,13 @@ PROGRAM_NAME = os.path.basename(__file__)
 log = logging.getLogger(__name__)
 
 
-KUDOBUILDER_OPERATORS_REPOSITORY = "kudobuilder/operators"
+OPERATORS_REPOSITORY = "kudobuilder/operators"
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Open a PR copying a KUDO Operator's files to the "
-        + f"{KUDOBUILDER_OPERATORS_REPOSITORY} repository"
+        + f"{OPERATORS_REPOSITORY} repository"
     )
 
     parser.add_argument(
@@ -47,8 +47,7 @@ def main() -> int:
         type=str,
         required=True,
         help="The git tag in the KUDO operator repository to copy the files "
-        + "from. This is also the directory name in "
-        + f"{KUDOBUILDER_OPERATORS_REPOSITORY}, "
+        + f"from. This is also the directory name in {OPERATORS_REPOSITORY}, "
         + "e.g., repository/cassandra/$OPERATOR_GIT_TAG",
     )
     parser.add_argument(
@@ -56,21 +55,19 @@ def main() -> int:
         type=str,
         required=True,
         help="The GitHub token used for opening the PR against "
-        + f"{KUDOBUILDER_OPERATORS_REPOSITORY}",
+        + f"{OPERATORS_REPOSITORY}",
     )
     parser.add_argument(
         "--git-commit-message",
         type=str,
-        help="The git commit message in the "
-        + f"{KUDOBUILDER_OPERATORS_REPOSITORY} PR branch. "
+        help=f"The git commit message in the {OPERATORS_REPOSITORY} PR branch. "
         + "This will also be the PR title",
     )
     parser.add_argument(
         "--operators-base-branch",
         type=str,
         default="master",
-        help=f"The {KUDOBUILDER_OPERATORS_REPOSITORY} branch "
-        + "to open a PR against",
+        help=f"The {OPERATORS_REPOSITORY} branch to open a PR against",
     )
     parser.add_argument(
         "--git-user",
@@ -97,7 +94,7 @@ def main() -> int:
     git_user = args.git_user
     debug = args.debug
 
-    operators_repository = KUDOBUILDER_OPERATORS_REPOSITORY
+    operators_repository = OPERATORS_REPOSITORY
     operators_repository_url = (
         f"{git_user}@github.com:{operators_repository}.git"
     )
@@ -135,7 +132,7 @@ def main() -> int:
     if rc != 0:
         return (
             rc,
-            f"Failed to create {KUDOBUILDER_OPERATORS_REPOSITORY} branch: "
+            f"Failed to create {OPERATORS_REPOSITORY} branch: "
             + f"{operators_branch}\nstdout:\n{stdout}\nstderr:\n{stderr}",
         )
 
