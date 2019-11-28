@@ -16,11 +16,6 @@ DEFAULT_PARAMS_YAML = path.realpath(
 )
 
 log = logging.getLogger(__name__)
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s %(levelname)s %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%SZ",
-)
 
 
 def generate_markdown_table(input_params_yaml, output_markdown_file_path):
@@ -100,4 +95,9 @@ def main() -> int:
 
 
 if __name__ == "__main__":
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s %(levelname)s %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%SZ",
+    )
     sys.exit(main())

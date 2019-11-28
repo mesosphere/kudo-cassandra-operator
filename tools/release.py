@@ -19,11 +19,6 @@ from utils import (
 )
 
 log = logging.getLogger(__name__)
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s %(levelname)s %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%SZ",
-)
 
 SEMVER_MAJOR_MINOR_PATTERN = "(0|[1-9]\d*)\.(0|[1-9]\d*)"
 
@@ -229,4 +224,9 @@ def main() -> int:
 
 
 if __name__ == "__main__":
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s %(levelname)s %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%SZ",
+    )
     sys.exit(main())

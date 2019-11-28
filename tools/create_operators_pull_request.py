@@ -18,11 +18,6 @@ from utils import (
 PROGRAM_NAME = os.path.basename(__file__)
 
 log = logging.getLogger(__name__)
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s %(levelname)s %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%SZ",
-)
 
 
 KUDOBUILDER_OPERATORS_REPOSITORY = "kudobuilder/operators"
@@ -242,4 +237,9 @@ def main() -> int:
 
 
 if __name__ == "__main__":
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s %(levelname)s %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%SZ",
+    )
     sys.exit(main())
