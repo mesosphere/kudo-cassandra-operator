@@ -25,7 +25,7 @@ KUDOBUILDER_OPERATORS_REPOSITORY = "kudobuilder/operators"
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Open a PR bringing a KUDO Operator's files to the "
+        description="Open a PR copying a KUDO Operator's files to the "
         + f"{KUDOBUILDER_OPERATORS_REPOSITORY} repository"
     )
 
@@ -33,7 +33,7 @@ def main() -> int:
         "--operator-repository",
         type=str,
         required=True,
-        help="The KUDO Operator repository to bring the files from "
+        help="The KUDO Operator repository to copy the files from "
         + "(e.g., mesosphere/kudo-cassandra-operator)",
     )
     parser.add_argument(
@@ -46,7 +46,7 @@ def main() -> int:
         "--operator-git-tag",
         type=str,
         required=True,
-        help="The git tag in the KUDO operator repository to bring the files "
+        help="The git tag in the KUDO operator repository to copy the files "
         + "from. This is also the directory name in "
         + f"{KUDOBUILDER_OPERATORS_REPOSITORY}, "
         + "e.g., repository/cassandra/$OPERATOR_GIT_TAG",
