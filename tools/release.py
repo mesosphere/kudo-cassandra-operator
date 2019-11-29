@@ -42,25 +42,25 @@ def validate_arguments_and_environment(
     git_remote: str, git_branch: str, git_tag: str, debug: bool
 ) -> int:
     if repository_dirty(debug):
-        log.info(
+        log.error(
             "Local repository is dirty. "
             + "Make sure it is clean and run the script again"
         )
         return 1
 
     if not remote_exists(git_remote, debug):
-        log.info(f"Remote '{git_remote}' doesn't exist")
+        log.error(f"Remote '{git_remote}' doesn't exist")
         return 1
 
     if not valid_stable_branch_name(git_branch):
-        log.info(
+        log.error(
             f"Invalid stable branch name: '{git_branch}'. Stable branch names "
             + f"should follow the pattern: {STABLE_BRANCH_NAME_PATTERN}"
         )
         return 1
 
     if not valid_release_tag(git_tag):
-        log.info(
+        log.error(
             f"Invalid release tag: '{git_tag}'. Release tags should follow the "
             + f"pattern: {RELEASE_TAG_PATTERN}"
         )
