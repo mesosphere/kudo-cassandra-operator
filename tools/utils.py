@@ -67,7 +67,7 @@ def remote_exists(remote: str, debug: bool) -> bool:
     return rc == 0
 
 
-def matching_remote_branches(
+def get_matching_remote_branches(
     remote: str, branch: str, debug: bool
 ) -> (int, List[str], str):
     rc, stdout, stderr = run("git branch -r", debug=debug)

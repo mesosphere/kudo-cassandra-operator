@@ -9,7 +9,7 @@ from utils import (
     run,
     repository_dirty,
     remote_exists,
-    matching_remote_branches,
+    get_matching_remote_branches,
     local_tag_exists,
     remote_tag_exists,
     local_branch_matches_remote_branch,
@@ -76,21 +76,21 @@ def validate_arguments_and_environment(
         )
         return rc
 
-    rc, _matching_remote_branches, error_message = matching_remote_branches(
+    rc, matching_remote_branches, error_message = get_matching_remote_branches(
         git_remote, git_branch, debug
     )
     if rc != 0:
         log.error(error_message)
         return rc
 
-    if len(_matching_remote_branches) == 0:
+    if len(matching_remote_branches) == 0:
         log.warning(
             f"Didn't find remote branch '{git_remote}/{git_branch}'. "
             + "Push a stable branch so that a release can be created from it"
         )
         return 1
-    elif len(_matching_remote_branches) == 1:
-        log.info(f"Found remote branch '{_matching_remote_branches[0]}'")
+    elif len(matching_remote_branches) == 1:
+        log.info(f"Found remote branch '{matching_remote_branches[0]}'")
     else:
         log.warning(
             "Found more than one remote branch matching "
