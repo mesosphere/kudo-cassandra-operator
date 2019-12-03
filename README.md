@@ -39,7 +39,12 @@ To install it run
 kubectl kudo install cassandra
 ```
 
-## [Documentation](./docs)
+## Documentation
+
+- [Installing](./docs/installing.md)
+- [Managing](./docs/managing.md)
+- [Monitoring](./docs/monitoring.md)
+- [Parameters reference](./docs/parameters.md)
 
 ## Version Chart
 
