@@ -20,22 +20,28 @@ from utils import (
 
 log = logging.getLogger(__name__)
 
-SEMVER_MAJOR_MINOR_PATTERN = "(0|[1-9]\d*)\.(0|[1-9]\d*)"
+SEMVER_MAJOR_MINOR_PATTERN = re.compile("(0|[1-9]\d*)\.(0|[1-9]\d*)")
 
 # https://regex101.com/r/vkijKf/1/
-SEMVER_PATTERN = "(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?"
+SEMVER_PATTERN = re.compile(
+    "(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?"
+)
 
-RELEASE_TAG_PATTERN = f"v{SEMVER_PATTERN}-{SEMVER_PATTERN}"
+RELEASE_TAG_PATTERN = re.compile(
+    f"v{SEMVER_PATTERN.pattern}-{SEMVER_PATTERN.pattern}"
+)
 
-STABLE_BRANCH_NAME_PATTERN = f"release-v{SEMVER_MAJOR_MINOR_PATTERN}"
+STABLE_BRANCH_NAME_PATTERN = re.compile(
+    f"release-v{SEMVER_MAJOR_MINOR_PATTERN.pattern}"
+)
 
 
 def valid_release_tag(tag: str) -> bool:
-    return bool(re.match(RELEASE_TAG_PATTERN, tag))
+    return bool(RELEASE_TAG_PATTERN.match(tag))
 
 
 def valid_stable_branch_name(branch: str) -> bool:
-    return bool(re.match(STABLE_BRANCH_NAME_PATTERN, branch))
+    return bool(STABLE_BRANCH_NAME_PATTERN.match(branch))
 
 
 def validate_arguments_and_environment(
@@ -55,14 +61,14 @@ def validate_arguments_and_environment(
     if not valid_stable_branch_name(git_branch):
         log.error(
             f"Invalid stable branch name: '{git_branch}'. Stable branch names "
-            + f"should follow the pattern: {STABLE_BRANCH_NAME_PATTERN}"
+            + f"should follow the pattern: {STABLE_BRANCH_NAME_PATTERN.pattern}"
         )
         return 1
 
     if not valid_release_tag(git_tag):
         log.error(
             f"Invalid release tag: '{git_tag}'. Release tags should follow the "
-            + f"pattern: {RELEASE_TAG_PATTERN}"
+            + f"pattern: {RELEASE_TAG_PATTERN.pattern}"
         )
         return 1
 
