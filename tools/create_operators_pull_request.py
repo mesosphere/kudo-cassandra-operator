@@ -214,6 +214,18 @@ def commit_copied_operator_files_and_push_branch(
         )
 
 
+def automated_operators_repository_commit_message(
+    operator_name: str, operator_git_tag: str
+) -> str:
+    return f"Release {operator_name} {operator_git_tag} (automated commit)."
+
+
+def automated_operators_repository_branch(
+    operator_name: str, operator_git_tag: str
+) -> str:
+    return f"{operator_name}_{operator_git_tag}_{random_short_string()}"
+
+
 def main() -> int:
     args = parse_arguments()
 
@@ -221,16 +233,18 @@ def main() -> int:
     operator_name = args.operator_name
     operator_git_tag = args.operator_git_tag
     github_token = args.github_token
-    git_commit_message = args.git_commit_message or (
-        f"Release {operator_name} {operator_git_tag} (automated commit)."
+    git_commit_message = (
+        args.git_commit_message
+        or automated_operators_repository_commit_message(
+            operator_name, operator_git_tag
+        )
     )
     operators_base_branch = args.operators_base_branch
     git_user = args.git_user
     debug = args.debug
 
-    operators_repository = OPERATORS_REPOSITORY
-    operators_branch = (
-        f"{operator_name}_{operator_git_tag}_{random_short_string()}"
+    operators_branch = automated_operators_repository_branch(
+        operator_name, operator_git_tag
     )
 
     with tempfile.mkdtemp("_kudo_dev") as base_directory:
