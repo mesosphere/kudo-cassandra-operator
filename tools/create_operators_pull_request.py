@@ -104,7 +104,7 @@ def prepare_git_repositories(
     3. Creates desired branch in the "operators collection" repository
     4. Configures the git user name and email in the "operators collection" repository to be the git user name and email at the operator repository's `operator_git_ref`.
 
-    Returns the  "operators collection" and operator directories
+    Returns the  "operators collection" and operator directories.
     """
 
     operators_repository_url = authenticated_github_repository_url(
@@ -165,7 +165,10 @@ def commit_copied_operator_files_and_push_branch(
     git_commit_message: bool,
     debug: bool,
 ):
-    """TODO: docstring."""
+    """Copies, commits and pushes operator-related files from the operator
+    repository (e.g., kudo-cassandra-operator) directory into the "operators
+    collection" repository (e.g., kudobuilder/operators) directory."""
+
     versioned_operator_directory = (
         f"{operators_directory}/repository/{operator_name}/{operator_git_tag}"
     )
