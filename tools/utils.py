@@ -142,6 +142,42 @@ def push_tag(remote: str, tag: str, debug: str) -> (int, str):
     return 0, ""
 
 
+def get_git_user(
+    repository_directory: str, git_ref: str, debug: str
+) -> (int, str, str, str):
+    rc, stdout, stderr = run(
+        f"git -C {repository_directory} show -s --format='%an' {git_ref}",
+        debug=debug,
+    )
+    if rc != 0:
+        return (
+            rc,
+            f"Failed to get git user name from "
+            + f"{repository_directory}@{git_ref}"
+            + f"\nstdout:\n{stdout}\nstderr:\n{stderr}",
+            "",
+            "",
+        )
+    git_user_name = stdout.strip()
+
+    rc, stdout, stderr = run(
+        f"git -C {repository_directory} show -s --format='%ae' {git_ref}",
+        debug=debug,
+    )
+    if rc != 0:
+        return (
+            rc,
+            f"Failed to get git user email from "
+            + f"{repository_directory}@{git_ref}"
+            + f"\nstdout:\n{stdout}\nstderr:\n{stderr}",
+            "",
+            "",
+        )
+    git_user_email = stdout.strip()
+
+    return 0, "", git_user_name, git_user_email
+
+
 def configure_git_user(
     repository_directory: str, user_name: str, user_email: str, debug: str
 ) -> (int, str):

@@ -11,6 +11,7 @@ from utils import (
     run,
     clone_repository,
     random_short_string,
+    get_git_user,
     configure_git_user,
     create_pull_request,
 )
@@ -91,12 +92,20 @@ def prepare_git_repositories(
     operators_base_branch: str,
     operators_branch: str,
     operator_repository: str,
-    operator_git_tag: str,
+    operator_git_ref: str,
     git_user: str,
     github_token: str,
     debug: bool,
-) -> (int, str, str):
-    """TODO: docstring."""
+) -> (int, str, str, str):
+    """
+    1. Clones the "operators collection" repository (e.g., kudobuilder/operators)
+    2. Clones the operator repository (e.g., kudo-cassandra-operator)
+    3. Creates desired branch in the "operators collection" repository
+    4. Configures the git user name and email in the "operators collection" repository to be the git user name and email at the operator repository's `operator_git_ref`.
+
+    Returns the  "operators collection" and operator directories
+    """
+
     rc, operators_directory, error_message = clone_repository(
         operators_repository_url, operators_base_branch, base_directory, debug
     )
@@ -109,7 +118,7 @@ def prepare_git_repositories(
     )
 
     rc, operator_directory, error_message = clone_repository(
-        operator_repository_url, operator_git_tag, base_directory, debug
+        operator_repository_url, operator_git_ref, base_directory, debug
     )
     if rc != 0:
         return rc, error_message, "", ""
@@ -127,41 +136,19 @@ def prepare_git_repositories(
             "",
         )
 
-    rc, stdout, stderr = run(
-        f"git -C {operators_directory} show -s --format='%an' {operator_git_tag}",
-        debug=debug,
+    rc, error_message, git_user_name, git_user_email = get_git_user(
+        operator_directory, operator_git_ref, debug
     )
     if rc != 0:
-        return (
-            rc,
-            f"Failed to get git user name from "
-            + f"{operator_repository}@{operator_git_tag}"
-            + f"\nstdout:\n{stdout}\nstderr:\n{stderr}",
-            "",
-            "",
-        )
-    git_user_name = stdout.strip()
-
-    rc, stdout, stderr = run(
-        f"git -C {operators_directory} show -s --format='%ae' {operator_git_tag}",
-        debug=debug,
-    )
-    if rc != 0:
-        return (
-            rc,
-            f"Failed to get git user email from "
-            + f"{operator_repository}@{operator_git_tag}"
-            + f"\nstdout:\n{stdout}\nstderr:\n{stderr}",
-            "",
-            "",
-        )
-    git_user_email = stdout.strip()
+        return rc, error_message, "", ""
 
     rc, error_message = configure_git_user(
         operators_directory, git_user_name, git_user_email, debug
     )
     if rc != 0:
         return rc, error_message, "", ""
+
+    return 0, "", operators_directory, operator_directory
 
 
 def commit_copied_operator_files_and_push_branch(

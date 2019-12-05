@@ -2,6 +2,7 @@
 
 import argparse
 import logging
+import os
 import re
 import sys
 
@@ -13,6 +14,7 @@ from utils import (
     local_tag_exists,
     remote_tag_exists,
     local_branch_matches_remote_branch,
+    get_git_user,
     configure_git_user,
     create_local_tag,
     push_tag,
@@ -185,27 +187,11 @@ def main() -> int:
     if rc != 0:
         return rc
 
-    rc, stdout, stderr = run(
-        f"git show -s --format='%an' {git_branch}", debug=debug
+    rc, error_message, git_user_name, git_user_email = get_git_user(
+        os.getcwd(), git_branch, debug
     )
     if rc != 0:
-        return (
-            rc,
-            f"Failed to get git user name:"
-            + f"\nstdout:\n{stdout}\nstderr:\n{stderr}",
-        )
-    git_user_name = stdout.strip()
-
-    rc, stdout, stderr = run(
-        f"git show -s --format='%ae' {git_branch}", debug=debug
-    )
-    if rc != 0:
-        return (
-            rc,
-            f"Failed to get git user email:"
-            + f"\nstdout:\n{stdout}\nstderr:\n{stderr}",
-        )
-    git_user_email = stdout.strip()
+        return rc, error_message, "", ""
 
     rc, error_message = configure_git_user(
         ".", git_user_name, git_user_email, debug
