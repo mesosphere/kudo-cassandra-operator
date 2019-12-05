@@ -5,9 +5,11 @@ import logging
 import os
 import re
 import sys
+import tempfile
 
 from utils import (
     run,
+    authenticated_github_repository_url,
     repository_dirty,
     remote_exists,
     get_matching_remote_branches,
@@ -16,6 +18,7 @@ from utils import (
     local_branch_matches_remote_branch,
     get_git_user,
     configure_git_user,
+    clone_repository,
     create_local_tag,
     push_tag,
 )
@@ -46,20 +49,58 @@ def valid_stable_branch_name(branch: str) -> bool:
     return bool(STABLE_BRANCH_NAME_PATTERN.match(branch))
 
 
+def parse_arguments() -> dict:
+    parser = argparse.ArgumentParser(description="Release a KUDO Operator")
+
+    parser.add_argument(
+        "--repository",
+        type=str,
+        required=True,
+        help="The KUDO Operator repository to be released "
+        + "(e.g., mesosphere/kudo-cassandra-operator)",
+    )
+    parser.add_argument(
+        "--git-branch",
+        type=str,
+        required=True,
+        help="The name of the KUDO Operator repository git branch",
+    )
+    parser.add_argument(
+        "--git-tag",
+        type=str,
+        required=True,
+        help="The desired git tag that will be created in the KUDO Operator "
+        + "repository from the head of the GIT_BRANCH",
+    )
+    parser.add_argument(
+        "--git-remote",
+        type=str,
+        default="origin",
+        help="The name of the git remote for the KUDO Operator repository",
+    )
+    parser.add_argument(
+        "--git-user",
+        type=str,
+        default="git",
+        help="The git user for cloning and pushing via SSH",
+    )
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        default=False,
+        help="Show debug output from all operations performed",
+    )
+
+    return parser.parse_args()
+
+
 def validate_arguments_and_environment(
-    git_remote: str, git_branch: str, git_tag: str, debug: bool
+    repository_directory: str,
+    git_remote: str,
+    git_branch: str,
+    git_tag: str,
+    debug: bool,
 ) -> int:
-    if repository_dirty(debug):
-        log.error(
-            "Local repository is dirty. "
-            + "Make sure it is clean and run the script again"
-        )
-        return 1
-
-    if not remote_exists(git_remote, debug):
-        log.error(f"Remote '{git_remote}' doesn't exist")
-        return 1
-
     if not valid_stable_branch_name(git_branch):
         log.error(
             f"Invalid stable branch name: '{git_branch}'. Stable branch names "
@@ -74,8 +115,20 @@ def validate_arguments_and_environment(
         )
         return 1
 
+    if repository_dirty(repository_directory, debug):
+        log.error(
+            "Local repository is dirty. "
+            + "Make sure it is clean and run the script again"
+        )
+        return 1
+
+    if not remote_exists(repository_directory, git_remote, debug):
+        log.error(f"Remote '{git_remote}' doesn't exist")
+        return 1
+
     rc, stdout, stderr = run(
-        f"git fetch --prune --tags {git_remote}", debug=debug
+        f"git -C {repository_directory} fetch --prune --tags {git_remote}",
+        debug=debug,
     )
     if rc != 0:
         log.error(
@@ -106,7 +159,7 @@ def validate_arguments_and_environment(
         )
         return 1
 
-    if local_tag_exists(git_tag, debug):
+    if local_tag_exists(repository_directory, git_tag, debug):
         log.error(
             f"Local tag already exists: '{git_tag}'. "
             + "Can't release a version when a tag "
@@ -114,7 +167,7 @@ def validate_arguments_and_environment(
         )
         return 1
 
-    if remote_tag_exists(git_remote, git_tag, debug):
+    if remote_tag_exists(repository_directory, git_remote, git_tag, debug):
         log.error(
             f"Remote tag already exists: 'refs/tags/{git_tag}'. "
             + "Can't release a version when a remote tag has "
@@ -123,7 +176,9 @@ def validate_arguments_and_environment(
         return 1
 
     rc, stdout, stderr = run(
-        f"git checkout -b {git_branch} {git_remote}/{git_branch}", debug=debug
+        f"git -C {repository_directory} "
+        + f"checkout -b {git_branch} {git_remote}/{git_branch}",
+        debug=debug,
     )
     if rc != 0:
         if "already exists" in stderr:
@@ -147,72 +202,61 @@ def validate_arguments_and_environment(
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Release KUDO Operators")
+    args = parse_arguments()
 
-    parser.add_argument(
-        "--git-branch",
-        type=str,
-        required=True,
-        help="The name of the KUDO Operator repository git branch",
-    )
-    parser.add_argument(
-        "--git-tag",
-        type=str,
-        required=True,
-        help="The desired git tag that will be created in the KUDO Operator "
-        + "repository from the head of the GIT_BRANCH",
-    )
-    parser.add_argument(
-        "--git-remote",
-        type=str,
-        default="origin",
-        help="The name of the git remote for the KUDO Operator repository",
-    )
-    parser.add_argument(
-        "--debug",
-        action="store_true",
-        default=False,
-        help="Show debug output from all operations performed",
-    )
-
-    args = parser.parse_args()
+    repository = args.repository
     git_branch = args.git_branch
     git_tag = args.git_tag
     git_remote = args.git_remote
+    github_token = args.github_token
+    git_user = args.git_user
     debug = args.debug
 
-    rc = validate_arguments_and_environment(
-        git_remote, git_branch, git_tag, debug
+    repository_url = authenticated_github_repository_url(
+        git_user, github_token, repository
     )
-    if rc != 0:
-        return rc
 
-    rc, error_message, git_user_name, git_user_email = get_git_user(
-        os.getcwd(), git_branch, debug
-    )
-    if rc != 0:
-        return rc, error_message, "", ""
+    with tempfile.mkdtemp("_kudo_dev") as base_directory:
+        rc, directory, error_message = clone_repository(
+            repository_url, git_tag, base_directory, debug
+        )
+        if rc != 0:
+            return rc, error_message, "", ""
 
-    rc, error_message = configure_git_user(
-        ".", git_user_name, git_user_email, debug
-    )
-    if rc != 0:
-        log.error(error_message)
-        return rc
+        rc = validate_arguments_and_environment(
+            directory, git_remote, git_branch, git_tag, debug
+        )
+        if rc != 0:
+            return rc
 
-    rc, error_message = create_local_tag(git_tag, debug)
-    if rc != 0:
-        log.error(error_message)
-        return rc
+        rc, error_message, git_user_name, git_user_email = get_git_user(
+            directory, git_branch, debug
+        )
+        if rc != 0:
+            return rc, error_message, "", ""
 
-    rc, error_message = push_tag(git_remote, git_tag, debug)
-    if rc != 0:
-        log.error(error_message)
-        return rc
+        return 0
 
-    log.info(f"'{git_tag}' released successfully from '{git_branch}'")
+        rc, error_message = configure_git_user(
+            directory, git_user_name, git_user_email, debug
+        )
+        if rc != 0:
+            log.error(error_message)
+            return rc
 
-    return 0
+        rc, error_message = create_local_tag(git_tag, debug)
+        if rc != 0:
+            log.error(error_message)
+            return rc
+
+        rc, error_message = push_tag(git_remote, git_tag, debug)
+        if rc != 0:
+            log.error(error_message)
+            return rc
+
+        log.info(f"'{git_tag}' released successfully from '{git_branch}'")
+
+        return 0
 
 
 if __name__ == "__main__":

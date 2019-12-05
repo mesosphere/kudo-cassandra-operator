@@ -57,20 +57,26 @@ def run(
     return result.returncode, stdout, stderr
 
 
-def repository_dirty(debug: bool) -> bool:
-    rc, stdout, stderr = run("git diff --quiet", debug=debug)
+def repository_dirty(repository_directory: str, debug: bool) -> bool:
+    rc, stdout, stderr = run(
+        f"git -C {repository_directory} diff --quiet", debug=debug
+    )
     return rc != 0
 
 
-def remote_exists(remote: str, debug: bool) -> bool:
-    rc, stdout, stderr = run(f"git remote show {remote}", debug=debug)
+def remote_exists(repository_directory: str, remote: str, debug: bool) -> bool:
+    rc, stdout, stderr = run(
+        f"git -C {repository_directory} remote show {remote}", debug=debug
+    )
     return rc == 0
 
 
 def get_matching_remote_branches(
-    remote: str, branch: str, debug: bool
+    repository_directory: str, remote: str, branch: str, debug: bool
 ) -> (int, List[str], str):
-    rc, stdout, stderr = run("git branch -r", debug=debug)
+    rc, stdout, stderr = run(
+        "git -C {repository_directory} branch -r", debug=debug
+    )
     if rc != 0:
         return (
             rc,
@@ -92,14 +98,19 @@ def get_matching_remote_branches(
     )
 
 
-def local_tag_exists(tag: str, debug: bool) -> bool:
-    rc, stdout, stderr = run(f"git rev-parse refs/tags/{tag}", debug=debug)
+def local_tag_exists(repository_directory: str, tag: str, debug: bool) -> bool:
+    rc, stdout, stderr = run(
+        f"git -C {repository_directory} rev-parse refs/tags/{tag}", debug=debug
+    )
     return rc == 0
 
 
-def remote_tag_exists(remote: str, tag: str, debug: bool) -> bool:
+def remote_tag_exists(
+    repository_directory: str, remote: str, tag: str, debug: bool
+) -> bool:
     rc, stdout, stderr = run(
-        f"git ls-remote --tags {remote} refs/tags/{tag}", debug=debug
+        f"git -C {repository_directory} ls-remote --tags {remote} refs/tags/{tag}",
+        debug=debug,
     )
     return rc == 0 and "refs/tags/{tag}" in stdout
 
@@ -111,16 +122,21 @@ def branch_exists_in_remote(
 
 
 def local_branch_matches_remote_branch(
-    remote: str, branch: str, debug: bool
+    repository_directory: str, remote: str, branch: str, debug: bool
 ) -> bool:
     rc, stdout, stderr = run(
-        f"git diff {branch}...{remote}/{branch} --quiet", debug=debug
+        f"git -C {repository_directory} diff {branch}...{remote}/{branch} --quiet",
+        debug=debug,
     )
     return rc == 0
 
 
-def create_local_tag(tag: str, debug: str) -> (int, str):
-    rc, stdout, stderr = run(f"git tag {tag}", debug=debug)
+def create_local_tag(
+    repository_directory: str, tag: str, debug: str
+) -> (int, str):
+    rc, stdout, stderr = run(
+        f"git -C {repository_directory} tag {tag}", debug=debug
+    )
     if rc != 0:
         return (
             rc,
@@ -131,8 +147,12 @@ def create_local_tag(tag: str, debug: str) -> (int, str):
     return 0, ""
 
 
-def push_tag(remote: str, tag: str, debug: str) -> (int, str):
-    rc, stdout, stderr = run(f"git push {remote} {tag}", debug=debug)
+def push_tag(
+    repository_directory: str, remote: str, tag: str, debug: str
+) -> (int, str):
+    rc, stdout, stderr = run(
+        f"git -C {repository_directory} push {remote} {tag}", debug=debug
+    )
     if rc != 0:
         return (
             rc,
@@ -140,6 +160,12 @@ def push_tag(remote: str, tag: str, debug: str) -> (int, str):
         )
 
     return 0, ""
+
+
+def authenticated_github_repository_url(
+    git_user: str, github_token: str, repository: str
+) -> str:
+    return f"https://{git_user}:{github_token}@github.com/{repository}.git"
 
 
 def get_git_user(

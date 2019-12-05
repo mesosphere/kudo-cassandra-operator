@@ -9,6 +9,7 @@ import tempfile
 
 from utils import (
     run,
+    authenticated_github_repository_url,
     clone_repository,
     random_short_string,
     get_git_user,
@@ -24,7 +25,7 @@ log = logging.getLogger(__name__)
 OPERATORS_REPOSITORY = "kudobuilder/operators"
 
 
-def parse_arguments():
+def parse_arguments() -> dict:
     parser = argparse.ArgumentParser(
         description="Open a PR copying a KUDO Operator's files to the "
         + f"{OPERATORS_REPOSITORY} repository"
@@ -88,7 +89,7 @@ def parse_arguments():
 
 def prepare_git_repositories(
     base_directory: str,
-    operators_repository_url: str,
+    operators_repository: str,
     operators_base_branch: str,
     operators_branch: str,
     operator_repository: str,
@@ -106,15 +107,18 @@ def prepare_git_repositories(
     Returns the  "operators collection" and operator directories
     """
 
+    operators_repository_url = authenticated_github_repository_url(
+        git_user, github_token, operators_repository
+    )
+
     rc, operators_directory, error_message = clone_repository(
         operators_repository_url, operators_base_branch, base_directory, debug
     )
     if rc != 0:
         return rc, error_message, "", ""
 
-    operator_repository_url = (
-        f"https://{git_user}:{github_token}@github.com"
-        + f"/{operator_repository}.git"
+    operator_repository_url = authenticated_github_repository_url(
+        git_user, github_token, operator_repository
     )
 
     rc, operator_directory, error_message = clone_repository(
@@ -222,9 +226,6 @@ def main() -> int:
     debug = args.debug
 
     operators_repository = OPERATORS_REPOSITORY
-    operators_repository_url = (
-        f"{git_user}@github.com:{operators_repository}.git"
-    )
     operators_branch = (
         f"{operator_name}_{operator_git_tag}_{random_short_string()}"
     )
@@ -237,7 +238,7 @@ def main() -> int:
             operator_directory,
         ) = prepare_git_repositories(
             base_directory,
-            operators_repository_url,
+            operators_repository,
             operators_base_branch,
             operators_branch,
             operator_repository,
