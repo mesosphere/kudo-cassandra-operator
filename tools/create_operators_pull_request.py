@@ -72,6 +72,12 @@ def parse_arguments() -> dict:
         help=f"The {OPERATORS_REPOSITORY} branch to open a PR against",
     )
     parser.add_argument(
+        "--operators-repository",
+        type=str,
+        default="master",
+        help=f"Use a different repository than {OPERATORS_REPOSITORY}",
+    )
+    parser.add_argument(
         "--git-user",
         type=str,
         default="git",
@@ -240,6 +246,7 @@ def main() -> int:
         )
     )
     operators_base_branch = args.operators_base_branch
+    operators_repository = args.operators_repository or OPERATORS_REPOSITORY
     git_user = args.git_user
     debug = args.debug
 
