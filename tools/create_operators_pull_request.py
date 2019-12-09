@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from typing import Tuple
 import argparse
 import json
 import logging
@@ -25,7 +26,7 @@ log = logging.getLogger(__name__)
 OPERATORS_REPOSITORY = "kudobuilder/operators"
 
 
-def parse_arguments() -> dict:
+def parse_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Open a PR copying a KUDO Operator's files to the "
         + f"{OPERATORS_REPOSITORY} repository"
@@ -103,7 +104,7 @@ def prepare_git_repositories(
     git_user: str,
     github_token: str,
     debug: bool,
-) -> (int, str, str, str):
+) -> Tuple[int, str, str, str]:
     """
     1. Clones the "operators collection" repository (e.g., kudobuilder/operators)
     2. Clones the operator repository (e.g., kudo-cassandra-operator)
@@ -168,7 +169,7 @@ def commit_copied_operator_files_and_push_branch(
     operator_directory: str,
     operator_name: str,
     operator_git_tag: str,
-    git_commit_message: bool,
+    git_commit_message: str,
     debug: bool,
 ):
     """Copies, commits and pushes operator-related files from the operator
@@ -254,7 +255,7 @@ def main() -> int:
         operator_name, operator_git_tag
     )
 
-    with tempfile.mkdtemp("_kudo_dev") as base_directory:
+    with tempfile.mkdtemp(prefix="kudo_dev_") as base_directory:
         (
             rc,
             error_message,

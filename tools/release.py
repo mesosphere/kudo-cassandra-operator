@@ -2,7 +2,6 @@
 
 import argparse
 import logging
-import os
 import re
 import sys
 import tempfile
@@ -25,11 +24,11 @@ from utils import (
 
 log = logging.getLogger(__name__)
 
-SEMVER_MAJOR_MINOR_PATTERN = re.compile("(0|[1-9]\d*)\.(0|[1-9]\d*)")
+SEMVER_MAJOR_MINOR_PATTERN = re.compile(r"(0|[1-9]\d*)\.(0|[1-9]\d*)")
 
 # https://regex101.com/r/vkijKf/1/
 SEMVER_PATTERN = re.compile(
-    "(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?"
+    r"(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?"
 )
 
 RELEASE_TAG_PATTERN = re.compile(
@@ -49,7 +48,7 @@ def valid_stable_branch_name(branch: str) -> bool:
     return bool(STABLE_BRANCH_NAME_PATTERN.match(branch))
 
 
-def parse_arguments() -> dict:
+def parse_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Release a KUDO Operator")
 
     parser.add_argument(
@@ -138,7 +137,7 @@ def validate_arguments_and_environment(
         return rc
 
     rc, matching_remote_branches, error_message = get_matching_remote_branches(
-        git_remote, git_branch, debug
+        repository_directory, git_remote, git_branch, debug
     )
     if rc != 0:
         log.error(error_message)
@@ -183,7 +182,7 @@ def validate_arguments_and_environment(
     if rc != 0:
         if "already exists" in stderr:
             if not local_branch_matches_remote_branch(
-                git_remote, git_branch, debug
+                repository_directory, git_remote, git_branch, debug
             ):
                 log.error(
                     f"Local branch '{git_branch}' doesn't match "
@@ -221,7 +220,8 @@ def main() -> int:
             repository_url, git_tag, base_directory, debug
         )
         if rc != 0:
-            return rc, error_message, "", ""
+            log.error(error_message)
+            return rc
 
         rc = validate_arguments_and_environment(
             directory, git_remote, git_branch, git_tag, debug
@@ -233,7 +233,8 @@ def main() -> int:
             directory, git_branch, debug
         )
         if rc != 0:
-            return rc, error_message, "", ""
+            log.error(error_message)
+            return rc
 
         return 0
 

@@ -73,7 +73,7 @@ def remote_exists(repository_directory: str, remote: str, debug: bool) -> bool:
 
 def get_matching_remote_branches(
     repository_directory: str, remote: str, branch: str, debug: bool
-) -> (int, List[str], str):
+) -> Tuple[int, List[str], str]:
     rc, stdout, stderr = run(
         "git -C {repository_directory} branch -r", debug=debug
     )
@@ -132,8 +132,8 @@ def local_branch_matches_remote_branch(
 
 
 def create_local_tag(
-    repository_directory: str, tag: str, debug: str
-) -> (int, str):
+    repository_directory: str, tag: str, debug: bool
+) -> Tuple[int, str]:
     rc, stdout, stderr = run(
         f"git -C {repository_directory} tag {tag}", debug=debug
     )
@@ -148,8 +148,8 @@ def create_local_tag(
 
 
 def push_tag(
-    repository_directory: str, remote: str, tag: str, debug: str
-) -> (int, str):
+    repository_directory: str, remote: str, tag: str, debug: bool
+) -> Tuple[int, str]:
     rc, stdout, stderr = run(
         f"git -C {repository_directory} push {remote} {tag}", debug=debug
     )
@@ -169,8 +169,8 @@ def authenticated_github_repository_url(
 
 
 def get_git_user(
-    repository_directory: str, git_ref: str, debug: str
-) -> (int, str, str, str):
+    repository_directory: str, git_ref: str, debug: bool
+) -> Tuple[int, str, str, str]:
     rc, stdout, stderr = run(
         f"git -C {repository_directory} show -s --format='%an' {git_ref}",
         debug=debug,
@@ -205,8 +205,8 @@ def get_git_user(
 
 
 def configure_git_user(
-    repository_directory: str, user_name: str, user_email: str, debug: str
-) -> (int, str):
+    repository_directory: str, user_name: str, user_email: str, debug: bool
+) -> Tuple[int, str]:
     command = " && ".join(
         [
             f"cd {repository_directory}",
@@ -230,7 +230,7 @@ def configure_git_user(
 
 def clone_repository(
     repository_url: str, reference: str, base_directory: str, debug: bool
-) -> (int, str, str):
+) -> Tuple[int, str, str]:
     repository = Path(urlparse(repository_url).path).stem
     target_directory = path.join(base_directory, repository.split("/")[-1])
 
@@ -259,7 +259,7 @@ def create_pull_request(
     github_token: str,
     user_agent: str,
     debug: bool,
-) -> (bool, http.client.HTTPResponse):
+) -> Tuple[bool, http.client.HTTPResponse]:
     headers = {
         "User-Agent": user_agent,
         "Content-Type": "application/json",
