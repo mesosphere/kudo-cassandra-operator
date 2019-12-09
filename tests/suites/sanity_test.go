@@ -1,4 +1,4 @@
-package sanity_test
+package suites
 
 import (
 	"encoding/base64"
@@ -36,15 +36,30 @@ var (
 )
 
 var _ = Describe(TestName, func() {
-	It("Installs the operator from a directory", func() {
+	It("Installs the latest operator from the package registry", func() {
 		// TODO(mpereira) Assert that it isn't running.
-		err := kudo.InstallOperatorFromDirectory(
-			OperatorDirectory, TestNamespace, TestInstance, []string{},
+		err := kudo.InstallOperator(
+			OperatorName, TestNamespace, TestInstance, []string{},
 		)
 		// TODO(mpereira) Assert that it is running.
 		if err != nil {
 			Fail(
 				"Failing the full suite: failed to install operator instance that the " +
+					"following tests depend on",
+			)
+		}
+		Expect(err).To(BeNil())
+	})
+
+	It("Upgrades the running operator instance from a directory", func() {
+		// TODO(mpereira) Assert that it is running.
+		err := kudo.UpgradeOperator(
+			OperatorDirectory, TestNamespace, TestInstance, []string{},
+		)
+		// TODO(mpereira) Assert that it is running.
+		if err != nil {
+			Fail(
+				"Failing the full suite: failed to upgrade operator instance that the " +
 					"following tests depend on",
 			)
 		}
