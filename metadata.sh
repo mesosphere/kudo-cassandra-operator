@@ -17,12 +17,11 @@ _project_directory="$(readlink -f "${_script_directory}")"
 export PROJECT_NAME="kudo-cassandra-operator"
 export OPERATOR_NAME="cassandra"
 
-# KUDO still doesn't support snapshots, or compound operator versions yet. Check
-# out:
-# - https://github.com/kudobuilder/kudo/pull/889
-# - https://github.com/kudobuilder/kudo/issues/163
+# More details about KUDO Versioning:
+# https://github.com/kudobuilder/kudo/pull/1028
 export OPERATOR_VERSION="0.1.0"
-export OPERATOR_VERSION_SNAPSHOT="-SNAPSHOT"
+
+export POSSIBLE_SNAPSHOT_SUFFIX="-SNAPSHOT"
 
 export OPERATOR_DIRECTORY="${_project_directory}/operator"
 export VENDOR_DIRECTORY="${_project_directory}/shared/vendor"
@@ -41,6 +40,9 @@ export KUDO_VERSION="0.8.0"
 
 export KUBERNETES_VERSION="1.15.0"
 
+export CASSANDRA_EXPORTER_DOCKER_IMAGE="criteord/cassandra_exporter"
+export CASSANDRA_EXPORTER_VERSION="2.2.1"
+
 ################################################################################
 ############################## Docker images ###################################
 ################################################################################
@@ -48,16 +50,13 @@ export KUBERNETES_VERSION="1.15.0"
 export CASSANDRA_DOCKER_IMAGE_FROM="cassandra:${CASSANDRA_VERSION}"
 export CASSANDRA_DOCKER_IMAGE_NAMESPACE="mesosphere"
 export CASSANDRA_DOCKER_IMAGE_NAME="${OPERATOR_NAME}"
-export CASSANDRA_DOCKER_IMAGE_TAG="${OPERATOR_VERSION}-${CASSANDRA_VERSION}${OPERATOR_VERSION_SNAPSHOT}"
+export CASSANDRA_DOCKER_IMAGE_TAG="${CASSANDRA_VERSION}-${OPERATOR_VERSION}${POSSIBLE_SNAPSHOT_SUFFIX}"
 export CASSANDRA_DOCKER_IMAGE="${CASSANDRA_DOCKER_IMAGE_NAMESPACE}/${CASSANDRA_DOCKER_IMAGE_NAME}:${CASSANDRA_DOCKER_IMAGE_TAG}"
-
-export CASSANDRA_EXPORTER_DOCKER_IMAGE="criteord/cassandra_exporter"
-export CASSANDRA_EXPORTER_VERSION="2.2.1"
 
 export PROMETHEUS_EXPORTER_DOCKER_IMAGE_FROM="${CASSANDRA_EXPORTER_DOCKER_IMAGE}:${CASSANDRA_EXPORTER_VERSION}"
 export PROMETHEUS_EXPORTER_DOCKER_IMAGE_NAMESPACE="mesosphere"
 export PROMETHEUS_EXPORTER_DOCKER_IMAGE_NAME="cassandra-prometheus-exporter"
-export PROMETHEUS_EXPORTER_DOCKER_IMAGE_TAG="${OPERATOR_VERSION}-${CASSANDRA_EXPORTER_VERSION}${OPERATOR_VERSION_SNAPSHOT}"
+export PROMETHEUS_EXPORTER_DOCKER_IMAGE_TAG="${CASSANDRA_EXPORTER_VERSION}-${OPERATOR_VERSION}${POSSIBLE_SNAPSHOT_SUFFIX}"
 export PROMETHEUS_EXPORTER_DOCKER_IMAGE="${PROMETHEUS_EXPORTER_DOCKER_IMAGE_NAMESPACE}/${PROMETHEUS_EXPORTER_DOCKER_IMAGE_NAME}:${PROMETHEUS_EXPORTER_DOCKER_IMAGE_TAG}"
 
 ################################################################################
