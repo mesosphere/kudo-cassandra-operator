@@ -74,7 +74,7 @@ def parse_arguments() -> dict:
     parser.add_argument(
         "--operators-repository",
         type=str,
-        default="master",
+        default=OPERATORS_REPOSITORY,
         help=f"Use a different repository than {OPERATORS_REPOSITORY}",
     )
     parser.add_argument(
@@ -246,7 +246,7 @@ def main() -> int:
         )
     )
     operators_base_branch = args.operators_base_branch
-    operators_repository = args.operators_repository or OPERATORS_REPOSITORY
+    operators_repository = args.operators_repository
     git_user = args.git_user
     debug = args.debug
 
