@@ -390,3 +390,20 @@ func GetPodContainerLogs(
 		containerName,
 	)
 }
+
+// ExecInPodContainer TODO function comment.
+func ExecInPodContainer(
+	namespaceName string,
+	instanceName string,
+	podName string,
+	podInstance int,
+	containerName string,
+	command []string,
+) (*bytes.Buffer, error) {
+	return k8s.ExecInPodContainer(
+		namespaceName,
+		fmt.Sprintf("%s-%s-%d", instanceName, podName, podInstance),
+		containerName,
+		command,
+	)
+}

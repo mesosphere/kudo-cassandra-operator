@@ -97,3 +97,34 @@ func GetPodContainerLogs(
 
 	return stdout, nil
 }
+
+// ExecInPodContainer TODO function comment.
+// TODO(mpereira): use client libraries instead of shelling out.
+func ExecInPodContainer(
+	namespaceName string,
+	podName string,
+	containerName string,
+	command []string,
+) (*bytes.Buffer, error) {
+	kubectlParameters := []string{
+		"exec",
+		podName,
+		fmt.Sprintf("--namespace=%s", namespaceName),
+		fmt.Sprintf("--container=%s", containerName),
+		"--",
+	}
+	kubectlParameters = append(kubectlParameters, command...)
+
+	_, stdout, _, err := cmd.Exec(
+		kubectlOptions.KubectlPath, kubectlParameters, nil, true,
+	)
+	if err != nil {
+		log.Errorf(
+			"Error executing '%s' (container='%s', pod='%s', namespace='%s'): %s",
+			command, containerName, podName, namespaceName, err,
+		)
+		return &bytes.Buffer{}, err
+	}
+
+	return stdout, nil
+}

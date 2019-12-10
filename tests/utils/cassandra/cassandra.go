@@ -34,6 +34,46 @@ func NodeJvmOptions(
 	)
 }
 
+// Nodes TODO function comment.
+func Nodes(
+	namespaceName string, instanceName string,
+) ([]map[string]string, error) {
+	stdout, _ := kudo.ExecInPodContainer(
+		namespaceName,
+		instanceName,
+		"node",
+		0,
+		"cassandra",
+		[]string{"nodetool", "status"},
+	)
+
+	scanner := bufio.NewScanner(stdout)
+
+	// --  Address         Load        Tokens  Owns   Host ID                               Rack
+	// UN  192.168.196.13  105.29 KiB  256     68.8%  440b2d75-059c-444a-ab01-9cea29b387d8  rack1
+	nodeRegexp := "^(\\w{2})\\s+([\\w\\.]+)\\s+([\\w\\.]+\\s\\w+)\\s+(\\d+)\\s+([\\d\\.]+%)\\s+([\\w-]+)\\s+(\\w+)$"
+	nodeLinePattern := regexp.MustCompile(nodeRegexp)
+
+	var nodes []map[string]string
+	for scanner.Scan() {
+		match := nodeLinePattern.FindStringSubmatch(scanner.Text())
+		if len(match) > 0 {
+			nodes = append(nodes, map[string]string{
+				"status": match[1],
+				"address": match[2],
+				"load": match[3],
+				"tokens": match[4],
+				"owns": match[5],
+				"host_id": match[6],
+				"rack": match[7],
+			})
+		}
+	}
+
+	return nodes, nil
+}
+
+
 func getConfigurationFromNodeLogs(
 	namespaceName string,
 	instanceName string,
