@@ -9,6 +9,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// Exec TODO function comment.
 func Exec(
 	command string,
 	arguments []string,

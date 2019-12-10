@@ -20,6 +20,7 @@ var (
 	kubectlOptions *kubectl.KubectlOptions
 )
 
+// Init TODO function comment.
 // TODO(mpereira) return error?
 func Init(_kubectlOptions *kubectl.KubectlOptions) {
 	kubectlOptions = _kubectlOptions
@@ -27,6 +28,7 @@ func Init(_kubectlOptions *kubectl.KubectlOptions) {
 	clientset, _ = kubectl.GetKubernetesClientFromOptions(_kubectlOptions)
 }
 
+// CreateNamespace TODO function comment.
 func CreateNamespace(namespaceName string) error {
 	namespace := corev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
@@ -50,6 +52,7 @@ func CreateNamespace(namespaceName string) error {
 	return err
 }
 
+// DeleteNamespace TODO function comment.
 func DeleteNamespace(namespaceName string) error {
 	log.Infof("Deleting namespace '%s'", namespaceName)
 
@@ -66,6 +69,7 @@ func DeleteNamespace(namespaceName string) error {
 	return nil
 }
 
+// GetPodContainerLogs TODO function comment.
 // TODO(mpereira): use client libraries instead of shelling out.
 // See: https://github.com/kubernetes/dashboard/blob/377842ddda5ce5a58e2d5397dffb14de9522ddb4/src/app/backend/resource/container/logs.go#L116
 func GetPodContainerLogs(

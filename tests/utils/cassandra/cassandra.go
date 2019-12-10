@@ -10,6 +10,7 @@ import (
 	"github.com/mesosphere/kudo-cassandra-operator/tests/utils/kudo"
 )
 
+// ClusterConfiguration TODO function comment.
 func ClusterConfiguration(
 	namespaceName string, instanceName string,
 ) (map[string]string, error) {
@@ -21,6 +22,7 @@ func ClusterConfiguration(
 	)
 }
 
+// NodeJvmOptions TODO function comment.
 func NodeJvmOptions(
 	namespaceName string, instanceName string,
 ) (map[string]string, error) {
