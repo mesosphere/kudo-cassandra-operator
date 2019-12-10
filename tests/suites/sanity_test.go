@@ -193,8 +193,8 @@ var _ = BeforeSuite(func() {
 })
 
 var _ = AfterSuite(func() {
-	// kudo.UninstallOperator(OperatorName, TestNamespace, TestInstance)
-	// k8s.DeleteNamespace(TestNamespace)
+	kudo.UninstallOperator(OperatorName, TestNamespace, TestInstance)
+	k8s.DeleteNamespace(TestNamespace)
 })
 
 func TestService(t *testing.T) {
