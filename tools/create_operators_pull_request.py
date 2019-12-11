@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from datetime import datetime
 from typing import Tuple
 import argparse
 import json
@@ -10,6 +11,8 @@ import tempfile
 
 from utils import (
     run,
+    get_sha,
+    github_repository_url,
     authenticated_github_repository_url,
     clone_repository,
     random_short_string,
@@ -119,15 +122,15 @@ def prepare_git_repositories(
         git_user, github_token, operators_repository
     )
 
+    operator_repository_url = authenticated_github_repository_url(
+        git_user, github_token, operator_repository
+    )
+
     rc, operators_directory, error_message = clone_repository(
         operators_repository_url, operators_base_branch, base_directory, debug
     )
     if rc != 0:
         return rc, error_message, "", ""
-
-    operator_repository_url = authenticated_github_repository_url(
-        git_user, github_token, operator_repository
-    )
 
     rc, operator_directory, error_message = clone_repository(
         operator_repository_url, operator_git_ref, base_directory, debug
@@ -221,6 +224,12 @@ def commit_copied_operator_files_and_push_branch(
         return rc, f"stdout:\n{stdout}\nstderr:\n{stderr}"
 
     rc, stdout, stderr = run(
+        f"git -C {operators_directory} diff HEAD^...HEAD", debug=debug
+    )
+    if rc != 0:
+        return rc, f"stdout:\n{stdout}\nstderr:\n{stderr}"
+
+    rc, stdout, stderr = run(
         f"git -C {operators_directory} log -n 1", debug=debug
     )
     if rc != 0:
@@ -239,9 +248,36 @@ def commit_copied_operator_files_and_push_branch(
 
 
 def automated_operators_repository_commit_message(
-    operator_name: str, operator_git_tag: str
-) -> str:
-    return f"Release {operator_name} {operator_git_tag} (automated commit)."
+    operator_repository: str,
+    operator_name: str,
+    operator_directory: str,
+    operator_git_tag: str,
+    debug: bool,
+) -> Tuple[int, str]:
+    rc, git_sha, stderr = get_sha(operator_directory, debug)
+    if rc != 0:
+        return (
+            rc,
+            f"Failed to get git SHA from '{operator_directory}'"
+            + f"\nstdout:\n{git_sha}\nstderr:\n{stderr}",
+        )
+
+    operator_repository_url = github_repository_url(operator_repository)
+    git_sha_url = f"{operator_repository_url}/commit/{git_sha}"
+
+    return "\n".join(
+        [
+            f"Release {operator_name} {operator_git_tag} (automated commit).",
+            f"",
+            f"| | |",
+            f"|-|-|",
+            f"| Repository | {operator_repository_url} |",
+            f"| Operator | {operator_name} |",
+            f"| Git tag | {operator_git_tag} |",
+            f"| Git SHA | {git_sha_url} |",
+            f"| Date | {datetime.utcnow()} |",
+        ]
+    )
 
 
 def automated_operators_repository_branch(
@@ -257,12 +293,6 @@ def main() -> int:
     operator_name = args.operator_name
     operator_git_tag = args.operator_git_tag
     github_token = args.github_token
-    git_commit_message = (
-        args.git_commit_message
-        or automated_operators_repository_commit_message(
-            operator_name, operator_git_tag
-        )
-    )
     operators_base_branch = args.operators_base_branch
     operators_repository = args.operators_repository
     git_user = args.git_user
@@ -272,7 +302,7 @@ def main() -> int:
         operator_name, operator_git_tag
     )
 
-    with tempfile.mkdtemp(prefix="kudo_dev_") as base_directory:
+    with tempfile.TemporaryDirectory(prefix="kudo_dev_") as base_directory:
         (
             rc,
             error_message,
@@ -293,6 +323,17 @@ def main() -> int:
             log.error(error_message)
             return rc
 
+        if args.git_commit_message:
+            git_commit_message = args.git_commit_message
+        else:
+            git_commit_message = automated_operators_repository_commit_message(
+                operator_repository,
+                operator_name,
+                operator_directory,
+                operator_git_tag,
+                debug,
+            )
+
         rc, error_message = commit_copied_operator_files_and_push_branch(
             operators_directory,
             operators_repository,
@@ -306,6 +347,8 @@ def main() -> int:
         if rc != 0:
             log.error(error_message)
             return rc
+
+        return 0
 
         success, http_response = create_pull_request(
             operators_repository,

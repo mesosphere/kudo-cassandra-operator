@@ -71,6 +71,13 @@ def remote_exists(repository_directory: str, remote: str, debug: bool) -> bool:
     return rc == 0
 
 
+def get_sha(repository_directory: str, debug: bool) -> bool:
+    rc, stdout, stderr = run(
+        f"git -C {repository_directory} rev-parse HEAD", debug=debug
+    )
+    return rc, stdout, stderr
+
+
 def get_matching_remote_branches(
     repository_directory: str, remote: str, branch: str, debug: bool
 ) -> Tuple[int, List[str], str]:
@@ -160,6 +167,10 @@ def push_tag(
         )
 
     return 0, ""
+
+
+def github_repository_url(repository: str) -> str:
+    return f"https://github.com/{repository}.git"
 
 
 def authenticated_github_repository_url(
