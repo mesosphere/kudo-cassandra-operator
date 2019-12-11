@@ -347,6 +347,23 @@ Any further releases based on Apache Cassandra `3.11.x` should originate from
 backported changes from the master branch to the existing `release-v3.11`
 branch, and then released to tags.
 
+A concrete example: it is desired that `3.11.5-0.1.1` is released with commits
+`c792f72` and `385c4ed` that are in the `master` branch:
+
+1. A `release-v3.11` branch already exists
+1. `git cherry-pick --ff c792f72` is run
+1. `git cherry-pick --ff 385c4ed` is run
+1. Changes making dependencies stable and changing the app version be `3.11.5`
+   and the operator version be `0.1.1` are committed and pushed to the remote
+1. A `v3.11.5-0.1.1` git tag is created from the `release-v3.11` branch HEAD
+
+As shown above, the [release.py](./tools/release.py) script can be used to
+achieve the last step above:
+
+```bash
+./tools/release.py --git-branch release-v3.11 --git-tag v3.11.5-0.1.1
+```
+
 ### Snapshots
 
 Snapshot release versions will have the following format:
