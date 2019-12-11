@@ -12,6 +12,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
+// KubectlOptions TODO struct comment.
 type KubectlOptions struct {
 	KubectlPath string
 	ConfigPath  string
@@ -20,6 +21,7 @@ type KubectlOptions struct {
 	ContextName string
 }
 
+// GetFirstNonEmptyEnvVarOrEmptyString TODO function comment.
 func GetFirstNonEmptyEnvVarOrEmptyString(envVarNames []string) string {
 	for _, name := range envVarNames {
 		if value := os.Getenv(name); value != "" {
@@ -30,6 +32,7 @@ func GetFirstNonEmptyEnvVarOrEmptyString(envVarNames []string) string {
 	return ""
 }
 
+// KubeConfigPathFromHomeDir TODO function comment.
 func KubeConfigPathFromHomeDir() (string, error) {
 	home, err := homedir.Dir()
 	if err != nil {
@@ -39,6 +42,7 @@ func KubeConfigPathFromHomeDir() (string, error) {
 	return configPath, err
 }
 
+// GetKubeConfigPath TODO function comment.
 func GetKubeConfigPath() (string, error) {
 	kubeConfigPath := GetFirstNonEmptyEnvVarOrEmptyString([]string{"KUBECONFIG"})
 	if kubeConfigPath == "" {
@@ -51,6 +55,7 @@ func GetKubeConfigPath() (string, error) {
 	return kubeConfigPath, nil
 }
 
+// GetConfigPath TODO function comment.
 func (kubectlOptions *KubectlOptions) GetConfigPath() (string, error) {
 	var err error
 
@@ -64,6 +69,7 @@ func (kubectlOptions *KubectlOptions) GetConfigPath() (string, error) {
 	return kubeConfigPath, nil
 }
 
+// LoadApiClientConfig TODO function comment.
 func LoadApiClientConfig(
 	configPath string, contextName string,
 ) (*rest.Config, error) {
@@ -78,6 +84,7 @@ func LoadApiClientConfig(
 	return config.ClientConfig()
 }
 
+// GetKubernetesClientFromOptions TODO function comment.
 func GetKubernetesClientFromOptions(
 	options *KubectlOptions,
 ) (*kubernetes.Clientset, error) {
@@ -107,6 +114,7 @@ func GetKubernetesClientFromOptions(
 	return clientset, nil
 }
 
+// NewKubectlOptions TODO function comment.
 func NewKubectlOptions(
 	kubectlPath string,
 	configPath string,
@@ -122,6 +130,7 @@ func NewKubectlOptions(
 	}
 }
 
+// BuildKubeConfig TODO function comment.
 func BuildKubeConfig(kubeConfigPath string) (*rest.Config, error) {
 	if kubeConfigPath != "" {
 		log.Infof("Using kubeconfig at '%s'", kubeConfigPath)

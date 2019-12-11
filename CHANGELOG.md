@@ -10,6 +10,7 @@ and this project adheres to
 
 ### Added
 
+- Upgrade Apache Cassandra to 3.11.5
 - Apache 2.0 license
   ([c792f72d](https://github.com/mesosphere/kudo-cassandra-operator/commit/c792f72d132ad01dd02859f3dc266f3e54142e32))
 
