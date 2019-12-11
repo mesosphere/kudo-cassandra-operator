@@ -17,6 +17,7 @@ from utils import (
     configure_git_user,
     create_pull_request,
 )
+from release import RELEASE_TAG_PATTERN
 
 PROGRAM_NAME = os.path.basename(__file__)
 
@@ -162,6 +163,21 @@ def prepare_git_repositories(
     return 0, "", operators_directory, operator_directory
 
 
+def build_versioned_operator_directory(
+    operators_directory: str, operator_name: str, operator_git_tag: str
+) -> str:
+    """Returns a versioned operator directory for the "operators collection"
+    repository.
+
+    e.g., /kudobuilder-operators/repository/cassandra/3.11
+    """
+    match = RELEASE_TAG_PATTERN.match(operator_git_tag)
+    # Assuming APP_VERSION follows SemVer for now.
+    app_version_major_minor = f"{match[1]}.{match[2]}"
+
+    return f"{operators_directory}/repository/{operator_name}/{app_version_major_minor}"
+
+
 def commit_copied_operator_files_and_push_branch(
     operators_directory: str,
     operators_repository: str,
@@ -176,8 +192,8 @@ def commit_copied_operator_files_and_push_branch(
     repository (e.g., kudo-cassandra-operator) directory into the "operators
     collection" repository (e.g., kudobuilder/operators) directory."""
 
-    versioned_operator_directory = (
-        f"{operators_directory}/repository/{operator_name}/{operator_git_tag}"
+    versioned_operator_directory = build_versioned_operator_directory(
+        operators_directory, operator_name, operator_git_tag
     )
 
     command = " && ".join(
