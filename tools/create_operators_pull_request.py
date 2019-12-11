@@ -108,7 +108,7 @@ def prepare_git_repositories(
 ) -> Tuple[int, str, str, str]:
     """
     1. Clones the "operators collection" repository (e.g., kudobuilder/operators)
-    2. Clones the operator repository (e.g., kudo-cassandra-operator)
+    2. Clones the operator repository (e.g., mesosphere/kudo-cassandra-operator)
     3. Creates desired branch in the "operators collection" repository
     4. Configures the git user name and email in the "operators collection" repository to be the git user name and email at the operator repository's `operator_git_ref`.
 
@@ -189,8 +189,9 @@ def commit_copied_operator_files_and_push_branch(
     debug: bool,
 ):
     """Copies, commits and pushes operator-related files from the operator
-    repository (e.g., kudo-cassandra-operator) directory into the "operators
-    collection" repository (e.g., kudobuilder/operators) directory."""
+    repository (e.g., mesosphere/kudo-cassandra-operator) directory into the
+    "operators collection" repository (e.g., kudobuilder/operators)
+    directory."""
 
     versioned_operator_directory = build_versioned_operator_directory(
         operators_directory, operator_name, operator_git_tag
