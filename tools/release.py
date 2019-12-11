@@ -31,12 +31,23 @@ SEMVER_PATTERN = re.compile(
     r"(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?"
 )
 
-RELEASE_TAG_PATTERN = re.compile(
-    f"v{SEMVER_PATTERN.pattern}-{SEMVER_PATTERN.pattern}"
+OPERATOR_VERSION_PATTERN = SEMVER_PATTERN
+
+# Assuming APP_VERSION follows SemVer for now.
+APP_VERSION_PATTERN = SEMVER_PATTERN
+
+# Assuming APP_VERSION follows SemVer for now.
+APP_VERSION_MAJOR_MINOR_PATTERN = SEMVER_MAJOR_MINOR_PATTERN
+
+VERSION_PATTERN = re.compile(
+    f"{APP_VERSION_PATTERN.pattern}-{OPERATOR_VERSION_PATTERN.pattern}"
 )
 
+RELEASE_TAG_PATTERN = re.compile(f"v{VERSION_PATTERN.pattern}")
+
+# Assuming APP_VERSION follows SemVer for now.
 STABLE_BRANCH_NAME_PATTERN = re.compile(
-    f"release-v{SEMVER_MAJOR_MINOR_PATTERN.pattern}"
+    f"release-v{APP_VERSION_MAJOR_MINOR_PATTERN.pattern}"
 )
 
 
