@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	retry "github.com/avast/retry-go"
@@ -24,6 +25,7 @@ var (
 	kudo           *versioned.Clientset
 )
 
+// Init TODO function comment.
 // TODO(mpereira) return err?
 func Init(_kubectlOptions *kubectl.KubectlOptions) {
 	kubectlOptions = _kubectlOptions
@@ -33,6 +35,7 @@ func Init(_kubectlOptions *kubectl.KubectlOptions) {
 	kudo, _ = versioned.NewForConfig(kubeconfig)
 }
 
+// GetInstance TODO function comment.
 func GetInstance(
 	namespaceName string, instanceName string,
 ) (*v1beta1.Instance, error) {
@@ -61,6 +64,7 @@ func GetInstance(
 	return instance, nil
 }
 
+// GetInstanceAggregatedStatus TODO function comment.
 func GetInstanceAggregatedStatus(
 	namespaceName string, instanceName string,
 ) (*v1beta1.ExecutionStatus, error) {
@@ -77,6 +81,7 @@ func GetInstanceAggregatedStatus(
 	return &instance.Status.AggregatedStatus.Status, err
 }
 
+// WaitForOperatorDeployStatus TODO function comment.
 func WaitForOperatorDeployStatus(
 	expectedStatus v1beta1.ExecutionStatus,
 	namespaceName string,
@@ -136,6 +141,7 @@ func WaitForOperatorDeployStatus(
 	)
 }
 
+// WaitForOperatorDeployInProgress TODO function comment.
 func WaitForOperatorDeployInProgress(
 	namespaceName string, instanceName string,
 ) error {
@@ -152,6 +158,7 @@ func WaitForOperatorDeployInProgress(
 	)
 }
 
+// WaitForOperatorDeployComplete TODO function comment.
 func WaitForOperatorDeployComplete(
 	namespaceName string, instanceName string,
 ) error {
@@ -168,6 +175,7 @@ func WaitForOperatorDeployComplete(
 	)
 }
 
+// UpdateInstanceParameters TODO function comment.
 func UpdateInstanceParameters(
 	namespaceName string, instanceName string, parameters map[string]string,
 ) error {
@@ -236,20 +244,34 @@ func UpdateInstanceParameters(
 	return nil
 }
 
-func InstallOperatorFromDirectory(
-	directory string, namespace string, instance string, parameters []string,
+func installOrUpgradeOperator(
+	installOrUpgrade string,
+	operatorNameOrDirectory string,
+	namespaceName string,
+	instanceName string,
+	parameters []string,
 ) error {
+	if installOrUpgrade != "install" && installOrUpgrade != "upgrade" {
+		fmt.Errorf(
+			"Expected 'installOrUpgrade' to be 'install' or 'upgrade', was: '%s'",
+			installOrUpgrade,
+		)
+	}
+
 	log.Infof(
-		"Installing operator from path: '%s' (instance='%s', namespace='%s')",
-		directory, instance, namespace,
+		"%sing '%s' operator (instance='%s', namespace='%s')",
+		strings.Title(installOrUpgrade),
+		operatorNameOrDirectory,
+		instanceName,
+		namespaceName,
 	)
 
 	kubectlParameters := []string{
 		"kudo",
-		"install",
-		directory,
-		fmt.Sprintf("--namespace=%s", namespace),
-		fmt.Sprintf("--instance=%s", instance),
+		installOrUpgrade,
+		operatorNameOrDirectory,
+		fmt.Sprintf("--namespace=%s", namespaceName),
+		fmt.Sprintf("--instance=%s", instanceName),
 	}
 
 	for _, parameter := range parameters {
@@ -262,30 +284,61 @@ func InstallOperatorFromDirectory(
 		kubectlOptions.KubectlPath, kubectlParameters, nil, false,
 	)
 	if err != nil {
-		log.Errorf("Error trying to install operator from path: %s", err)
+		log.Errorf(
+			"Error trying to %s '%s' operator: %s",
+			installOrUpgrade, operatorNameOrDirectory, err,
+		)
 		return err
 	}
 
 	log.Infof(
-		"Started operator installation from path: '%s' (instance='%s', namespace='%s')",
-		directory, instance, namespace,
+		"Started '%s' operator %s (instance='%s', namespace='%s')",
+		operatorNameOrDirectory, installOrUpgrade, instanceName, namespaceName,
 	)
 
-	err = WaitForOperatorDeployInProgress(namespace, instance)
+	err = WaitForOperatorDeployInProgress(namespaceName, instanceName)
 	if err != nil {
 		log.Errorf("Error waiting for operator deploy to be in-progress: %s", err)
 		return err
 	}
 
-	err = WaitForOperatorDeployComplete(namespace, instance)
+	err = WaitForOperatorDeployComplete(namespaceName, instanceName)
 	if err != nil {
-		log.Errorf("Error waiting for operator deploy to complete: %s", err)
+		log.Errorf(
+			"Error waiting for '%s' operator deploy to complete: %s",
+			operatorNameOrDirectory, err,
+		)
 		return err
 	}
 
 	return nil
 }
 
+// InstallOperator TODO function comment.
+func InstallOperator(
+	operatorNameOrDirectory string,
+	namespaceName string,
+	instanceName string,
+	parameters []string,
+) error {
+	return installOrUpgradeOperator(
+		"install", operatorNameOrDirectory, namespaceName, instanceName, parameters,
+	)
+}
+
+// UpgradeOperator TODO function comment.
+func UpgradeOperator(
+	operatorNameOrDirectory string,
+	namespaceName string,
+	instanceName string,
+	parameters []string,
+) error {
+	return installOrUpgradeOperator(
+		"upgrade", operatorNameOrDirectory, namespaceName, instanceName, parameters,
+	)
+}
+
+// UninstallOperator TODO function comment.
 func UninstallOperator(
 	operatorName string, namespaceName string, instanceName string,
 ) error {
@@ -323,6 +376,7 @@ func UninstallOperator(
 	return nil
 }
 
+// GetPodContainerLogs TODO function comment.
 func GetPodContainerLogs(
 	namespaceName string,
 	instanceName string,
@@ -334,5 +388,22 @@ func GetPodContainerLogs(
 		namespaceName,
 		fmt.Sprintf("%s-%s-%d", instanceName, podName, podInstance),
 		containerName,
+	)
+}
+
+// ExecInPodContainer TODO function comment.
+func ExecInPodContainer(
+	namespaceName string,
+	instanceName string,
+	podName string,
+	podInstance int,
+	containerName string,
+	command []string,
+) (*bytes.Buffer, error) {
+	return k8s.ExecInPodContainer(
+		namespaceName,
+		fmt.Sprintf("%s-%s-%d", instanceName, podName, podInstance),
+		containerName,
+		command,
 	)
 }

@@ -20,6 +20,7 @@ var (
 	kubectlOptions *kubectl.KubectlOptions
 )
 
+// Init TODO function comment.
 // TODO(mpereira) return error?
 func Init(_kubectlOptions *kubectl.KubectlOptions) {
 	kubectlOptions = _kubectlOptions
@@ -27,6 +28,7 @@ func Init(_kubectlOptions *kubectl.KubectlOptions) {
 	clientset, _ = kubectl.GetKubernetesClientFromOptions(_kubectlOptions)
 }
 
+// CreateNamespace TODO function comment.
 func CreateNamespace(namespaceName string) error {
 	namespace := corev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
@@ -50,6 +52,7 @@ func CreateNamespace(namespaceName string) error {
 	return err
 }
 
+// DeleteNamespace TODO function comment.
 func DeleteNamespace(namespaceName string) error {
 	log.Infof("Deleting namespace '%s'", namespaceName)
 
@@ -66,6 +69,7 @@ func DeleteNamespace(namespaceName string) error {
 	return nil
 }
 
+// GetPodContainerLogs TODO function comment.
 // TODO(mpereira): use client libraries instead of shelling out.
 // See: https://github.com/kubernetes/dashboard/blob/377842ddda5ce5a58e2d5397dffb14de9522ddb4/src/app/backend/resource/container/logs.go#L116
 func GetPodContainerLogs(
@@ -87,6 +91,37 @@ func GetPodContainerLogs(
 		log.Errorf(
 			"Error getting logs (container='%s', pod='%s', namespace='%s'): %s",
 			containerName, podName, namespaceName, err,
+		)
+		return &bytes.Buffer{}, err
+	}
+
+	return stdout, nil
+}
+
+// ExecInPodContainer TODO function comment.
+// TODO(mpereira): use client libraries instead of shelling out.
+func ExecInPodContainer(
+	namespaceName string,
+	podName string,
+	containerName string,
+	command []string,
+) (*bytes.Buffer, error) {
+	kubectlParameters := []string{
+		"exec",
+		podName,
+		fmt.Sprintf("--namespace=%s", namespaceName),
+		fmt.Sprintf("--container=%s", containerName),
+		"--",
+	}
+	kubectlParameters = append(kubectlParameters, command...)
+
+	_, stdout, _, err := cmd.Exec(
+		kubectlOptions.KubectlPath, kubectlParameters, nil, true,
+	)
+	if err != nil {
+		log.Errorf(
+			"Error executing '%s' (container='%s', pod='%s', namespace='%s'): %s",
+			command, containerName, podName, namespaceName, err,
 		)
 		return &bytes.Buffer{}, err
 	}

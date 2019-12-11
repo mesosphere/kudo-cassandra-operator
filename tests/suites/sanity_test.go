@@ -4,14 +4,13 @@ import (
 	"encoding/base64"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"testing"
 
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/reporters"
 	. "github.com/onsi/gomega"
-
-	// log "github.com/sirupsen/logrus"
 
 	"github.com/mesosphere/kudo-cassandra-operator/tests/utils/cassandra"
 	"github.com/mesosphere/kudo-cassandra-operator/tests/utils/k8s"
@@ -27,7 +26,9 @@ var (
 	KubeConfigPath    = os.Getenv("KUBECONFIG")
 	KubectlPath       = os.Getenv("KUBECTL_PATH")
 	OperatorDirectory = os.Getenv("OPERATOR_DIRECTORY")
-	KubectlOptions    = kubectl.NewKubectlOptions(
+	// TODO(mpereira): read NodeCount from params.yaml.
+	NodeCount      = 3
+	KubectlOptions = kubectl.NewKubectlOptions(
 		KubectlPath,
 		KubeConfigPath,
 		TestNamespace,
@@ -35,13 +36,18 @@ var (
 	)
 )
 
+func assertNumberOfCassandraNodes(nodeCount int) {
+	nodes, err := cassandra.Nodes(TestNamespace, TestInstance)
+	Expect(err).To(BeNil())
+	Expect(len(nodes)).To(Equal(nodeCount))
+}
+
 var _ = Describe(TestName, func() {
-	It("Installs the operator from a directory", func() {
+	It("Installs the latest operator from the package registry", func() {
 		// TODO(mpereira) Assert that it isn't running.
-		err := kudo.InstallOperatorFromDirectory(
-			OperatorDirectory, TestNamespace, TestInstance, []string{},
+		err := kudo.InstallOperator(
+			OperatorName, TestNamespace, TestInstance, []string{},
 		)
-		// TODO(mpereira) Assert that it is running.
 		if err != nil {
 			Fail(
 				"Failing the full suite: failed to install operator instance that the " +
@@ -49,16 +55,39 @@ var _ = Describe(TestName, func() {
 			)
 		}
 		Expect(err).To(BeNil())
+
+		assertNumberOfCassandraNodes(NodeCount)
+	})
+
+	It("Upgrades the running operator instance from a directory", func() {
+		// TODO(mpereira) Assert that it is running.
+		err := kudo.UpgradeOperator(
+			OperatorDirectory, TestNamespace, TestInstance, []string{},
+		)
+		if err != nil {
+			Fail(
+				"Failing the full suite: failed to upgrade operator instance that the " +
+					"following tests depend on",
+			)
+		}
+		Expect(err).To(BeNil())
+
+		assertNumberOfCassandraNodes(NodeCount)
 	})
 
 	It("Scales the instance's number of nodes", func() {
+		NodeCount = NodeCount + 1
 		err := kudo.UpdateInstanceParameters(
-			TestNamespace, TestInstance, map[string]string{"NODE_COUNT": "4"},
+			TestNamespace,
+			TestInstance,
+			map[string]string{"NODE_COUNT": strconv.Itoa(NodeCount)},
 		)
 		if err != nil {
 			Fail("Failing the full suite: failed to scale the number of nodes")
 		}
 		Expect(err).To(BeNil())
+
+		assertNumberOfCassandraNodes(NodeCount)
 	})
 
 	It("Updates the instance's parameters", func() {
@@ -84,6 +113,8 @@ var _ = Describe(TestName, func() {
 		)
 		Expect(err).To(BeNil())
 		Expect(configuration[parameter]).To(Equal(desiredValue))
+
+		assertNumberOfCassandraNodes(NodeCount)
 	})
 
 	It("Configures Cassandra properties through custom properties", func() {
@@ -112,6 +143,8 @@ var _ = Describe(TestName, func() {
 		)
 		Expect(err).To(BeNil())
 		Expect(configuration[parameter]).To(Equal(desiredValue))
+
+		assertNumberOfCassandraNodes(NodeCount)
 	})
 
 	It("Configures Cassandra JVM options through custom options", func() {
@@ -141,6 +174,8 @@ var _ = Describe(TestName, func() {
 		)
 		Expect(err).To(BeNil())
 		Expect(configuration[parameter]).To(Equal(desiredValue))
+
+		assertNumberOfCassandraNodes(NodeCount)
 	})
 
 	It("Uninstalls the operator", func() {
@@ -158,6 +193,7 @@ var _ = BeforeSuite(func() {
 })
 
 var _ = AfterSuite(func() {
+	kudo.UninstallOperator(OperatorName, TestNamespace, TestInstance)
 	k8s.DeleteNamespace(TestNamespace)
 })
 
