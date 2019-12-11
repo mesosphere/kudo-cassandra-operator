@@ -23,7 +23,7 @@ export OPERATOR_VERSION="0.1.1"
 
 # This should be an empty string on stable branches and "-SNAPSHOT" on
 # non-stable branches.
-export POSSIBLE_SNAPSHOT_SUFFIX="-SNAPSHOT"
+export POSSIBLE_SNAPSHOT_SUFFIX=""
 
 export OPERATOR_DIRECTORY="${_project_directory}/operator"
 export VENDOR_DIRECTORY="${_project_directory}/shared/vendor"
