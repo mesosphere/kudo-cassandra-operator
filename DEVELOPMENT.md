@@ -383,3 +383,28 @@ Example:
 ```
 3.11.4-0.0.0-20191225000000-1909e93ffa56
 ```
+
+## Synchronize changes to [kudobuilder/operators](https://github.com/kudobuilder/operators)
+
+The [kudobuilder/operators](https://github.com/kudobuilder/operators) repository
+contains a collection of KUDO operators. As of right now (2019-12-11) it is
+required that operators are published there so that they are available via
+`kubectl kudo install`.
+
+The
+[`tools/create_operators_pull_request.py`](tools/create_operators_pull_request.py)
+script copies over all "KUDO operator"-related files to kudobuilder.operators.
+
+For example, the following command creates a PR under kudobuilder/operators
+copying all "KUDO operator"-related files from the
+mesosphere/kudo-cassandra-operator (the [`operator`](operator) and
+[`docs`](docs) directory as of 2019-12-11) into a directory under
+kudobuilder/operators:
+
+```bash
+./tools/create_operators_pull_request.py \
+  --operator-repository mesosphere/kudo-cassandra-operator \
+  --operator-name cassandra \
+  --operator-git-tag v3.11.5-0.1.1 \
+  --github-token "${github_token}"
+```
