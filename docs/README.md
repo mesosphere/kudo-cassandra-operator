@@ -1,3 +1,1 @@
-## KUDO Cassandra Operator
-
-- [Monitoring](./monitoring.md)
+../README.md

@@ -9,6 +9,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// Exec TODO function comment.
 func Exec(
 	command string,
 	arguments []string,
@@ -36,11 +37,18 @@ func Exec(
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 
+	if !suppressOutput {
+		log.Infof("Running '%s'", cmd)
+	}
+
 	err := cmd.Run()
 	if err != nil {
 		if exitErr, ok := err.(*exec.ExitError); ok {
 			if status, ok := exitErr.Sys().(syscall.WaitStatus); ok {
-				log.Errorf("ExitError while running '%s':\n%s", cmd, exitErr.Stderr)
+				log.Errorf(
+					"ExitError while running '%s'\nstdout:\n%s\nstderr:\n%s",
+					cmd, stdout.String(), exitErr.Stderr,
+				)
 				exitStatus = status.ExitStatus()
 				log.Errorf("'%s' exited with '%d'", cmd, exitStatus)
 			} else {

@@ -1,4 +1,4 @@
-FROM cassandra:3.11.4
+FROM cassandra:3.11.5
 
 RUN set -eux; \
   apt-get update; \
