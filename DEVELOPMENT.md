@@ -193,9 +193,15 @@ echo "${CASSANDRA_VERSION}"
 
 Running it will output `3.11.5`.
 
+```bash
+$ ./cassandra_version.sh
+3.11.5
+```
+
 It's important to notice that **changes to templated files have to be done on
 the template and compiled**. For example, changes to `operator/operator.yaml`
-have to made in `templates/operator/operator.yaml.template` and then compiled.
+have to made in `templates/operator/operator.yaml.template` and then compiled
+with `tools/compile_templates.sh`.
 
 ### Running static code analyzers
 
