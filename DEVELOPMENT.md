@@ -27,7 +27,6 @@
     - [Merging pull requests](#merging-pull-requests)
 - [Releasing](#releasing)
   - [Versioning](#versioning)
-    - [-](#-)
   - [Development Cycle](#development-cycle)
   - [Release Workflow](#release-workflow)
   - [Backport Workflow](#backport-workflow)
