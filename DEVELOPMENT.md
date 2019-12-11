@@ -148,9 +148,54 @@ kubectl exec "${kudo_cassandra_pod_0}" \
 
 ### Compiling templates
 
+The KUDO Cassandra operator makes use of templates so that data that needs to be
+present in files or available as environment variables in scripts can be
+centralized in a single place and templated into files or loaded into
+environment variables in scripts.
+
+The centralized place for that data is the `metadata.sh` file.
+
+Templates are under the `templates` directory. The `tools/compile_templates.sh`
+script will compile all templates under `templates` to files in the repository.
+
+For example, given the following data file:
+
+`metadata.sh`
 ```bash
-./tools/compile_templates.sh
+export CASSANDRA_VERSION="3.11.5"
 ```
+
+
+Running `./tools/compile_templates.sh` will compile
+
+`templates/operator/operator.yaml.template`
+```yaml
+apiVersion: kudo.dev/v1beta1
+name: "cassandra"
+appVersion: "${CASSANDRA_VERSION}"
+```
+
+into
+
+`operator/operator.yaml`
+```yaml
+apiVersion: kudo.dev/v1beta1
+name: "cassandra"
+appVersion: "3.11.5"
+```
+
+Assuming also there's a script named `cassandra_version.sh` that looks like
+
+```bash
+source "../metadata.sh"
+echo "${CASSANDRA_VERSION}"
+```
+
+Running it will output `3.11.5`.
+
+It's important to notice that **changes to templated files have to be done on
+the template and compiled**. For example, changes to `operator/operator.yaml`
+have to made in `templates/operator/operator.yaml.template` and then compiled.
 
 ### Running static code analyzers
 
