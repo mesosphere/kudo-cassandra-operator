@@ -27,8 +27,8 @@ var (
 	KubectlPath       = os.Getenv("KUBECTL_PATH")
 	OperatorDirectory = os.Getenv("OPERATOR_DIRECTORY")
 	// TODO(mpereira): read NodeCount from params.yaml.
-	NodeCount         = 3
-	KubectlOptions    = kubectl.NewKubectlOptions(
+	NodeCount      = 3
+	KubectlOptions = kubectl.NewKubectlOptions(
 		KubectlPath,
 		KubeConfigPath,
 		TestNamespace,

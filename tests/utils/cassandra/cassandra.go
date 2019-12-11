@@ -59,20 +59,19 @@ func Nodes(
 		match := nodeLinePattern.FindStringSubmatch(scanner.Text())
 		if len(match) > 0 {
 			nodes = append(nodes, map[string]string{
-				"status": match[1],
+				"status":  match[1],
 				"address": match[2],
-				"load": match[3],
-				"tokens": match[4],
-				"owns": match[5],
+				"load":    match[3],
+				"tokens":  match[4],
+				"owns":    match[5],
 				"host_id": match[6],
-				"rack": match[7],
+				"rack":    match[7],
 			})
 		}
 	}
 
 	return nodes, nil
 }
-
 
 func getConfigurationFromNodeLogs(
 	namespaceName string,

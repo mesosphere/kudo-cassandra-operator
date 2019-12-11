@@ -161,14 +161,15 @@ script will compile all templates under `templates` to files in the repository.
 For example, given the following data file:
 
 `metadata.sh`
+
 ```bash
 export CASSANDRA_VERSION="3.11.5"
 ```
 
-
 Running `./tools/compile_templates.sh` will compile
 
 `templates/operator/operator.yaml.template`
+
 ```yaml
 apiVersion: kudo.dev/v1beta1
 name: "cassandra"
@@ -178,6 +179,7 @@ appVersion: "${CASSANDRA_VERSION}"
 into
 
 `operator/operator.yaml`
+
 ```yaml
 apiVersion: kudo.dev/v1beta1
 name: "cassandra"
