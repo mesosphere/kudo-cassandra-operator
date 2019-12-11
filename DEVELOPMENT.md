@@ -27,7 +27,6 @@
     - [Merging pull requests](#merging-pull-requests)
 - [Releasing](#releasing)
   - [Versioning](#versioning)
-    - [-](#-)
   - [Development Cycle](#development-cycle)
   - [Release Workflow](#release-workflow)
   - [Backport Workflow](#backport-workflow)
@@ -339,7 +338,10 @@ The [release.py](./tools/release.py) script can be used to achieve the last step
 above:
 
 ```bash
-./tools/release.py --git-branch release-v3.11 --git-tag v3.11.4-0.1.0
+./tools/release.py \
+  --repository mesosphere/kudo-cassandra-operator \
+  --git-branch release-v3.11 \
+  --git-tag v3.11.4-0.1.0
 ```
 
 ### Backport Workflow
@@ -347,6 +349,26 @@ above:
 Any further releases based on Apache Cassandra `3.11.x` should originate from
 backported changes from the master branch to the existing `release-v3.11`
 branch, and then released to tags.
+
+A concrete example: it is desired that `3.11.5-0.1.1` is released with commits
+`c792f72` and `385c4ed` that are in the `master` branch:
+
+1. A `release-v3.11` branch already exists
+1. `git cherry-pick --ff c792f72` is run
+1. `git cherry-pick --ff 385c4ed` is run
+1. Changes making dependencies stable and changing the app version be `3.11.5`
+   and the operator version be `0.1.1` are committed and pushed to the remote
+1. A `v3.11.5-0.1.1` git tag is created from the `release-v3.11` branch HEAD
+
+As shown above, the [release.py](./tools/release.py) script can be used to
+achieve the last step above:
+
+```bash
+./tools/release.py \
+  --repository mesosphere/kudo-cassandra-operator \
+  --git-branch release-v3.11 \
+  --git-tag v3.11.5-0.1.1
+```
 
 ### Snapshots
 
@@ -360,4 +382,29 @@ Example:
 
 ```
 3.11.4-0.0.0-20191225000000-1909e93ffa56
+```
+
+## Synchronize changes to [kudobuilder/operators](https://github.com/kudobuilder/operators)
+
+The [kudobuilder/operators](https://github.com/kudobuilder/operators) repository
+contains a collection of KUDO operators. As of right now (2019-12-11) it is
+required that operators are published there so that they are available via
+`kubectl kudo install`.
+
+The
+[`tools/create_operators_pull_request.py`](tools/create_operators_pull_request.py)
+script copies over all "KUDO operator"-related files to kudobuilder.operators.
+
+For example, the following command creates a PR under kudobuilder/operators
+copying all "KUDO operator"-related files from the
+mesosphere/kudo-cassandra-operator (the [`operator`](operator) and
+[`docs`](docs) directory as of 2019-12-11) into a directory under
+kudobuilder/operators:
+
+```bash
+./tools/create_operators_pull_request.py \
+  --operator-repository mesosphere/kudo-cassandra-operator \
+  --operator-name cassandra \
+  --operator-git-tag v3.11.5-0.1.1 \
+  --github-token "${github_token}"
 ```
