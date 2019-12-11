@@ -338,7 +338,10 @@ The [release.py](./tools/release.py) script can be used to achieve the last step
 above:
 
 ```bash
-./tools/release.py --git-branch release-v3.11 --git-tag v3.11.4-0.1.0
+./tools/release.py \
+  --repository mesosphere/kudo-cassandra-operator \
+  --git-branch release-v3.11 \
+  --git-tag v3.11.4-0.1.0
 ```
 
 ### Backport Workflow
@@ -361,7 +364,10 @@ As shown above, the [release.py](./tools/release.py) script can be used to
 achieve the last step above:
 
 ```bash
-./tools/release.py --git-branch release-v3.11 --git-tag v3.11.5-0.1.1
+./tools/release.py \
+  --repository mesosphere/kudo-cassandra-operator \
+  --git-branch release-v3.11 \
+  --git-tag v3.11.5-0.1.1
 ```
 
 ### Snapshots
