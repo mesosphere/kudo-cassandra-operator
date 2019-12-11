@@ -19,10 +19,10 @@ The KUDO Cassandra Operator makes it easy to deploy and manage
 
 ## Roadmap
 
+- Backup/restore
 - TLS
 - Rack-awareness
 - Node replace
-- Backup/restore
 - Inter-pod anti-affinity
 - RBAC, pod security policies
 - Liveness probe
