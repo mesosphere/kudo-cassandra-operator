@@ -286,7 +286,7 @@ def automated_operators_repository_commit_message(
             f"| Operator | {operator_name} |",
             f"| Git tag | {operator_git_tag_url} |",
             f"| Git SHA | {operator_git_sha_url} |",
-            f"| Date | {datetime.utcnow()} |",
+            f"| Date (UTC) | {datetime.utcnow()} |",
         ]
     )
 
@@ -324,7 +324,7 @@ def main() -> int:
         ) = prepare_git_repositories(
             base_directory,
             operators_repository,
-            operators_git_tag,
+            operator_git_tag,
             operators_branch,
             operator_repository,
             operator_git_tag,
