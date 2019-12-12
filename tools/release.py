@@ -254,8 +254,6 @@ def main() -> int:
             log.error(error_message)
             return rc
 
-        return 0
-
         rc, error_message = configure_git_user(
             directory, git_user_name, git_user_email, debug
         )
