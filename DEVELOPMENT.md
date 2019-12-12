@@ -3,7 +3,7 @@
 **Table of Contents**
 
 - [Requirements](#requirements)
-- [Installing](#installing)
+- [Walkthrough](#walkthrough)
   - [Cloning the git repository](#cloning-the-git-repository)
   - [Choosing a name and a namespace for the instance](#choosing-a-name-and-a-namespace-for-the-instance)
   - [Creating the namespace (if it doesn't exist)](#creating-the-namespace-if-it-doesnt-exist)
@@ -31,10 +31,10 @@
   - [Release Workflow](#release-workflow)
   - [Backport Workflow](#backport-workflow)
   - [Snapshots](#snapshots)
+- [Synchronize changes to kudobuilder/operators](#synchronize-changes-to-kudobuilderoperators)
 
 ## Requirements
 
-- [GitHub SSH access](https://help.github.com/en/articles/connecting-to-github-with-ssh)
 - Docker ([macOS](https://docs.docker.com/docker-for-mac/),
   [Ubuntu](https://docs.docker.com/install/linux/docker-ce/ubuntu/). Last tested
   on 19.03.2)
@@ -46,9 +46,15 @@
   [Konvoy](https://github.com/mesosphere/konvoy/releases)) (check
   `KUBERNETES_VERSION` in `metadata.sh` to see the last tested version)
 
-## Installing
+## Walkthrough
 
 ### Cloning the git repository
+
+Remove the `--recurse-submodules` flag if you don't have access to the private
+[CI repository](https://github.com/mesosphere/data-services-ci). If you do have
+access to it, also make sure you have
+[GitHub SSH access](https://help.github.com/en/articles/connecting-to-github-with-ssh)
+configured.
 
 ```bash
 git clone \
@@ -142,8 +148,11 @@ kubectl exec "${kudo_cassandra_pod_0}" \
 
 - bash 4+ ([macOS](https://formulae.brew.sh/formula/bash))
 - envsubst ([macOS](https://formulae.brew.sh/formula/gettext))
-- [shellcheck](https://www.shellcheck.net/)
 - [goimports](https://godoc.org/golang.org/x/tools/cmd/goimports)
+- [Prettier](https://prettier.io/)
+- [pytablewriter](https://pytablewriter.readthedocs.io/en/latest/)
+- [Python 3](https://docs.python.org/3/)
+- [shellcheck](https://www.shellcheck.net/)
 
 ### Compiling templates
 
@@ -348,10 +357,21 @@ above:
 
 Any further releases based on Apache Cassandra `3.11.x` should originate from
 backported changes from the master branch to the existing `release-v3.11`
-branch, and then released to tags.
+branch, and then released as tags.
 
-A concrete example: it is desired that `3.11.5-0.1.1` is released with commits
-`c792f72` and `385c4ed` that are in the `master` branch:
+It is likely that all commits in the master branch should be present in a new
+release. In that case, for a concrete example:
+
+1. A `release-v3.11` branch already exists
+1. `git merge master` is run
+1. Changes making dependencies stable and changing the app version be `3.11.5`
+   and the operator version be `0.1.1` are committed and pushed to the remote
+1. A `v3.11.5-0.1.1` git tag is created from the `release-v3.11` branch HEAD
+
+Another scenario is wanting just a few commits in the master branch to be
+present in a new release. In that case, for a concrete example: it is desired
+that `3.11.5-0.1.1` is released with commits `c792f72` and `385c4ed` that are in
+the `master` branch:
 
 1. A `release-v3.11` branch already exists
 1. `git cherry-pick --ff c792f72` is run
@@ -360,8 +380,8 @@ A concrete example: it is desired that `3.11.5-0.1.1` is released with commits
    and the operator version be `0.1.1` are committed and pushed to the remote
 1. A `v3.11.5-0.1.1` git tag is created from the `release-v3.11` branch HEAD
 
-As shown above, the [release.py](./tools/release.py) script can be used to
-achieve the last step above:
+As before, the [release.py](./tools/release.py) script can be used to achieve
+the last step above:
 
 ```bash
 ./tools/release.py \
