@@ -170,7 +170,7 @@ def push_tag(
 
 
 def github_repository_url(repository: str) -> str:
-    return f"https://github.com/{repository}.git"
+    return f"https://github.com/{repository}"
 
 
 def authenticated_github_repository_url(
