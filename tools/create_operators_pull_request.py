@@ -322,7 +322,7 @@ def main() -> int:
         return rc
     git_version = stdout.strip()
 
-    log.info("git version: {git_version}")
+    log.info(git_version)
 
     with tempfile.TemporaryDirectory(prefix="kudo_dev_") as base_directory:
         (
