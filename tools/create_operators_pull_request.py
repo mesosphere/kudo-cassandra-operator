@@ -272,6 +272,7 @@ def automated_operators_repository_commit_message(
         [
             f"Release {operator_name} {operator_git_tag} (automated commit).",
             f"",
+            f"",
             f"| | |",
             f"|-|-|",
             f"| Repository | {operator_repository_url} |",
