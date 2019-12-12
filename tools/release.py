@@ -11,11 +11,12 @@ from utils import (
     authenticated_github_repository_url,
     repository_dirty,
     remote_exists,
+    get_git_version,
+    get_git_user,
     get_matching_remote_branches,
     local_tag_exists,
     remote_tag_exists,
     local_branch_matches_remote_branch,
-    get_git_user,
     configure_git_user,
     clone_repository,
     create_local_tag,
@@ -232,6 +233,14 @@ def main() -> int:
     repository_url = authenticated_github_repository_url(
         git_user, github_token, repository
     )
+
+    rc, stdout, stderr = get_git_version(debug)
+    if rc != 0:
+        log.error(error_message)
+        return rc
+    git_version = stdout.strip()
+
+    log.info("git version: {git_version}")
 
     with tempfile.TemporaryDirectory(prefix="_kudo_dev") as base_directory:
         rc, directory, error_message = clone_repository(
