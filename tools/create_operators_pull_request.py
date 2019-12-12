@@ -322,7 +322,7 @@ def main() -> int:
         return rc
     git_version = stdout.strip()
 
-    log.info("git version: {git_version}")
+    log.info(git_version)
 
     with tempfile.TemporaryDirectory(prefix="kudo_dev_") as base_directory:
         (
@@ -333,7 +333,7 @@ def main() -> int:
         ) = prepare_git_repositories(
             base_directory,
             operators_repository,
-            operator_git_tag,
+            operators_base_branch,
             operators_branch,
             operator_repository,
             operator_git_tag,

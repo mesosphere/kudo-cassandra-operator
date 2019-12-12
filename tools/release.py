@@ -240,7 +240,7 @@ def main() -> int:
         return rc
     git_version = stdout.strip()
 
-    log.info("git version: {git_version}")
+    log.info(git_version)
 
     with tempfile.TemporaryDirectory(prefix="_kudo_dev") as base_directory:
         rc, directory, error_message = clone_repository(
