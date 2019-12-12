@@ -82,7 +82,7 @@ def get_matching_remote_branches(
     repository_directory: str, remote: str, branch: str, debug: bool
 ) -> Tuple[int, List[str], str]:
     rc, stdout, stderr = run(
-        "git -C {repository_directory} branch -r", debug=debug
+        f"git -C {repository_directory} branch -r", debug=debug
     )
     if rc != 0:
         return (
