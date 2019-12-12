@@ -255,11 +255,13 @@ def automated_operators_repository_commit_message(
     operator_directory: str,
     operator_git_tag: str,
     debug: bool,
-) -> Tuple[int, str]:
+) -> Tuple[int, str, str, str]:
     rc, stdout, stderr = get_sha(operator_directory, debug)
     if rc != 0:
         return (
             rc,
+            "",
+            "",
             f"Failed to get git SHA from '{operator_directory}'"
             + f"\nstdout:\n{stdout}\nstderr:\n{stderr}",
         )
@@ -268,11 +270,11 @@ def automated_operators_repository_commit_message(
     operator_repository_url = github_repository_url(operator_repository)
     git_sha_url = f"{operator_repository_url}/commit/{git_sha}"
 
-    return "\n".join(
+    commit_message_subject = (
+        f"Release {operator_name} {operator_git_tag} (automated commit)."
+    )
+    commit_message_body = "\n".join(
         [
-            f"Release {operator_name} {operator_git_tag} (automated commit).",
-            f"",
-            f"",
             f"| | |",
             f"|-|-|",
             f"| Repository | {operator_repository_url} |",
@@ -282,6 +284,8 @@ def automated_operators_repository_commit_message(
             f"| Date | {datetime.utcnow()} |",
         ]
     )
+
+    return 0, commit_message_subject, commit_message_body, ""
 
 
 def automated_operators_repository_branch(
@@ -328,15 +332,28 @@ def main() -> int:
             return rc
 
         if args.git_commit_message:
-            git_commit_message = args.git_commit_message
+            git_commit_message_subject = args.git_commit_message
+            git_commit_message_body = ""
         else:
-            git_commit_message = automated_operators_repository_commit_message(
+            (
+                rc,
+                git_commit_message_subject,
+                git_commit_message_body,
+                error_message,
+            ) = automated_operators_repository_commit_message(
                 operator_repository,
                 operator_name,
                 operator_directory,
                 operator_git_tag,
                 debug,
             )
+            if rc != 0:
+                log.error(error_message)
+                return rc
+
+        git_commit_message = (
+            f"{git_commit_message_subject}\n{git_commit_message_body}"
+        ).strip()
 
         rc, error_message = commit_copied_operator_files_and_push_branch(
             operators_directory,
@@ -356,8 +373,8 @@ def main() -> int:
             operators_repository,
             operators_base_branch,
             operators_branch,
-            git_commit_message,
-            "",
+            git_commit_message_subject,
+            git_commit_message_body,
             github_token,
             PROGRAM_NAME,
             debug,
