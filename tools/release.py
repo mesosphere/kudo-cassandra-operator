@@ -235,7 +235,7 @@ def main() -> int:
 
     with tempfile.TemporaryDirectory(prefix="_kudo_dev") as base_directory:
         rc, directory, error_message = clone_repository(
-            repository_url, git_tag, base_directory, debug
+            repository_url, git_branch, base_directory, debug
         )
         if rc != 0:
             log.error(error_message)
