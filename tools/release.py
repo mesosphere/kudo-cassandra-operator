@@ -233,7 +233,7 @@ def main() -> int:
         git_user, github_token, repository
     )
 
-    with tempfile.mkdtemp("_kudo_dev") as base_directory:
+    with tempfile.TemporaryDirectory(prefix="_kudo_dev") as base_directory:
         rc, directory, error_message = clone_repository(
             repository_url, git_tag, base_directory, debug
         )
