@@ -352,7 +352,7 @@ def main() -> int:
                 return rc
 
         git_commit_message = (
-            f"{git_commit_message_subject}\n{git_commit_message_body}"
+            f"{git_commit_message_subject}\n\n{git_commit_message_body}"
         ).strip()
 
         rc, error_message = commit_copied_operator_files_and_push_branch(
