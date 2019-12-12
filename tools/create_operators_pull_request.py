@@ -351,8 +351,6 @@ def main() -> int:
             log.error(error_message)
             return rc
 
-        return 0
-
         success, http_response = create_pull_request(
             operators_repository,
             operators_base_branch,
