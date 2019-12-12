@@ -9,7 +9,9 @@ The KUDO Cassandra Operator makes it easy to deploy and manage
 
 ## Getting started
 
-The KUDO Cassandra operator requires KUDO 0.8.0 and Kubernetes 1.15.0.
+The KUDO Cassandra operator requires [KUDO](https://kudo.dev/)
+[0.8.0](https://github.com/kudobuilder/kudo/releases/tag/v0.8.0) and Kubernetes
+1.15.0.
 
 To install it run
 
