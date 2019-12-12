@@ -324,7 +324,7 @@ def main() -> int:
         ) = prepare_git_repositories(
             base_directory,
             operators_repository,
-            operators_git_tag,
+            operator_git_tag,
             operators_branch,
             operator_repository,
             operator_git_tag,
