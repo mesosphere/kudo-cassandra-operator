@@ -83,6 +83,13 @@ def parse_arguments() -> argparse.Namespace:
         + "repository from the head of the GIT_BRANCH",
     )
     parser.add_argument(
+        "--github-token",
+        type=str,
+        required=True,
+        help="The GitHub token used for interacting with the "
+        + "KUDO Operator repository",
+    )
+    parser.add_argument(
         "--git-remote",
         type=str,
         default="origin",
