@@ -266,9 +266,14 @@ def automated_operators_repository_commit_message(
             + f"\nstdout:\n{stdout}\nstderr:\n{stderr}",
         )
 
-    git_sha = stdout.strip()
+    operator_git_sha = stdout.strip()
     operator_repository_url = github_repository_url(operator_repository)
-    git_sha_url = f"{operator_repository_url}/commit/{git_sha}"
+    operator_git_tag_url = (
+        f"{operator_repository_url}/releases/tag/{operator_git_tag}"
+    )
+    operator_git_sha_url = (
+        f"{operator_repository_url}/commit/{operator_git_sha}"
+    )
 
     commit_message_subject = (
         f"Release {operator_name} {operator_git_tag} (automated commit)."
@@ -279,8 +284,8 @@ def automated_operators_repository_commit_message(
             f"|-|-|",
             f"| Repository | {operator_repository_url} |",
             f"| Operator | {operator_name} |",
-            f"| Git tag | {operator_git_tag} |",
-            f"| Git SHA | {git_sha_url} |",
+            f"| Git tag | {operator_git_tag_url} |",
+            f"| Git SHA | {operator_git_sha_url} |",
             f"| Date | {datetime.utcnow()} |",
         ]
     )
@@ -319,7 +324,7 @@ def main() -> int:
         ) = prepare_git_repositories(
             base_directory,
             operators_repository,
-            operators_base_branch,
+            operators_git_tag,
             operators_branch,
             operator_repository,
             operator_git_tag,
