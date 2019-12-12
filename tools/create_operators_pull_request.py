@@ -254,14 +254,15 @@ def automated_operators_repository_commit_message(
     operator_git_tag: str,
     debug: bool,
 ) -> Tuple[int, str]:
-    rc, git_sha, stderr = get_sha(operator_directory, debug)
+    rc, stdout, stderr = get_sha(operator_directory, debug)
     if rc != 0:
         return (
             rc,
             f"Failed to get git SHA from '{operator_directory}'"
-            + f"\nstdout:\n{git_sha}\nstderr:\n{stderr}",
+            + f"\nstdout:\n{stdout}\nstderr:\n{stderr}",
         )
 
+    git_sha = stdout.strip()
     operator_repository_url = github_repository_url(operator_repository)
     git_sha_url = f"{operator_repository_url}/commit/{git_sha}"
 
