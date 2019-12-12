@@ -7,6 +7,16 @@ The KUDO Cassandra Operator makes it easy to deploy and manage
 | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | <a href="https://teamcity.mesosphere.io/viewType.html?buildTypeId=Frameworks_DataServices_Kudo_Cassandra_Nightly_CassandraNightlyKonvoyKudo&branch_Frameworks_DataServices_Kudo_Cassandra_Nightly=%3Cdefault%3E&tab=buildTypeStatusDiv"><img src="https://teamcity.mesosphere.io/app/rest/builds/buildType:(id:Frameworks_DataServices_Kudo_Cassandra_Nightly_CassandraNightlyKonvoyKudo)/statusIcon"/></a> |
 
+## Getting started
+
+The KUDO Cassandra operator requires KUDO 0.8.0 and Kubernetes 1.15.0.
+
+To install it run
+
+```bash
+kubectl kudo install cassandra
+```
+
 ## Features
 
 - Configurable `cassandra.yaml` and `jvm.options` parameters
@@ -28,16 +38,6 @@ The KUDO Cassandra Operator makes it easy to deploy and manage
 - Liveness probe
 - Multi-datacenter support
 - Diagnostics bundle
-
-## Getting started
-
-The KUDO Cassandra operator requires KUDO 0.8.0 and Kubernetes 1.15.0.
-
-To install it run
-
-```bash
-kubectl kudo install cassandra
-```
 
 ## Documentation
 
