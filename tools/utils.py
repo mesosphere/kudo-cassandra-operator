@@ -71,7 +71,12 @@ def remote_exists(repository_directory: str, remote: str, debug: bool) -> bool:
     return rc == 0
 
 
-def get_sha(repository_directory: str, debug: bool) -> bool:
+def get_git_version(debug: bool) -> Tuple[bool, str, str]:
+    rc, stdout, stderr = run(f"git --version", debug=debug)
+    return rc, stdout, stderr
+
+
+def get_sha(repository_directory: str, debug: bool) -> Tuple[bool, str, str]:
     rc, stdout, stderr = run(
         f"git -C {repository_directory} rev-parse HEAD", debug=debug
     )

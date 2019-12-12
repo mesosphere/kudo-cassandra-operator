@@ -11,12 +11,13 @@ import tempfile
 
 from utils import (
     run,
+    get_git_version,
+    get_git_user,
     get_sha,
     github_repository_url,
     authenticated_github_repository_url,
     clone_repository,
     random_short_string,
-    get_git_user,
     configure_git_user,
     create_pull_request,
 )
@@ -314,6 +315,14 @@ def main() -> int:
     operators_branch = automated_operators_repository_branch(
         operator_name, operator_git_tag
     )
+
+    rc, stdout, stderr = get_git_version(debug)
+    if rc != 0:
+        log.error(error_message)
+        return rc
+    git_version = stdout.strip()
+
+    log.info("git version: {git_version}")
 
     with tempfile.TemporaryDirectory(prefix="kudo_dev_") as base_directory:
         (
