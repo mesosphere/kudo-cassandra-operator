@@ -261,12 +261,12 @@ def main() -> int:
             log.error(error_message)
             return rc
 
-        rc, error_message = create_local_tag(git_tag, debug)
+        rc, error_message = create_local_tag(directory, git_tag, debug)
         if rc != 0:
             log.error(error_message)
             return rc
 
-        rc, error_message = push_tag(git_remote, git_tag, debug)
+        rc, error_message = push_tag(directory, git_remote, git_tag, debug)
         if rc != 0:
             log.error(error_message)
             return rc
