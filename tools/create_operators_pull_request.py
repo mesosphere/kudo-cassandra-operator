@@ -190,7 +190,7 @@ def commit_copied_operator_files_and_push_branch(
     operator_git_tag: str,
     git_commit_message: str,
     debug: bool,
-):
+) -> Tuple[int, str]:
     """Copies, commits and pushes operator-related files from the operator
     repository (e.g., mesosphere/kudo-cassandra-operator) directory into the
     "operators collection" repository (e.g., kudobuilder/operators)
@@ -245,6 +245,8 @@ def commit_copied_operator_files_and_push_branch(
             f"Failed to push '{operators_branch}' to '{operators_repository}'"
             + f"\nstdout:\n{stdout}\nstderr:\n{stderr}",
         )
+
+    return 0, ""
 
 
 def automated_operators_repository_commit_message(
