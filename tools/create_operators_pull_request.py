@@ -55,8 +55,10 @@ def parse_arguments() -> argparse.Namespace:
         type=str,
         required=True,
         help="The git tag in the KUDO operator repository to copy the files "
-        + f"from. This is also the directory name in {OPERATORS_REPOSITORY}, "
-        + "e.g., repository/cassandra/$OPERATOR_GIT_TAG",
+        + f"from. The major and minor version from OPERATOR_GIT_TAG will be "
+        + "the directory name in {OPERATORS_REPOSITORY}, e.g., a "
+        + "'v3.11.5-0.1.0' git tag will result in a 'repository/cassandra/3.11'"
+        + "directory",
     )
     parser.add_argument(
         "--github-token",

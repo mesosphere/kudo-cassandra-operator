@@ -74,7 +74,8 @@ def parse_arguments() -> argparse.Namespace:
         "--git-branch",
         type=str,
         required=True,
-        help="The name of the KUDO Operator repository git branch",
+        help="The git branch in the KUDO Operator repository from which "
+        + "the GIT_TAG will be created",
     )
     parser.add_argument(
         "--git-tag",
