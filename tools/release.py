@@ -236,7 +236,9 @@ def main() -> int:
 
     rc, stdout, stderr = get_git_version(debug)
     if rc != 0:
-        log.error(error_message)
+        log.error(
+            f"Error getting git version:\nstdout:\n{stdout}\nstderr:\n{stderr}"
+        )
         return rc
     git_version = stdout.strip()
 
