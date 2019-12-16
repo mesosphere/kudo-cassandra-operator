@@ -8,9 +8,12 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [3.11.5-0.1.1] - 2019-12-12
+
 ### Added
 
 - Upgrade Apache Cassandra to 3.11.5
+  ([#29](https://github.com/mesosphere/kudo-cassandra-operator/pull/29))
 - Apache 2.0 license
   ([c792f72d](https://github.com/mesosphere/kudo-cassandra-operator/commit/c792f72d132ad01dd02859f3dc266f3e54142e32))
 
@@ -31,6 +34,8 @@ and this project adheres to
 - Unpriviledged container execution
 
 [unreleased]:
-  https://github.com/mesosphere/kudo-cassandra-operator/compare/v3.11.4-0.1.0...HEAD
+  https://github.com/mesosphere/kudo-cassandra-operator/compare/v3.11.5-0.1.1...HEAD
+[3.11.5-0.1.1]:
+  https://github.com/mesosphere/kudo-cassandra-operator/compare/v3.11.4-0.1.0...v3.11.5-0.1.1
 [3.11.4-0.1.0]:
   https://github.com/mesosphere/kudo-cassandra-operator/releases/tag/v3.11.4-0.1.0
