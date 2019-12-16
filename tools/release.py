@@ -244,7 +244,7 @@ def main() -> int:
 
     log.info(git_version)
 
-    with tempfile.TemporaryDirectory(prefix="_kudo_dev") as base_directory:
+    with tempfile.TemporaryDirectory(prefix="kudo_dev_") as base_directory:
         rc, directory, error_message = clone_repository(
             repository_url, git_branch, base_directory, debug
         )
