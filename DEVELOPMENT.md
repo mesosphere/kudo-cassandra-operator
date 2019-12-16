@@ -322,10 +322,10 @@ commonality with regards to the operator itself. The operator version
 progression is only meaningful within an app version's `major.minor` family,
 i.e. `3.11.x` and `4.0.x`.
 
-### Development Cycle
+### Development cycle
 
 Development happens in feature branches which are merged into the master branch
-via GitHub PRs. When it is deciced that a release needs to be done, a _stable
+via GitHub PRs. When it is decided that a release needs to be done, a _stable
 branch_ is created based off of the master branch. In this branch all operator
 dependencies (Docker images, KUDO version, Golang libraries, etc.) are made to
 be _stable_, as in no _running versions_ (SNAPSHOT, latest, etc.) are used. The
@@ -334,7 +334,7 @@ version is updated according to the versioning scheme shown above. After these
 changes are committed to the stable branch, a git tag is created with the
 version to be released.
 
-### Release Workflow
+### Release workflow
 
 A concrete example: it is desired that `3.11.4-0.1.0` is released:
 
@@ -353,7 +353,7 @@ above:
   --git-tag v3.11.4-0.1.0
 ```
 
-### Backport Workflow
+### Backport workflow
 
 Any further releases based on Apache Cassandra `3.11.x` should originate from
 backported changes from the master branch to the existing `release-v3.11`
@@ -390,7 +390,22 @@ the last step above:
   --git-tag v3.11.5-0.1.1
 ```
 
-### Snapshots
+### Additional release work
+
+After doing the steps in either "[release workflow](#release-workflow)" or
+"[backport workflow](#backport-workflow)" a git tag will be created. A few
+further steps are required.
+
+1. Create an entry for the release in the [CHANGELOG](CHANGELOG.md).
+1. Copy the contents of the release entry in the CHANGELOG to the release entry
+   under
+   "[releases](https://github.com/mesosphere/kudo-cassandra-operator/releases)".
+1. Publish the operator to the
+   [kudobuilder/operators](https://github.com/kudobuilder/operators) repository.
+   Check the [following section](#synchronize-changes-to-kudobuilderoperators)
+   for more details on how to get this done.
+
+### Snapshots (to be implemented)
 
 Snapshot release versions will have the following format:
 
