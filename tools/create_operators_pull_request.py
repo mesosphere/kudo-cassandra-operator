@@ -206,6 +206,7 @@ def commit_copied_operator_files_and_push_branch(
     command = " && ".join(
         [
             f"mkdir -p {versioned_operator_directory}",
+            f"cp {operator_directory}/README.md {versioned_operator_directory}",
             f"cp -r {operator_directory}/operator {versioned_operator_directory}",
             f"cp -r {operator_directory}/docs {versioned_operator_directory}",
         ]
