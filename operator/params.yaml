@@ -123,6 +123,26 @@ parameters:
     description: "The JMX port that will be used to interface with the Cassandra application."
     default: "7199"
 
+  - name: TRANSPORT_ENCRYPTION_ENABLED
+    description: "Enable transport encryption (TLS)."
+    default: "true"
+
+  - name: TLS_SECRET_NAME
+    description: "The secret that contains TLS certificate and is mounted as a volume to make them available to the nodes."
+    default: "cassandra-tls"
+  
+  - name: TRANSPORT_ENCRYPTION_CLIENT_ENABLED
+    description: "Enable Server-Client TLS communication."
+    default: "true"
+  
+  - name: TRANSPORT_ENCRYPTION_CLIENT_ALLOW_PLAINTEXT
+    description: "Enable Server-Client plaintext communication alongside encrypted traffic."
+    default: "false"
+  
+  - name: TRANSPORT_ENCRYPTION_CIPHERS
+    description: "Comma-separated list of JSSE Cipher Suite Names."
+    default: "TLS_RSA_WITH_AES_128_CBC_SHA,TLS_RSA_WITH_AES_256_CBC_SHA,TLS_DHE_RSA_WITH_AES_128_CBC_SHA,TLS_DHE_RSA_WITH_AES_256_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA"
+
   - name: NODE_MIN_HEAP_SIZE_MB
     description: "The minimum JVM heap size in MB. This has a smart default and doesn't need to be explicitly set."
     default: ""
