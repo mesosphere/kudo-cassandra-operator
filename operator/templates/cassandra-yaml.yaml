@@ -1178,6 +1178,7 @@ data:
       truststore: /etc/cassandra/tls/cassandra.server.truststore.jks
       truststore_password: {{ .Params.TLS_TRUSTSTORE_PASSWORD }}
       protocol: TLSv1.2
+      # TODO(mpereira): make this parameterizable and default to true.
       # require_client_auth: false
       algorithm: SunX509
       store_type: JKS
