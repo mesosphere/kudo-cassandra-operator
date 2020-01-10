@@ -76,7 +76,7 @@ spec:
             - -c
           args:
             - {{ if eq .Params.TRANSPORT_ENCRYPTION_ENABLED "true" }}
-              /etc/tls/bin/enable-tls.sh;
+              /etc/tls/bin/generate-tls-artifacts.sh;
               {{ end }}
               cassandra -f
           # Comment the `command` above and uncomment the one below if pods are
@@ -152,10 +152,12 @@ spec:
             - name: node-readiness-probe-sh
               mountPath: /etc/cassandra/node-readiness-probe.sh
               subPath: node-readiness-probe.sh
+          # TODO(mpereira): this needs to check if
+          # `.Params.TRANSPORT_ENCRYPTION_ENABLED` is true as well.
           {{ if eq .Params.TRANSPORT_ENCRYPTION_ENABLED "true" }}
-            - name: cassandra-tls
+            - name: {{ .Params.TLS_SECRET_NAME }}
               mountPath: /etc/tls/certs
-            - name: enable-tls
+            - name: generate-tls-artifacts
               mountPath: /etc/tls/bin
           {{ end }}
         {{ if eq .Params.PROMETHEUS_EXPORTER_ENABLED "true" }}
@@ -220,13 +222,16 @@ spec:
           configMap:
             name: {{ .Name }}-cassandra-exporter-config-yml
         {{ end }}
+        # TODO(mpereira): this needs to check if
+        # `.Params.TRANSPORT_ENCRYPTION_ENABLED` is true as well.
         {{ if eq .Params.TRANSPORT_ENCRYPTION_ENABLED "true" }}
-        - name: cassandra-tls
+        - name: {{ .Params.TLS_SECRET_NAME }}
           secret:
             secretName: {{ .Params.TLS_SECRET_NAME }}
-        - name: enable-tls
+        - name: generate-tls-artifacts
           configMap:
-            name:  {{ .Name }}-enable-tls
+            name:  {{ .Name }}-generate-tls-artifacts-sh
+            # TODO(mpereira): is 777 really necessary?
             defaultMode: 0777
         {{ end }}
   volumeClaimTemplates:

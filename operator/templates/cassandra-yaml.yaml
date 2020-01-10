@@ -1147,44 +1147,41 @@ data:
     # The passwords used in these options must match the passwords used when generating
     # the keystore and truststore.  For instructions on generating these files, see:
     # http://download.oracle.com/javase/6/docs/technotes/guides/security/jsse/JSSERefGuide.html#CreateKeystore
-    #
-    # TODO(mpereira): we'll have to configure this when adding TLS support.
+
     {{ if eq .Params.TRANSPORT_ENCRYPTION_ENABLED "true" }}
     server_encryption_options:
       internode_encryption: all
       keystore: /etc/cassandra/tls/cassandra.server.keystore.jks
-      keystore_password: changeit
+      keystore_password: {{ .Params.TLS_KEYSTORE_PASSWORD }}
       truststore: /etc/cassandra/tls/cassandra.server.truststore.jks
-      truststore_password: changeit
+      truststore_password: {{ .Params.TLS_TRUSTSTORE_PASSWORD }}
       protocol: TLSv1.2
       cipher_suites: [{{ .Params.TRANSPORT_ENCRYPTION_CIPHERS }}]
       algorithm: SunX509
       store_type: JKS
-      # require_client_auth: false
+      require_client_auth: {{ .Params.TRANSPORT_ENCRYPTION_REQUIRE_CLIENT_AUTH }}
       # require_endpoint_verification: false
+    {{ end }}
 
-    # enable or disable client/server encryption.
-    #
-    # TODO(mpereira): we'll have to configure this when adding TLS support.
     {{ if eq .Params.TRANSPORT_ENCRYPTION_CLIENT_ENABLED "true" }}
     client_encryption_options:
+      # If both 'enabled' and 'optional' are set to 'true', both encrypted and
+      # unencrypted connections are allowed.
       enabled: true
-      # If enabled and optional is set to true encrypted and unencrypted connections are handled.
       {{ if eq .Params.TRANSPORT_ENCRYPTION_CLIENT_ALLOW_PLAINTEXT "true"}}
       optional: true
       {{ else }}
       optional: false
       {{ end }}
       keystore: /etc/cassandra/tls/cassandra.server.keystore.jks
-      keystore_password: changeit
+      keystore_password: {{ .Params.TLS_KEYSTORE_PASSWORD }}
       truststore: /etc/cassandra/tls/cassandra.server.truststore.jks
-      truststore_password: changeit
+      truststore_password: {{ .Params.TLS_TRUSTSTORE_PASSWORD }}
       protocol: TLSv1.2
       # require_client_auth: false
       algorithm: SunX509
       store_type: JKS
       cipher_suites: [{{ .Params.TRANSPORT_ENCRYPTION_CIPHERS }}]
-    {{ end }}
     {{ end }}
 
     # internode_compression controls whether traffic between nodes is
