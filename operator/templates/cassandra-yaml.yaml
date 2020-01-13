@@ -1168,7 +1168,7 @@ data:
       # If both 'enabled' and 'optional' are set to 'true', both encrypted and
       # unencrypted connections are allowed.
       enabled: true
-      {{ if eq .Params.TRANSPORT_ENCRYPTION_CLIENT_ALLOW_PLAINTEXT "true"}}
+      {{ if eq .Params.TRANSPORT_ENCRYPTION_CLIENT_ALLOW_PLAINTEXT "true" }}
       optional: true
       {{ else }}
       optional: false
@@ -1178,8 +1178,7 @@ data:
       truststore: /etc/cassandra/tls/cassandra.server.truststore.jks
       truststore_password: {{ .Params.TLS_TRUSTSTORE_PASSWORD }}
       protocol: TLSv1.2
-      # TODO(mpereira): make this parameterizable and default to true.
-      # require_client_auth: false
+      require_client_auth: {{ .Params.TRANSPORT_ENCRYPTION_CLIENT_REQUIRE_CLIENT_AUTH }}
       algorithm: SunX509
       store_type: JKS
       cipher_suites: [{{ .Params.TRANSPORT_ENCRYPTION_CIPHERS }}]

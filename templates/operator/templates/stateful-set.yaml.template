@@ -73,8 +73,13 @@ spec:
             successThreshold: {{ .Params.NODE_READINESS_PROBE_SUCCESS_THRESHOLD }}
             failureThreshold: {{ .Params.NODE_READINESS_PROBE_FAILURE_THRESHOLD }}
           command:
-            - cassandra
-            - -f
+            - bash
+            - -c
+          args:
+            - {{ if or (eq .Params.TRANSPORT_ENCRYPTION_ENABLED "true") (eq .Params.TRANSPORT_ENCRYPTION_CLIENT_ENABLED "true") }}
+              /etc/tls/bin/generate-tls-artifacts.sh;
+              {{ end }}
+              cassandra -f
           # Comment the `command` above and uncomment the one below if pods are
           # crash-looping and you would like to investigate their state. This is
           # analogous to a `pod pause` in SDK-land.
@@ -148,6 +153,12 @@ spec:
             - name: node-readiness-probe-sh
               mountPath: /etc/cassandra/node-readiness-probe.sh
               subPath: node-readiness-probe.sh
+          {{ if or (eq .Params.TRANSPORT_ENCRYPTION_ENABLED "true") (eq .Params.TRANSPORT_ENCRYPTION_CLIENT_ENABLED "true") }}
+            - name: {{ .Params.TLS_SECRET_NAME }}
+              mountPath: /etc/tls/certs
+            - name: generate-tls-artifacts
+              mountPath: /etc/tls/bin
+          {{ end }}
         {{ if eq .Params.PROMETHEUS_EXPORTER_ENABLED "true" }}
         - name: prometheus-exporter
           image: {{ .Params.PROMETHEUS_EXPORTER_DOCKER_IMAGE }}
@@ -209,6 +220,16 @@ spec:
         - name: cassandra-exporter-config-yml
           configMap:
             name: {{ .Name }}-cassandra-exporter-config-yml
+        {{ end }}
+        {{ if or (eq .Params.TRANSPORT_ENCRYPTION_ENABLED "true") (eq .Params.TRANSPORT_ENCRYPTION_CLIENT_ENABLED "true") }}
+        - name: {{ .Params.TLS_SECRET_NAME }}
+          secret:
+            secretName: {{ .Params.TLS_SECRET_NAME }}
+        - name: generate-tls-artifacts
+          configMap:
+            name:  {{ .Name }}-generate-tls-artifacts-sh
+            # TODO(mpereira): is 777 really necessary?
+            defaultMode: 0777
         {{ end }}
   volumeClaimTemplates:
     - metadata:

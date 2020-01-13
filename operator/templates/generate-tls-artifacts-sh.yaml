@@ -12,8 +12,8 @@ data:
     mkdir -p /etc/cassandra/tls
     pushd /etc/cassandra/tls
 
-    readonly certificate="cassandra.crt"
-    readonly private_key="cassandra.key"
+    readonly certificate="tls.crt"
+    readonly private_key="tls.key"
 
     # In days.
     readonly validity=900

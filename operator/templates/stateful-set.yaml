@@ -76,7 +76,7 @@ spec:
             - bash
             - -c
           args:
-            - {{ if eq .Params.TRANSPORT_ENCRYPTION_ENABLED "true" }}
+            - {{ if or (eq .Params.TRANSPORT_ENCRYPTION_ENABLED "true") (eq .Params.TRANSPORT_ENCRYPTION_CLIENT_ENABLED "true") }}
               /etc/tls/bin/generate-tls-artifacts.sh;
               {{ end }}
               cassandra -f
@@ -153,9 +153,7 @@ spec:
             - name: node-readiness-probe-sh
               mountPath: /etc/cassandra/node-readiness-probe.sh
               subPath: node-readiness-probe.sh
-          # TODO(mpereira): this needs to check if
-          # `.Params.TRANSPORT_ENCRYPTION_ENABLED` is true as well.
-          {{ if eq .Params.TRANSPORT_ENCRYPTION_ENABLED "true" }}
+          {{ if or (eq .Params.TRANSPORT_ENCRYPTION_ENABLED "true") (eq .Params.TRANSPORT_ENCRYPTION_CLIENT_ENABLED "true") }}
             - name: {{ .Params.TLS_SECRET_NAME }}
               mountPath: /etc/tls/certs
             - name: generate-tls-artifacts
@@ -223,9 +221,7 @@ spec:
           configMap:
             name: {{ .Name }}-cassandra-exporter-config-yml
         {{ end }}
-        # TODO(mpereira): this needs to check if
-        # `.Params.TRANSPORT_ENCRYPTION_ENABLED` is true as well.
-        {{ if eq .Params.TRANSPORT_ENCRYPTION_ENABLED "true" }}
+        {{ if or (eq .Params.TRANSPORT_ENCRYPTION_ENABLED "true") (eq .Params.TRANSPORT_ENCRYPTION_CLIENT_ENABLED "true") }}
         - name: {{ .Params.TLS_SECRET_NAME }}
           secret:
             secretName: {{ .Params.TLS_SECRET_NAME }}

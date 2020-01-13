@@ -123,6 +123,42 @@ parameters:
     description: "The JMX port that will be used to interface with the Cassandra application."
     default: "7199"
 
+  - name: TRANSPORT_ENCRYPTION_ENABLED
+    description: "Enable node-to-node encryption."
+    default: "false"
+
+  - name: TRANSPORT_ENCRYPTION_CLIENT_ENABLED
+    description: "Enable client-to-node encryption."
+    default: "false"
+
+  - name: TRANSPORT_ENCRYPTION_CIPHERS
+    description: "Comma-separated list of JSSE Cipher Suite Names."
+    default: "TLS_RSA_WITH_AES_128_CBC_SHA,TLS_RSA_WITH_AES_256_CBC_SHA,TLS_DHE_RSA_WITH_AES_128_CBC_SHA,TLS_DHE_RSA_WITH_AES_256_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA"
+
+  - name: TRANSPORT_ENCRYPTION_CLIENT_ALLOW_PLAINTEXT
+    description: "Enable Server-Client plaintext communication alongside encrypted traffic."
+    default: "false"
+
+  - name: TRANSPORT_ENCRYPTION_REQUIRE_CLIENT_AUTH
+    description: "TODO"
+    default: "true"
+
+  - name: TRANSPORT_ENCRYPTION_CLIENT_REQUIRE_CLIENT_AUTH
+    description: "TODO"
+    default: "true"
+
+  - name: TLS_SECRET_NAME
+    description: "The TLS secret that contains the self-signed certificate (cassandra.crt) and the private key (cassandra.key). The secret will be mounted as a volume to make the artifacts available."
+    default: "cassandra-tls"
+
+  - name: TLS_KEYSTORE_PASSWORD
+    description: "TODO"
+    default: "cassandra"
+
+  - name: TLS_TRUSTSTORE_PASSWORD
+    description: "TODO"
+    default: "cassandra"
+
   - name: NODE_MIN_HEAP_SIZE_MB
     description: "The minimum JVM heap size in MB. This has a smart default and doesn't need to be explicitly set."
     default: ""
