@@ -411,7 +411,7 @@ func UpgradeOperator(
 func UninstallOperator(
 	operatorName string, namespaceName string, instanceName string,
 ) error {
-	uninstallScript := "../../scripts/uninstall_operator.sh"
+	uninstallScript := "../../../scripts/uninstall_operator.sh"
 	uninstallScriptParameters := []string{
 		"--operator", operatorName,
 		"--instance", instanceName,

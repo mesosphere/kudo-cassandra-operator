@@ -1,4 +1,4 @@
-package suites
+package cassandra_sanity
 
 import (
 	"encoding/base64"
@@ -49,7 +49,12 @@ var _ = Describe(TestName, func() {
 	It("Installs the latest operator from the package registry", func() {
 		// TODO(mpereira) Assert that it isn't running.
 		err := kudo.InstallOperator(
-			OperatorName, TestNamespace, TestInstance, []string{},
+			OperatorName, TestNamespace, TestInstance, []string{
+				"NODE_CPU_MC=200",
+				"NODE_MEM_MIB=800",
+				"PROMETHEUS_EXPORTER_CPU_MC=100",
+				"PROMETHEUS_EXPORTER_MEM_MIB=200",
+			},
 		)
 		if err != nil {
 			Fail(
