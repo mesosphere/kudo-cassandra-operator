@@ -22,7 +22,7 @@ tasks:
         - cassandra-exporter-config-yml.yaml
         - service-monitor.yaml
         - node-readiness-probe-sh.yaml
-        - enable-tls.yaml
+        - generate-tls-artifacts.yaml
 
 plans:
   deploy:
