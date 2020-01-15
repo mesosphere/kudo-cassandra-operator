@@ -1,6 +1,7 @@
 # Upgrade KUDO Cassandra
 
-This runbook explains how to upgrade a running KUDO Cassandra instance to a newer version of KUDO Cassandra.
+This guide explains how to upgrade a running KUDO Cassandra instance to a newer
+version of KUDO Cassandra.
 
 ## Requirements
 
@@ -13,8 +14,9 @@ This runbook explains how to upgrade a running KUDO Cassandra instance to a newe
 
 #### 1. Set the shell variables
 
-The examples below assume that the instance and namespace names are stored in the following shell variables.
-With this assumptions met, you should be able to copy-paste the commands easily.
+The examples below assume that the instance and namespace names are stored in
+the following shell variables. With this assumptions met, you should be able to
+copy-paste the commands easily.
 
 ```bash
 instance_name=cassandra
@@ -40,12 +42,12 @@ About to upgrade to 0.1.2
 
 #### 3. Verify the state of the KUDO Cassandra instance
 
-
 ```bash
 kubectl kudo plan status --instance=$instance_name -n $namespace_name
 ```
 
 In the output note if:
+
 - the current `Operator-Version` matches your expectation, and
 - deploy plan is `COMPLETE`
 
@@ -83,6 +85,7 @@ kubectl kudo plan status --instance=$instance_name -n $namespace_name
 ```
 
 Expected output should show:
+
 - `deploy` plan either `IN_PROGRESS` or `COMPLETE`, and
 - the `Operator-Version` to match the destination version.
 
@@ -96,4 +99,5 @@ Plan(s) for "cassandra" in namespace "default":
 
 ```
 
-Once the pods are ready (passing readiness and liveness checks),the plan should change to `COMPLETE`.
+Once the pods are ready (passing readiness and liveness checks), the plan should
+change to `COMPLETE`.
