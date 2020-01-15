@@ -20,6 +20,7 @@ spec:
       labels:
         app: {{ .Name }}
         cassandra: {{ .OperatorName }}
+        kudo.dev/instance: {{ .Name }}
     spec:
       securityContext:
         # FIXME(mpereira): are the two settings below necessary?
