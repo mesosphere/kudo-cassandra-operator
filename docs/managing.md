@@ -75,7 +75,7 @@ configurable settings.
 
 ## Upgrading
 
-TODO
+See the [document on upgrading](upgrading.md).
 
 ## Debugging
 
