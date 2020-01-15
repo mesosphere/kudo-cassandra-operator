@@ -82,8 +82,9 @@ Check the plan status:
 kubectl kudo plan status --instance=$instance_name -n $namespace_name
 ```
 
-Expected output should show `deploy` either `IN_PROGRESS` or `COMPLETE` and the `Operator-Version` to match the
-destination version.
+Expected output should show:
+- `deploy` plan either `IN_PROGRESS` or `COMPLETE`, and
+- the `Operator-Version` to match the destination version.
 
 ```
 Plan(s) for "cassandra" in namespace "default":
