@@ -3,7 +3,7 @@
 This guide explains how to upgrade a running KUDO Cassandra instance to a newer
 version of KUDO Cassandra.
 
-## Requirements
+## Pre-conditions
 
 - KUDO Cassandra instance running
 - KUDO CLI installed
