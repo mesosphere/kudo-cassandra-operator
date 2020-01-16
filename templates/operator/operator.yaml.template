@@ -1,6 +1,6 @@
 apiVersion: kudo.dev/v1beta1
 name: "cassandra"
-version: "${OPERATOR_VERSION}"
+operatorVersion: "${OPERATOR_VERSION}"
 kudoVersion: "${KUDO_VERSION}"
 kubernetesVersion: "${KUBERNETES_VERSION}"
 appVersion: "${CASSANDRA_VERSION}"
@@ -20,7 +20,7 @@ tasks:
         - jvm-options.yaml
         - stateful-set.yaml
         - cassandra-exporter-config-yml.yaml
-        - service-monitor-yaml.yaml
+        - service-monitor.yaml
         - node-readiness-probe-sh.yaml
 
 plans:
