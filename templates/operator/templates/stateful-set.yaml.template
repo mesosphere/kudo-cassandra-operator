@@ -79,6 +79,7 @@ spec:
             - {{ if or (eq .Params.TRANSPORT_ENCRYPTION_ENABLED "true") (eq .Params.TRANSPORT_ENCRYPTION_CLIENT_ENABLED "true") }}
               /etc/tls/bin/generate-tls-artifacts.sh;
               {{ end }}
+              /etc/cassandra/generate-cqlshrc.sh;
               cassandra -f
           # Comment the `command` above and uncomment the one below if pods are
           # crash-looping and you would like to investigate their state. This is
@@ -153,6 +154,11 @@ spec:
             - name: node-readiness-probe-sh
               mountPath: /etc/cassandra/node-readiness-probe.sh
               subPath: node-readiness-probe.sh
+            - name: cassandra-home
+              mountPath: /home/cassandra/.cassandra/
+            - name: generate-cqlshrc-sh
+              mountPath: /etc/cassandra/generate-cqlshrc.sh
+              subPath: generate-cqlshrc.sh
           {{ if or (eq .Params.TRANSPORT_ENCRYPTION_ENABLED "true") (eq .Params.TRANSPORT_ENCRYPTION_CLIENT_ENABLED "true") }}
             - name: {{ .Params.TLS_SECRET_NAME }}
               mountPath: /etc/tls/certs
@@ -216,6 +222,12 @@ spec:
         - name: node-readiness-probe-sh
           configMap:
             name: {{ .Name }}-node-readiness-probe-sh
+        - name: cassandra-home
+          emptyDir: {}
+        - name: generate-cqlshrc-sh
+          configMap:
+            name: {{ .Name }}-generate-cqlshrc-sh
+            defaultMode: 0755
         {{ if eq .Params.PROMETHEUS_EXPORTER_ENABLED "true" }}
         - name: cassandra-exporter-config-yml
           configMap:
