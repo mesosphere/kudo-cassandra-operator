@@ -74,19 +74,19 @@ for parameter in operator_name \
   fi
 done
 
-${kubectl} delete instance \
+${kubectl} delete instance.kudo.dev \
            "${operator_instance_name}" \
            -n "${operator_instance_namespace}"
 
 # TODO(mpereira): add a flag to skip operatorversion deletion?
-${kubectl} delete operatorversion \
+${kubectl} delete operatorversion.kudo.dev \
            "${operator_name}-${operator_version}" \
            -n "${operator_instance_namespace}"
 
 # TODO(mpereira): add a flag to skip operator deletion?
-${kubectl} delete operator \
-        "${operator_name}" \
-        -n "${operator_instance_namespace}"
+${kubectl} delete operator.kudo.dev \
+           "${operator_name}" \
+           -n "${operator_instance_namespace}"
 
 # TODO(mpereira): add a flag to skip pvc deletion?
 declare -a PVCS
