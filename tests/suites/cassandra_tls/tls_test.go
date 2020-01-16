@@ -33,6 +33,19 @@ var (
 	)
 )
 
+const testCQLScript = "CREATE SCHEMA schema1 WITH replication = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 };" +
+	"USE schema1;" +
+	"CREATE TABLE users (user_id varchar PRIMARY KEY,first varchar,last varchar,age int);" +
+	"INSERT INTO users (user_id, first, last, age) VALUES ('jsmith', 'John', 'Smith', 42);" +
+	"SELECT * FROM users;"
+
+const testCQLScriptOutput = `
+ user_id | age | first | last
+---------+-----+-------+-------
+  jsmith |  42 |  John | Smith
+
+(1 rows)`
+
 func assertNumberOfCassandraNodes(nodeCount int) {
 	nodes, err := cassandra.Nodes(TestNamespace, TestInstance)
 	Expect(err).To(BeNil())
@@ -40,43 +53,142 @@ func assertNumberOfCassandraNodes(nodeCount int) {
 }
 
 var _ = Describe(TestName, func() {
-	It("Installs the operator from a directory", func() {
-		err := kudo.InstallOperator(
-			OperatorDirectory, TestNamespace, TestInstance, []string{
-				"NODE_CPU_MC=200",
-				"NODE_MEM_MIB=800",
-				"PROMETHEUS_EXPORTER_CPU_MC=100",
-				"PROMETHEUS_EXPORTER_MEM_MIB=200",
-				"TLS_SECRET_NAME=cassandra-tls",
-				"TRANSPORT_ENCRYPTION_ENABLED=true",
-				"TRANSPORT_ENCRYPTION_CLIENT_ENABLED=true",
-			},
-		)
-		if err != nil {
-			Fail(
-				"Failing the full suite: failed to install operator instance that the " +
-					"following tests depend on",
+	Context("Installs the operator with node-to-node encryption enabled", func() {
+		It("Installs the operator from a directory", func() {
+			err := kudo.InstallOperator(
+				OperatorDirectory, TestNamespace, TestInstance, []string{
+					"NODE_CPU_MC=200",
+					"NODE_MEM_MIB=800",
+					"PROMETHEUS_EXPORTER_CPU_MC=100",
+					"PROMETHEUS_EXPORTER_MEM_MIB=200",
+					"TLS_SECRET_NAME=cassandra-tls",
+					"TRANSPORT_ENCRYPTION_ENABLED=true",
+				},
 			)
-		}
-		Expect(err).To(BeNil())
-
-		assertNumberOfCassandraNodes(NodeCount)
+			if err != nil {
+				Fail(
+					"Failing the full suite: failed to install operator instance that the " +
+						"following tests depend on",
+				)
+			}
+			Expect(err).To(BeNil())
+			assertNumberOfCassandraNodes(NodeCount)
+		})
+		It("Check container logs", func() {
+			output, _ := k8s.FetchLogsOfPod(
+				TestNamespace,
+				fmt.Sprintf("%s-%s-%d", TestInstance, "node", 0),
+				"cassandra",
+			)
+			Expect(output).To(ContainSubstring("Starting Encrypted Messaging Service on SSL port"))
+			// Expect(output).To(ContainSubstring("Enabling encrypted CQL connections between client and server"))
+		})
+		It("Test data read & write using CQLSH", func() {
+			output, err := cassandra.CQLSH(
+				TestNamespace,
+				TestInstance,
+				testCQLScript,
+			)
+			Expect(err).To(BeNil())
+			Expect(output.String()).To(ContainSubstring(testCQLScriptOutput))
+		})
+		It("Uninstalls the operator", func() {
+			err := kudo.UninstallOperator(OperatorName, TestNamespace, TestInstance)
+			Expect(err).To(BeNil())
+			// TODO(mpereira) Assert that it isn't running.
+		})
 	})
 
-	It("Check logs", func() {
-		output, _ := k8s.FetchLogsOfPod(
-			TestNamespace,
-			fmt.Sprintf("%s-%s-%d", TestInstance, "node", 0),
-			"cassandra",
-		)
-		Expect(output).To(ContainSubstring("Starting Encrypted Messaging Service on SSL port"))
-		Expect(output).To(ContainSubstring("Enabling encrypted CQL connections between client and server"))
+	Context("Installs the operator with client-to-node encryption enabled", func() {
+		It("Installs the operator from a directory", func() {
+			err := kudo.InstallOperator(
+				OperatorDirectory, TestNamespace, TestInstance, []string{
+					"NODE_CPU_MC=200",
+					"NODE_MEM_MIB=800",
+					"PROMETHEUS_EXPORTER_CPU_MC=100",
+					"PROMETHEUS_EXPORTER_MEM_MIB=200",
+					"TLS_SECRET_NAME=cassandra-tls",
+					"TRANSPORT_ENCRYPTION_CLIENT_ENABLED=true",
+				},
+			)
+			if err != nil {
+				Fail(
+					"Failing the full suite: failed to install operator instance that the " +
+						"following tests depend on",
+				)
+			}
+			Expect(err).To(BeNil())
+			assertNumberOfCassandraNodes(NodeCount)
+		})
+		It("Check container logs", func() {
+			output, _ := k8s.FetchLogsOfPod(
+				TestNamespace,
+				fmt.Sprintf("%s-%s-%d", TestInstance, "node", 0),
+				"cassandra",
+			)
+			Expect(output).To(ContainSubstring("Enabling encrypted CQL connections between client and server"))
+		})
+		It("Test data read & write using CQLSH", func() {
+			output, err := cassandra.CQLSH(
+				TestNamespace,
+				TestInstance,
+				testCQLScript,
+			)
+			Expect(err).To(BeNil())
+			Expect(output.String()).To(ContainSubstring(testCQLScriptOutput))
+		})
+		It("Uninstalls the operator", func() {
+			err := kudo.UninstallOperator(OperatorName, TestNamespace, TestInstance)
+			Expect(err).To(BeNil())
+			// TODO(mpereira) Assert that it isn't running.
+		})
 	})
 
-	It("Uninstalls the operator", func() {
-		err := kudo.UninstallOperator(OperatorName, TestNamespace, TestInstance)
-		Expect(err).To(BeNil())
-		// TODO(mpereira) Assert that it isn't running.
+	Context("Installs the operator with node-to-node and client-to-node encryption enabled", func() {
+		It("Installs the operator from a directory", func() {
+			err := kudo.InstallOperator(
+				OperatorDirectory, TestNamespace, TestInstance, []string{
+					"NODE_CPU_MC=200",
+					"NODE_MEM_MIB=800",
+					"PROMETHEUS_EXPORTER_CPU_MC=100",
+					"PROMETHEUS_EXPORTER_MEM_MIB=200",
+					"TLS_SECRET_NAME=cassandra-tls",
+					"TRANSPORT_ENCRYPTION_ENABLED=true",
+					"TRANSPORT_ENCRYPTION_CLIENT_ENABLED=true",
+				},
+			)
+			if err != nil {
+				Fail(
+					"Failing the full suite: failed to install operator instance that the " +
+						"following tests depend on",
+				)
+			}
+			Expect(err).To(BeNil())
+			assertNumberOfCassandraNodes(NodeCount)
+		})
+		It("Check container logs", func() {
+			output, _ := k8s.FetchLogsOfPod(
+				TestNamespace,
+				fmt.Sprintf("%s-%s-%d", TestInstance, "node", 0),
+				"cassandra",
+			)
+			Expect(output).To(ContainSubstring("Starting Encrypted Messaging Service on SSL port"))
+			Expect(output).To(ContainSubstring("Enabling encrypted CQL connections between client and server"))
+		})
+		It("Test data read & write using CQLSH", func() {
+			output, err := cassandra.CQLSH(
+				TestNamespace,
+				TestInstance,
+				testCQLScript,
+			)
+			Expect(err).To(BeNil())
+			Expect(output.String()).To(ContainSubstring(testCQLScriptOutput))
+		})
+		It("Uninstalls the operator", func() {
+			err := kudo.UninstallOperator(OperatorName, TestNamespace, TestInstance)
+			Expect(err).To(BeNil())
+			// TODO(mpereira) Assert that it isn't running.
+		})
 	})
 })
 
