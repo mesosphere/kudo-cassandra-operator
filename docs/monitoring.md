@@ -4,13 +4,16 @@ This guide explains how to set up monitoring for KUDO Cassandra.
 
 ## Description
 
-The KUDO Cassandra operator will by default export metrics to Prometheus via a
-Prometheus exporter based on the
+The KUDO Cassandra operator will export metrics to Prometheus by default. It
+achieves this using a Prometheus exporter based on the
 [criteo/cassandra_exporter](https://github.com/criteo/cassandra_exporter).
 
+When the `PROMETHEUS_EXPORTER_ENABLED` parameter is at its default value of
+`true`:
+
 - A `prometheus-exporter` container will run in the same pod as every Cassandra
-  `node` container and listen for connections at `PROMETHEUS_EXPORTER_PORT`,
-  which is set to `7200` by default.
+  `node` container. It will listen for connections on
+  `PROMETHEUS_EXPORTER_PORT`, which is set to `7200` by default.
 - A `prometheus-exporter-port` will be added to the KUDO Cassandra operator
   [Service](https://kubernetes.io/docs/concepts/services-networking/service/).
 - A
@@ -24,8 +27,7 @@ Prometheus exporter based on the
   [Grafana](https://grafana.com/) set up in the cluster. The
   [kube-prometheus](https://github.com/coreos/kube-prometheus) project provides
   both of them.
-- KUDO CLI installed (only necessary if you _had_ disabled this feature
-  previously).
+- KUDO CLI installed (only necessary if you _had_ disabled this feature before).
 
 The examples below assume that the instance and namespace names are stored in
 the following shell variables. With this assumptions met, you should be able to
