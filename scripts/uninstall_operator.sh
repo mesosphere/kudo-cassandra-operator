@@ -92,8 +92,8 @@ ${kubectl} delete operator.kudo.dev \
 declare -a PVCS
 mapfile -t PVCS < <(
   ${kubectl} get pvc \
-          -n "${operator_instance_namespace}" \
-          -o 'jsonpath={.items[*].metadata.name}' \
+             -n "${operator_instance_namespace}" \
+             -o 'jsonpath={.items[*].metadata.name}' \
     | tr ' ' '\n'
 )
 
