@@ -1,10 +1,10 @@
 # Accessing Cassandra
 
-This guide explains how to access a running KUDO Cassandra instance from your application
-deployed within the same kubernetes cluster.
+This guide explains how to access a running KUDO Cassandra instance from your
+application deployed within the same kubernetes cluster.
 
-:warning: The KUDO Cassandra operator currently does not support accessing the Cassandra instance
-from outside of the same kubernetes cluster.
+:warning: The KUDO Cassandra operator currently does not support accessing the
+Cassandra instance from outside of the same kubernetes cluster.
 
 ## Pre-conditions
 
@@ -41,15 +41,14 @@ cassandra   16h
 
 ### Access Cassandra
 
-You will run simple `cqlsh` command within an ephemeral pod on the kubernetes cluster to
-show how to connect to Cassandra.
+You will run simple `cqlsh` command within an ephemeral pod on the kubernetes
+cluster to show how to connect to Cassandra.
 
 #### 3. Retrieve the docker image name
 
-In order to run `cqlsh` you need a container image which has it.
-For simplicity, you can use the same image which is used by the cassandra nodes.
-Run the following command to retrieve its full name:
-
+In order to run `cqlsh` you need a container image which has it. For simplicity,
+you can use the same image which is used by the cassandra nodes. Run the
+following command to retrieve its full name:
 
 ```bash
 cassandra_image=$(kubectl get pod -n ${namespace_name} ${instance_name}-node-0 --template '{{ (index .spec.containers 0).image }}{{"\n"}}')
@@ -79,13 +78,15 @@ pod/cassandra-access-demo created
 
 #### 5. Retrieve the output
 
-Once the pod completes (which should take no more than a few seconds), you can see its output using a command such as the following:
+Once the pod completes (which should take no more than a few seconds), you can
+see its output using a command such as the following:
 
 ```bash
 kubectl logs cassandra-access-demo
 ```
 
 Example output:
+
 ```
 Warning: Cannot create directory at `/home/cassandra/.cassandra`. Command history will not be saved.
 
@@ -93,7 +94,6 @@ Warning: Cannot create directory at `/home/cassandra/.cassandra`. Command histor
 Cluster: cassandra1
 Partitioner: Murmur3Partitioner
 ```
-
 
 ### Cleanup
 
@@ -104,6 +104,7 @@ kubectl delete pod cassandra-access-demo
 ```
 
 Expected output:
+
 ```
 pod "cassandra-access-demo" deleted
 ```
