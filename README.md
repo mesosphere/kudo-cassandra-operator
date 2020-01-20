@@ -28,11 +28,11 @@ kubectl kudo install cassandra
 - Rolling parameter updates
 - Readiness probe
 - Unpriviledged container execution
+- Node-to-Node and Node-to-Client communication encryption
 
 ## Roadmap
 
 - Backup/restore
-- TLS
 - Rack-awareness
 - Node replace
 - Inter-pod anti-affinity
@@ -48,6 +48,7 @@ kubectl kudo install cassandra
 - [Managing](/docs/managing.md)
 - [Upgrading](/docs/upgrading.md)
 - [Monitoring](/docs/monitoring.md)
+- [Security](./docs/secuity.md)
 - [Parameters reference](/docs/parameters.md)
 
 ## Version Chart
