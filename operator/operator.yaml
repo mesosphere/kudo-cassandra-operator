@@ -1,6 +1,6 @@
 apiVersion: kudo.dev/v1beta1
 name: "cassandra"
-operatorVersion: "0.1.2"
+operatorVersion: "0.1.2-20200120t170941z-2c1fe686bede"
 kudoVersion: "0.10.0"
 kubernetesVersion: "1.15.0"
 appVersion: "3.11.5"
