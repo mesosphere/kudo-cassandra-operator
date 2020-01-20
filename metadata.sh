@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2155
 
 # This script contains metadata that is either used in other scripts or expanded
 # into templates via `tools/compile_templates.sh`.
@@ -17,16 +18,35 @@ _project_directory="$(readlink -f "${_script_directory}")"
 export PROJECT_NAME="kudo-cassandra-operator"
 export OPERATOR_NAME="cassandra"
 
-# More details about KUDO Versioning:
-# https://github.com/kudobuilder/kudo/pull/1028
-export OPERATOR_VERSION="0.1.2"
-
-# This should be an empty string on stable branches and "-SNAPSHOT" on
-# non-stable branches.
-export POSSIBLE_SNAPSHOT_SUFFIX="-SNAPSHOT"
-
 export OPERATOR_DIRECTORY="${_project_directory}/operator"
 export VENDOR_DIRECTORY="${_project_directory}/shared/vendor"
+
+################################################################################
+################################## Version #####################################
+################################################################################
+
+# This should be made "false" on stable branches (i.e. from which releases are
+# made) and kept as "true" on non-stable branches (e.g. master, feature
+# branches).
+export IS_SNAPSHOT="true"
+
+# Will append a "-dirty" suffix to the operator version if the git repository is
+# dirty.
+export POSSIBLE_DIRTY_SUFFIX="$(git diff --quiet || echo '-dirty')"
+
+# FIXME(mpereira): using lower case for "T" and "Z" because KUDO can't deal with
+# that yet. It will be possible when this is fixed:
+# https://github.com/kudobuilder/kudo/issues/1294.
+export NOW_UTC="$(date +%Y%m%dt%H%M%Sz)"
+export GIT_SHA="$(git rev-parse --short=12 HEAD)"
+
+if [ "${IS_SNAPSHOT}" = "true" ]; then
+  export POSSIBLE_SNAPSHOT_SUFFIX="-${NOW_UTC}-${GIT_SHA}${POSSIBLE_DIRTY_SUFFIX}"
+else
+  export POSSIBLE_SNAPSHOT_SUFFIX=""
+fi
+
+export OPERATOR_VERSION="0.1.2${POSSIBLE_SNAPSHOT_SUFFIX}"
 
 ################################################################################
 ############################### Dependencies ###################################

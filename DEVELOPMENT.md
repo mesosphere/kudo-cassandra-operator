@@ -405,18 +405,18 @@ further steps are required.
    Check the [following section](#synchronize-changes-to-kudobuilderoperators)
    for more details on how to get this done.
 
-### Snapshots (to be implemented)
+### Snapshots
 
-Snapshot release versions will have the following format:
+Snapshot release versions have the following format:
 
 ```
-${app_version}-0.0.0-YYYYMMDDHHmmss-${git_sha}
+${app_version}-0.0.0-YYYYMMDDTHHmmssZ-${git_sha}
 ```
 
 Example:
 
 ```
-3.11.4-0.0.0-20191225000000-1909e93ffa56
+3.11.4-0.0.0-20191225T203000Z-1909e93ffa56
 ```
 
 ## Synchronize changes to [kudobuilder/operators](https://github.com/kudobuilder/operators)
