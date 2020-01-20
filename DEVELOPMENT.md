@@ -410,13 +410,13 @@ further steps are required.
 Snapshot release versions have the following format:
 
 ```
-${app_version}-0.0.0-YYYYMMDDTHHmmssZ-${git_sha}
+${app_version}-${operator_version}-YYYYMMDDTHHmmssZ-${git_sha}
 ```
 
 Example:
 
 ```
-3.11.4-0.0.0-20191225T203000Z-1909e93ffa56
+3.11.4-1.0.0-20191225T203000Z-1909e93ffa56
 ```
 
 ## Synchronize changes to [kudobuilder/operators](https://github.com/kudobuilder/operators)
