@@ -1,10 +1,10 @@
 # Accessing Cassandra
 
 This guide explains how to access a running KUDO Cassandra instance from your
-application deployed within the same kubernetes cluster.
+application deployed within the same Kubernetes cluster.
 
 :warning: The KUDO Cassandra operator currently does not support accessing the
-Cassandra instance from outside of the same kubernetes cluster.
+Cassandra instance from outside of the same Kubernetes cluster.
 
 ## Pre-conditions
 
@@ -41,7 +41,7 @@ cassandra   16h
 
 ### Access Cassandra
 
-You will run simple `cqlsh` command within an ephemeral pod on the kubernetes
+You will run simple `cqlsh` command within an ephemeral pod on the Kubernetes
 cluster to show how to connect to Cassandra.
 
 #### 3. Retrieve the docker image name
