@@ -63,7 +63,7 @@ var _ = Describe(TestName, func() {
 	})
 
 	It("Upgrades the running operator instance from a directory", func() {
-		before, _, err := kudo.OverrideOperatorVersion(OperatorVersion)
+		before, _, err := kudo.OverrideOperatorVersion(TestOperatorVersion)
 		if err != nil {
 			log.Errorf(
 				"Error overriding operatorVersion from '%s' to '%s': %v",
