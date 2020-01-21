@@ -8,6 +8,9 @@ and this project adheres to
 
 ## [Unreleased]
 
+- Fix issue that prevented setting a custom volume storage class.
+  ([#42](https://github.com/mesosphere/kudo-cassandra-operator/pull/42))
+
 ## [3.11.5-0.1.1] - 2019-12-12
 
 ### Added
