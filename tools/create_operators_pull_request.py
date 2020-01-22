@@ -55,8 +55,10 @@ def parse_arguments() -> argparse.Namespace:
         type=str,
         required=True,
         help="The git tag in the KUDO operator repository to copy the files "
-        + f"from. This is also the directory name in {OPERATORS_REPOSITORY}, "
-        + "e.g., repository/cassandra/$OPERATOR_GIT_TAG",
+        + f"from. The major and minor version from OPERATOR_GIT_TAG will be "
+        + "the directory name in {OPERATORS_REPOSITORY}, e.g., a "
+        + "'v3.11.5-0.1.0' git tag will result in a 'repository/cassandra/3.11'"
+        + "directory",
     )
     parser.add_argument(
         "--github-token",
@@ -204,6 +206,7 @@ def commit_copied_operator_files_and_push_branch(
     command = " && ".join(
         [
             f"mkdir -p {versioned_operator_directory}",
+            f"cp {operator_directory}/README.md {versioned_operator_directory}",
             f"cp -r {operator_directory}/operator {versioned_operator_directory}",
             f"cp -r {operator_directory}/docs {versioned_operator_directory}",
         ]
@@ -318,7 +321,9 @@ def main() -> int:
 
     rc, stdout, stderr = get_git_version(debug)
     if rc != 0:
-        log.error(error_message)
+        log.error(
+            f"Error getting git version:\nstdout:\n{stdout}\nstderr:\n{stderr}"
+        )
         return rc
     git_version = stdout.strip()
 

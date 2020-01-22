@@ -15,6 +15,10 @@ DEFAULT_PARAMS_YAML = path.realpath(
     path.join(SCRIPT_DIRECTORY, "../operator/params.yaml")
 )
 
+DEFAULT_DOCS_MARKDOWN = path.realpath(
+    path.join(SCRIPT_DIRECTORY, "../docs/parameters.yaml")
+)
+
 log = logging.getLogger(__name__)
 
 
@@ -75,6 +79,7 @@ def main() -> int:
     parser.add_argument(
         "--output-markdown-file",
         help="Relative path for output file with markdown table",
+        default=DEFAULT_DOCS_MARKDOWN,
     )
 
     args = parser.parse_args()

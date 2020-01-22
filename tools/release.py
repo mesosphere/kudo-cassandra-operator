@@ -74,7 +74,8 @@ def parse_arguments() -> argparse.Namespace:
         "--git-branch",
         type=str,
         required=True,
-        help="The name of the KUDO Operator repository git branch",
+        help="The git branch in the KUDO Operator repository from which "
+        + "the GIT_TAG will be created",
     )
     parser.add_argument(
         "--git-tag",
@@ -236,13 +237,15 @@ def main() -> int:
 
     rc, stdout, stderr = get_git_version(debug)
     if rc != 0:
-        log.error(error_message)
+        log.error(
+            f"Error getting git version:\nstdout:\n{stdout}\nstderr:\n{stderr}"
+        )
         return rc
     git_version = stdout.strip()
 
     log.info(git_version)
 
-    with tempfile.TemporaryDirectory(prefix="_kudo_dev") as base_directory:
+    with tempfile.TemporaryDirectory(prefix="kudo_dev_") as base_directory:
         rc, directory, error_message = clone_repository(
             repository_url, git_branch, base_directory, debug
         )
