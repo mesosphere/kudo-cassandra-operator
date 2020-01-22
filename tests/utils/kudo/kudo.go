@@ -27,6 +27,8 @@ var (
 	kubectlOptions       *kubectl.KubectlOptions
 	kudo                 *versioned.Clientset
 	operatorYamlFilePath = "../../operator/operator.yaml"
+	// https://regex101.com/r/Ly7O1x/3/
+	semVerRegexp = `(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)(?:-(?P<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+(?P<buildmetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?`
 )
 
 // Init TODO function comment.
@@ -57,7 +59,9 @@ func OverrideOperatorVersion(
 
 	scanner := bufio.NewScanner(bytes.NewReader(operatorYamlBytes))
 
-	operatorVersionLineRegexp := "^operatorVersion:\\s*\"(\\d+\\.\\d+.\\d+)\"$"
+	operatorVersionLineRegexp := fmt.Sprintf(
+		`^operatorVersion:\s*"(%s)"$`, semVerRegexp,
+	)
 	operatorVersionLineLinePattern := regexp.MustCompile(operatorVersionLineRegexp)
 
 	var operatorVersion string
