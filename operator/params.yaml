@@ -64,6 +64,26 @@ parameters:
     description: "Override the name of the Cassandra cluster set by the operator. This shouldn't be explicit set, unless you know what you're doing."
     default: ""
 
+  - name: EXTERNAL_NATIVE_TRANSPORT
+    displayName: "Enable external native transport"
+    description: "This exposes the Cassandra cluster via an external service so it can be accessed from outside the Kubernetes cluster"
+    default: "false"
+
+  - name: EXTERNAL_RPC
+    displayName: "Enable external rpc"
+    description: "This exposes the Cassandra cluster via an external service so it can be accessed from outside the Kubernetes cluster. Works only if START_RPC is true"
+    default: "false"
+
+  - name: EXTERNAL_NATIVE_TRANSPORT_PORT
+    displayName: "External advertised native transport port"
+    description: "The external port to use for Cassandra native transport protocol."
+    default: "9042"
+
+  - name: EXTERNAL_RPC_PORT
+    displayName: "External advertised rpc port"
+    description: "The external port to use for Cassandra rpc protocol."
+    default: "9160"
+
   ################################################################################
   ######################### Prometheus exporter settings #########################
   ################################################################################

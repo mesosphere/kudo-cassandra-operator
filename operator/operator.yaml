@@ -22,7 +22,7 @@ tasks:
         - cassandra-exporter-config-yml.yaml
         - service-monitor.yaml
         - node-readiness-probe-sh.yaml
-
+        - external-service.yaml
 plans:
   deploy:
     strategy: serial
