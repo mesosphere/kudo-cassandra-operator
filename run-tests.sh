@@ -26,7 +26,7 @@ docker run \
        -e "OPERATOR_DIRECTORY=${container_operator_directory}" \
        -e "VENDOR_DIRECTORY=${container_vendor_directory}" \
        -v "${kubeconfig}:${container_kubeconfig}:ro" \
-       -v "${OPERATOR_DIRECTORY}:${container_operator_directory}:ro" \
+       -v "${OPERATOR_DIRECTORY}:${container_operator_directory}" \
        -v "${project_directory}:${container_project_directory}" \
        -v "${VENDOR_DIRECTORY}:${container_vendor_directory}" \
        -w "${container_project_directory}" \
