@@ -52,6 +52,14 @@ func CreateNamespace(namespaceName string) error {
 	return err
 }
 
+func GetService(namespace string, serviceName string) (*corev1.Service, error) {
+	service, err := clientset.CoreV1().Services(namespace).Get(serviceName, metav1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+	return service, nil
+}
+
 // DeleteNamespace TODO function comment.
 func DeleteNamespace(namespaceName string) error {
 	log.Infof("Deleting namespace '%s'", namespaceName)
