@@ -2,6 +2,7 @@ package suites
 
 import (
 	"fmt"
+
 	"github.com/mesosphere/kudo-cassandra-operator/tests/utils/k8s"
 	"github.com/mesosphere/kudo-cassandra-operator/tests/utils/kudo"
 	. "github.com/onsi/ginkgo"
