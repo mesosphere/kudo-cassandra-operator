@@ -21,7 +21,7 @@ var _ = Describe("external service", func() {
 		}
 		Expect(err).To(BeNil())
 
-		assertNumberOfCassandraNodes(TestNamespace, TestInstance, NodeCount)
+		assertNumberOfCassandraNodes(NodeCount)
 	})
 
 	It("Allows external access to the cassandra cluster", func() {
@@ -32,7 +32,7 @@ var _ = Describe("external service", func() {
 		)
 		Expect(err).To(BeNil())
 
-		assertNumberOfCassandraNodes(TestNamespace, TestInstance, NodeCount)
+		assertNumberOfCassandraNodes(NodeCount)
 
 		svc, err := k8s.GetService(TestNamespace, fmt.Sprintf("%s-svc-external", TestInstance))
 		Expect(err).To(BeNil())
@@ -50,7 +50,7 @@ var _ = Describe("external service", func() {
 		)
 		Expect(err).To(BeNil())
 
-		assertNumberOfCassandraNodes(TestNamespace, TestInstance, NodeCount)
+		assertNumberOfCassandraNodes(NodeCount)
 
 		svc, err := k8s.GetService(TestNamespace, fmt.Sprintf("%s-svc-external", TestInstance))
 		Expect(err).To(BeNil())
