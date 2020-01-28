@@ -49,7 +49,7 @@ var _ = Describe(TestName, func() {
 	It("Installs the latest operator from the package registry", func() {
 		// TODO(mpereira) Assert that it isn't running.
 		err := kudo.InstallOperator(
-			OperatorName, TestNamespace, TestInstance, []string{},
+			OperatorName, TestNamespace, TestInstance, []string{}, true,
 		)
 		if err != nil {
 			Fail(
@@ -74,7 +74,7 @@ var _ = Describe(TestName, func() {
 		Expect(err).To(BeNil())
 
 		err = kudo.UpgradeOperator(
-			OperatorDirectory, TestNamespace, TestInstance, []string{},
+			OperatorDirectory, TestNamespace, TestInstance, []string{}, true,
 		)
 		if err != nil {
 			Fail(
@@ -93,6 +93,7 @@ var _ = Describe(TestName, func() {
 			TestNamespace,
 			TestInstance,
 			map[string]string{"NODE_COUNT": strconv.Itoa(NodeCount)},
+			true,
 		)
 		if err != nil {
 			Fail("Failing the full suite: failed to scale the number of nodes")
@@ -117,6 +118,7 @@ var _ = Describe(TestName, func() {
 			TestNamespace,
 			TestInstance,
 			map[string]string{strings.ToUpper(parameter): desiredValue},
+			true,
 		)
 		Expect(err).To(BeNil())
 
@@ -147,6 +149,7 @@ var _ = Describe(TestName, func() {
 			TestNamespace,
 			TestInstance,
 			map[string]string{"CUSTOM_CASSANDRA_YAML_BASE64": desiredEncodedProperties},
+			true,
 		)
 		Expect(err).To(BeNil())
 
@@ -178,6 +181,7 @@ var _ = Describe(TestName, func() {
 			TestNamespace,
 			TestInstance,
 			map[string]string{"CUSTOM_JVM_OPTIONS_BASE64": desiredEncodedProperties},
+			true,
 		)
 		Expect(err).To(BeNil())
 

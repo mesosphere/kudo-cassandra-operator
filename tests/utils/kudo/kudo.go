@@ -247,6 +247,7 @@ func WaitForOperatorDeployComplete(
 // UpdateInstanceParameters TODO function comment.
 func UpdateInstanceParameters(
 	namespaceName string, instanceName string, parameters map[string]string,
+	waitForDeploy bool,
 ) error {
 	log.Infof(
 		"Updating instance (instance='%s', namespace='%s')",
@@ -293,10 +294,12 @@ func UpdateInstanceParameters(
 		return err
 	}
 
-	err = WaitForOperatorDeployInProgress(namespaceName, instanceName)
-	if err != nil {
-		log.Errorf("Error waiting for operator deploy to be in-progress: %s", err)
-		return err
+	if waitForDeploy {
+		err = WaitForOperatorDeployInProgress(namespaceName, instanceName)
+		if err != nil {
+			log.Errorf("Error waiting for operator deploy to be in-progress: %s", err)
+			return err
+		}
 	}
 
 	err = WaitForOperatorDeployComplete(namespaceName, instanceName)
@@ -319,6 +322,7 @@ func installOrUpgradeOperator(
 	namespaceName string,
 	instanceName string,
 	parameters []string,
+	waitForDeploy bool,
 ) error {
 	if installOrUpgrade != "install" && installOrUpgrade != "upgrade" {
 		fmt.Errorf(
@@ -365,10 +369,12 @@ func installOrUpgradeOperator(
 		operatorNameOrDirectory, installOrUpgrade, instanceName, namespaceName,
 	)
 
-	err = WaitForOperatorDeployInProgress(namespaceName, instanceName)
-	if err != nil {
-		log.Errorf("Error waiting for operator deploy to be in-progress: %s", err)
-		return err
+	if waitForDeploy {
+		err = WaitForOperatorDeployInProgress(namespaceName, instanceName)
+		if err != nil {
+			log.Errorf("Error waiting for operator deploy to be in-progress: %s", err)
+			return err
+		}
 	}
 
 	err = WaitForOperatorDeployComplete(namespaceName, instanceName)
@@ -389,9 +395,10 @@ func InstallOperator(
 	namespaceName string,
 	instanceName string,
 	parameters []string,
+	waitForDeploy bool,
 ) error {
 	return installOrUpgradeOperator(
-		"install", operatorNameOrDirectory, namespaceName, instanceName, parameters,
+		"install", operatorNameOrDirectory, namespaceName, instanceName, parameters, waitForDeploy,
 	)
 }
 
@@ -401,9 +408,10 @@ func UpgradeOperator(
 	namespaceName string,
 	instanceName string,
 	parameters []string,
+	waitForDeploy bool,
 ) error {
 	return installOrUpgradeOperator(
-		"upgrade", operatorNameOrDirectory, namespaceName, instanceName, parameters,
+		"upgrade", operatorNameOrDirectory, namespaceName, instanceName, parameters, waitForDeploy,
 	)
 }
 

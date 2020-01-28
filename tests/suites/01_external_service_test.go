@@ -10,9 +10,11 @@ import (
 )
 
 var _ = Describe("external service", func() {
+	NodeCount = 3
+
 	It("Installs the operator from the current directory", func() {
 		err := kudo.InstallOperator(
-			OperatorDirectory, TestNamespace, TestInstance, []string{},
+			OperatorDirectory, TestNamespace, TestInstance, []string{}, true,
 		)
 		if err != nil {
 			Fail(
@@ -30,6 +32,7 @@ var _ = Describe("external service", func() {
 			TestNamespace,
 			TestInstance,
 			map[string]string{"EXTERNAL_NATIVE_TRANSPORT": "true"},
+			false,
 		)
 		Expect(err).To(BeNil())
 
@@ -45,9 +48,10 @@ var _ = Describe("external service", func() {
 			TestNamespace,
 			TestInstance,
 			map[string]string{
-				"START_RPC":                      "true",
-				"EXTERNAL_NATIVE_TRANSPORT_PORT": "true",
+				"START_RPC":    "true",
+				"EXTERNAL_RPC": "true",
 			},
+			true,
 		)
 		Expect(err).To(BeNil())
 
