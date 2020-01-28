@@ -43,15 +43,17 @@ kubectl kudo install cassandra
 
 ## Documentation
 
-- [Installing](./docs/installing.md)
-- [Upgrading](./docs/upgrading.md)
-- [Managing](./docs/managing.md)
-- [Monitoring](./docs/monitoring.md)
-- [Parameters reference](./docs/parameters.md)
+- [Installing](/docs/installing.md)
+- [Accessing](/docs/accessing.md)
+- [Managing](/docs/managing.md)
+- [Upgrading](/docs/upgrading.md)
+- [Monitoring](/docs/monitoring.md)
+- [Parameters reference](/docs/parameters.md)
 
 ## Version Chart
 
 | Version                                                                                          | Apache Cassandra version | Operator version | Minimum KUDO Version | Status | Release date |
 | ------------------------------------------------------------------------------------------------ | ------------------------ | ---------------- | -------------------- | ------ | ------------ |
+| [3.11.5-0.1.2](https://github.com/mesosphere/kudo-cassandra-operator/releases/tag/v3.11.5-0.1.2) | 3.11.5                   | 0.1.2            | 0.10.0               | beta   | 2020-01-22   |
 | [3.11.5-0.1.1](https://github.com/mesosphere/kudo-cassandra-operator/releases/tag/v3.11.5-0.1.1) | 3.11.5                   | 0.1.1            | 0.8.0                | beta   | 2019-12-12   |
 | [3.11.4-0.1.0](https://github.com/mesosphere/kudo-cassandra-operator/releases/tag/v3.11.4-0.1.0) | 3.11.4                   | 0.1.0            | 0.8.0                | beta   | 2019-11-13   |

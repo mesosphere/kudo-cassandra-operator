@@ -8,6 +8,15 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [3.11.5-0.1.2] - 2020-01-22
+
+### Changed
+
+- Make the KUDO Cassandra operator work with KUDO 0.10.0.
+  ([#34](https://github.com/mesosphere/kudo-cassandra-operator/pull/34))
+- Fix issue that prevented setting a custom volume storage class.
+  ([#42](https://github.com/mesosphere/kudo-cassandra-operator/pull/42))
+
 ## [3.11.5-0.1.1] - 2019-12-12
 
 ### Added
@@ -34,7 +43,9 @@ and this project adheres to
 - Unpriviledged container execution
 
 [unreleased]:
-  https://github.com/mesosphere/kudo-cassandra-operator/compare/v3.11.5-0.1.1...HEAD
+  https://github.com/mesosphere/kudo-cassandra-operator/compare/v3.11.5-0.1.2...HEAD
+[3.11.5-0.1.2]:
+  https://github.com/mesosphere/kudo-cassandra-operator/compare/v3.11.5-0.1.1...v3.11.5-0.1.2
 [3.11.5-0.1.1]:
   https://github.com/mesosphere/kudo-cassandra-operator/compare/v3.11.4-0.1.0...v3.11.5-0.1.1
 [3.11.4-0.1.0]:
