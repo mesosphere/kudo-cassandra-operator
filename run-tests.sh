@@ -22,6 +22,9 @@ readonly container_vendor_directory="${container_project_directory}/shared/vendo
 # If not DS_KUDO_VERSION is set, we use and install the required KUDO version from the operator
 export DS_KUDO_VERSION="${DS_KUDO_VERSION:-${KUDO_VERSION}}"
 
+# Strip 'v' from "v0.10.1" if it's there.
+if [[ ${DS_KUDO_VERSION:0:1} == "v" ]] ; then DS_KUDO_VERSION="${DS_KUDO_VERSION:1}"; fi
+
 docker run \
        --rm \
        -e "KUBECONFIG=${container_kubeconfig}" \
