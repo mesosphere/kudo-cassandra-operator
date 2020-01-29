@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	retry "github.com/avast/retry-go"
+	"github.com/avast/retry-go"
 	log "github.com/sirupsen/logrus"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -18,9 +18,9 @@ import (
 	"github.com/kudobuilder/kudo/pkg/apis/kudo/v1beta1"
 	"github.com/kudobuilder/kudo/pkg/client/clientset/versioned"
 
-	cmd "github.com/mesosphere/kudo-cassandra-operator/tests/utils/cmd"
-	k8s "github.com/mesosphere/kudo-cassandra-operator/tests/utils/k8s"
-	kubectl "github.com/mesosphere/kudo-cassandra-operator/tests/utils/kubectl"
+	"github.com/mesosphere/kudo-cassandra-operator/tests/utils/cmd"
+	"github.com/mesosphere/kudo-cassandra-operator/tests/utils/k8s"
+	"github.com/mesosphere/kudo-cassandra-operator/tests/utils/kubectl"
 )
 
 var (
@@ -136,15 +136,15 @@ func GetInstance(
 // GetInstanceAggregatedStatus TODO function comment.
 func GetInstanceAggregatedStatus(
 	namespaceName string, instanceName string,
-) (*v1beta1.ExecutionStatus, error) {
+) (*v1beta1.ExecutionStatus, int64, error) {
 	instance, err := GetInstance(namespaceName, instanceName)
 
 	if err != nil {
-		return nil, err
+		return nil, -1, err
 	}
 
 	if instance == nil {
-		return nil, err
+		return nil, -1, err
 	}
 
 	for _, plan := range instance.Status.PlanStatus {
@@ -157,7 +157,9 @@ func GetInstanceAggregatedStatus(
 		}
 	}
 
-	return &instance.Status.AggregatedStatus.Status, err
+	planUID := instance.Generation
+
+	return &instance.Status.AggregatedStatus.Status, planUID, err
 }
 
 // WaitForOperatorDeployStatus TODO function comment.
@@ -167,10 +169,11 @@ func WaitForOperatorDeployStatus(
 	instanceName string,
 	retryDelay time.Duration,
 	retryAttempts uint,
+	oldGeneration int64,
 ) error {
 	return retry.Do(
 		func() error {
-			status, err := GetInstanceAggregatedStatus(namespaceName, instanceName)
+			status, generation, err := GetInstanceAggregatedStatus(namespaceName, instanceName)
 
 			if err != nil {
 				log.Errorf(
@@ -191,6 +194,11 @@ func WaitForOperatorDeployStatus(
 					namespaceName,
 					expectedStatus,
 				)
+				return errors.New("")
+			}
+
+			if generation == oldGeneration {
+				log.Warnf("Old Instance Generation '%d' equals current generation, no new plan was triggered", generation)
 				return errors.New("")
 			}
 
@@ -234,15 +242,16 @@ func WaitForOperatorDeployInProgress(
 		instanceName,
 		retryDelay,
 		retryAttempts,
+		-1,
 	)
 }
 
 // WaitForOperatorDeployComplete TODO function comment.
 func WaitForOperatorDeployComplete(
-	namespaceName string, instanceName string,
+	namespaceName string, instanceName string, oldGeneration int64,
 ) error {
 	// 5 minutes.
-	retryDelay := time.Second * 10
+	retryDelay := time.Second * 15
 	var retryAttempts uint = 30
 
 	return WaitForOperatorDeployStatus(
@@ -251,6 +260,7 @@ func WaitForOperatorDeployComplete(
 		instanceName,
 		retryDelay,
 		retryAttempts,
+		oldGeneration,
 	)
 }
 
@@ -282,6 +292,9 @@ func UpdateInstanceParameters(
 		return errors.New("Instance not found")
 	}
 
+	// Save old Instance generation so we can verify that a new plan was executed
+	oldGeneration := instance.Generation
+
 	newParameters := make(map[string]string)
 	for k, v := range instance.Spec.Parameters {
 		newParameters[k] = v
@@ -312,7 +325,7 @@ func UpdateInstanceParameters(
 		}
 	}
 
-	err = WaitForOperatorDeployComplete(namespaceName, instanceName)
+	err = WaitForOperatorDeployComplete(namespaceName, instanceName, oldGeneration)
 	if err != nil {
 		log.Errorf("Error waiting for operator deploy to complete: %s", err)
 		return err
@@ -387,7 +400,7 @@ func installOrUpgradeOperator(
 		}
 	}
 
-	err = WaitForOperatorDeployComplete(namespaceName, instanceName)
+	err = WaitForOperatorDeployComplete(namespaceName, instanceName, -1)
 	if err != nil {
 		log.Errorf(
 			"Error waiting for '%s' operator deploy to complete: %s",

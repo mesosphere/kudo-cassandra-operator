@@ -61,4 +61,9 @@ var _ = Describe("external service", func() {
 		Expect(err).To(BeNil())
 		Expect(len(svc.Spec.Ports)).To(Equal(2))
 	})
+
+	It("Uninstalls the operator", func() {
+		err := kudo.UninstallOperator(OperatorName, TestNamespace, TestInstance)
+		Expect(err).To(BeNil())
+	})
 })
