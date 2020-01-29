@@ -2,11 +2,12 @@ package cassandra_externalservice
 
 import (
 	"fmt"
+	"os"
+	"testing"
+
 	"github.com/mesosphere/kudo-cassandra-operator/tests/utils/cassandra"
 	"github.com/mesosphere/kudo-cassandra-operator/tests/utils/kubectl"
 	"github.com/onsi/ginkgo/reporters"
-	"os"
-	"testing"
 
 	"github.com/mesosphere/kudo-cassandra-operator/tests/utils/k8s"
 	"github.com/mesosphere/kudo-cassandra-operator/tests/utils/kudo"
