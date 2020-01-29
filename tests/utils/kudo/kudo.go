@@ -147,6 +147,16 @@ func GetInstanceAggregatedStatus(
 		return nil, err
 	}
 
+	for _, plan := range instance.Status.PlanStatus {
+		for _, phase := range plan.Phases {
+			for _, step := range phase.Steps {
+				if step.Status == v1beta1.ErrorStatus {
+					log.Warnf("Plan %s, Phase %s, Step %s is in ErrorStatus: %s", plan.Name, phase.Name, step.Name, step.Message)
+				}
+			}
+		}
+	}
+
 	return &instance.Status.AggregatedStatus.Status, err
 }
 
