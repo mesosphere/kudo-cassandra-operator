@@ -14,15 +14,32 @@ readonly kubeconfig="${KUBECONFIG:-${HOME}/.kube/config}"
 readonly container_kubeconfig="/root/.kube/config"
 readonly container_project_directory="/${PROJECT_NAME}"
 readonly container_operator_directory="${container_project_directory}/operator"
+readonly container_tooling_directory="${container_project_directory}/shared"
 readonly container_vendor_directory="${container_project_directory}/shared/vendor"
 
 # Note: DS_KUDO_VERSION is used by the shared data-services-kudo tooling.
+# DS_KUDO_VERSION *may* be set by TeamCity Jobs if a fixed KUDO version is preferred for the test execution
+# If not DS_KUDO_VERSION is set, we use and install the required KUDO version from the operator
+export DS_KUDO_VERSION="${DS_KUDO_VERSION:-v${KUDO_VERSION}}"
 
 docker run \
        --rm \
        -e "KUBECONFIG=${container_kubeconfig}" \
        -e "KUBECTL_PATH=${container_vendor_directory}/kubectl.sh"  \
-       -e "DS_KUDO_VERSION=v${KUDO_VERSION}" \
+       -e "DS_KUDO_VERSION=v${DS_KUDO_VERSION}" \
+       -e "TOOLING_DIRECTORY=${container_tooling_directory}" \
+       -v "${kubeconfig}:${container_kubeconfig}:ro" \
+       -v "${project_directory}:${container_project_directory}" \
+       -v "${TOOLING_DIRECTORY}:${container_tooling_directory}" \
+       -w "${container_project_directory}" \
+       "${INTEGRATION_TESTS_DOCKER_IMAGE}" \
+       bash -c "${container_project_directory}/shared/deploy-kudo-controller-and-crds.sh"
+
+docker run \
+       --rm \
+       -e "KUBECONFIG=${container_kubeconfig}" \
+       -e "KUBECTL_PATH=${container_vendor_directory}/kubectl.sh"  \
+       -e "DS_KUDO_VERSION=v${DS_KUDO_VERSION}" \
        -e "OPERATOR_DIRECTORY=${container_operator_directory}" \
        -e "VENDOR_DIRECTORY=${container_vendor_directory}" \
        -v "${kubeconfig}:${container_kubeconfig}:ro" \
