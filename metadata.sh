@@ -26,6 +26,7 @@ export OPERATOR_VERSION="0.1.2"
 export POSSIBLE_SNAPSHOT_SUFFIX="-SNAPSHOT"
 
 export OPERATOR_DIRECTORY="${_project_directory}/operator"
+export TOOLING_DIRECTORY="${_project_directory}/shared"
 export VENDOR_DIRECTORY="${_project_directory}/shared/vendor"
 
 ################################################################################
