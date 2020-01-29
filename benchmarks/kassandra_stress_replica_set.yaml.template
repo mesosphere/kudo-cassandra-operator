@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: $workload_name
+  namespace: $kubernetes_namespace
+spec:
+  selector:
+    matchLabels:
+      app: $workload_name
+  replicas: $number_of_clients
+  template:
+    metadata:
+      labels:
+        app: $workload_name
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+        runAsGroup: 999
+        fsGroup: 999
+      containers:
+      - name: cassandra-stress
+        # TODO(mpereira): make this parameterizable.
+        image: mesosphere/cassandra:3.11.5-0.1.2
+        resources:
+          requests:
+            # TODO(mpereira): make this parameterizable.
+            cpu: 1000Mi
+            memory: 4096m
+          limits:
+            # TODO(mpereira): make this parameterizable.
+            cpu: 1000Mi
+            memory: 4096m
+        securityContext:
+          capabilities:
+            add:
+              - IPC_LOCK
+              - SYS_RESOURCE
+        command:
+          - /bin/bash
+        args:
+          - -c
+          - "set -x; cassandra-stress write duration=$duration cl=$consistency_level -node $hosts -schema 'keyspace=$keyspace_name replication(factor=$keyspace_replication_factor)' -rate 'threads=$threads_per_client throttle=$threads_throttle' -graph file=$graph_file title=$workload_name"

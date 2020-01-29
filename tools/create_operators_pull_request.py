@@ -205,6 +205,9 @@ def commit_copied_operator_files_and_push_branch(
 
     command = " && ".join(
         [
+            # TODO(mpereira): maybe we could use `rsync --delete` instead of
+            # `rm -rf` + `cp -r`?
+            f"rm -rf {versioned_operator_directory}",
             f"mkdir -p {versioned_operator_directory}",
             f"cp {operator_directory}/README.md {versioned_operator_directory}",
             f"cp -r {operator_directory}/operator {versioned_operator_directory}",

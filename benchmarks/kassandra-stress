@@ -1,0 +1,193 @@
+#!/usr/bin/env python3
+
+# import json
+# import math
+import logging
+from os import path
+from string import Template
+import argparse
+
+__directory__ = path.dirname(__file__)
+
+log = logging.getLogger(__name__)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%SZ",
+)
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Benchmark Cassandra clusters running on Kubernetes with "
+        + "cassandra-stress"
+    )
+
+    parser.add_argument(
+        "--kubernetes-namespace",
+        type=str,
+        default="default",
+        help="Kubernetes namespace for the Deployment and its Pods",
+    )
+
+    parser.add_argument(
+        "--workload-name",
+        type=str,
+        default="cassandra-stress",
+        help="Name for the whole workload",
+    )
+
+    parser.add_argument(
+        "--hosts",
+        type=str,
+        required=True,
+        help="Comma-separated list of cluster node (or load balancer) hosts "
+        + "to receive cassandra-stress requests",
+    )
+
+    parser.add_argument(
+        "--number-of-clients",
+        type=int,
+        default=1,
+        help="Number of parallel cassandra-stress clients",
+    )
+
+    # FIXME(mpereira): right now it's only possible to have 1 keyspace per
+    # client.
+    # parser.add_argument(
+    #     "--keyspaces-per-client",
+    #     type=int,
+    #     default=1,
+    #     help="Number of keyspaces to be created by each cassandra-stress "
+    #     + "client",
+    # )
+
+    parser.add_argument(
+        "--keyspace-name",
+        type=str,
+        default="cassandra_stress",
+        help="Keyspace name for each cassandra-stress client",
+    )
+
+    parser.add_argument(
+        "--one-keyspace-per-client",
+        type=bool,
+        default=False,
+        help="If true, each cassandra-stress client will interact with their "
+        + "own keyspace. Otherwise, all clients will interact with the same "
+        + "keyspace client",
+    )
+
+    parser.add_argument(
+        "--rows-per-client",
+        type=int,
+        default=1000000,
+        help="Number of rows to be written per cassandra-stress client",
+    )
+
+    parser.add_argument(
+        "--keyspace-replication-factor",
+        type=int,
+        default=1,
+        help="Replication factor for all keyspaces",
+    )
+
+    parser.add_argument(
+        "--consistency-level",
+        type=str,
+        default="ONE",
+        help="Consistency level for all requests",
+    )
+
+    parser.add_argument(
+        "--duration",
+        type=str,
+        help="Workload duration for all cassandra-stress clients",
+    )
+
+    parser.add_argument(
+        "--threads-per-client",
+        type=int,
+        help="Number of concurrent threads per cassandra-stress client",
+    )
+
+    parser.add_argument(
+        "--threads-throttle",
+        type=str,
+        help="Maximum number of per-thread operations per second",
+    )
+
+    args = parser.parse_args()
+    workload_name = args.workload_name
+    kubernetes_namespace = args.kubernetes_namespace
+    hosts = args.hosts
+    keyspace_name = args.keyspace_name
+    number_of_clients = args.number_of_clients
+    # keyspaces_per_client = args.keyspaces_per_client
+    one_keyspace_per_client = args.one_keyspace_per_client
+    rows_per_client = args.rows_per_client
+    keyspace_replication_factor = args.keyspace_replication_factor
+    consistency_level = args.consistency_level
+    duration = args.duration
+    threads_per_client = args.threads_per_client
+    threads_throttle = args.threads_throttle
+
+    total_number_of_keyspaces = (
+        1 if one_keyspace_per_client else number_of_clients
+    )
+
+    total_number_of_rows = total_number_of_keyspaces * rows_per_client
+
+    log.info("Parameters")
+    log.info("  workload_name:               %s", workload_name)
+    log.info("  kubernetes_namespace:        %s", kubernetes_namespace)
+    log.info("  hosts:                       %s", hosts)
+    log.info("  number_of_clients:           %s", number_of_clients)
+    log.info("  keyspace_name:               %s", keyspace_name)
+    log.info("  one_keyspace_per_client:     %s", one_keyspace_per_client)
+    # log.info("  keyspaces_per_client:        %s", keyspaces_per_client)
+    log.info("  rows_per_client:             %s", rows_per_client)
+    log.info("  keyspace_replication_factor: %s", keyspace_replication_factor)
+    log.info("  consistency_level:           %s", consistency_level)
+    log.info("  duration:                    %s", duration)
+    log.info("  threads_per_client:          %s", threads_per_client)
+    log.info("  threads_throttle:            %s", threads_throttle)
+    log.info("")
+    log.info("Calculated Parameters")
+    log.info("  total_number_of_keyspaces:   %s", total_number_of_keyspaces)
+    log.info("  total_number_of_rows:        %s", total_number_of_rows)
+
+    deployment_file = "kassandra_stress_deployment.yaml"
+    deployment_template = f"{deployment_file}.template"
+    graph_file = f"/tmp/{workload_name}.html"
+
+    with open(path.join(__directory__, deployment_template), "r") as f:
+        try:
+            template = Template(f.read())
+        except Exception:
+            pass
+
+        compiled_template = template.substitute(
+            workload_name=workload_name,
+            kubernetes_namespace=kubernetes_namespace,
+            number_of_clients=number_of_clients,
+            duration=duration,
+            hosts=hosts,
+            consistency_level=consistency_level,
+            keyspace_name=keyspace_name,
+            keyspace_replication_factor=keyspace_replication_factor,
+            threads_per_client=threads_per_client,
+            threads_throttle=threads_throttle,
+            graph_file=graph_file,
+        )
+
+        deployment_file_path = path.join(__directory__, deployment_file)
+
+        with open(deployment_file_path, "w") as f:
+            f.write(compiled_template)
+
+        log.info(f"Created Kubernetes Deployment file: {deployment_file_path}")
+
+
+if __name__ == "__main__":
+    main()
