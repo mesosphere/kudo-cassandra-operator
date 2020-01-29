@@ -87,21 +87,6 @@ var _ = Describe(TestName, func() {
 		assertNumberOfCassandraNodes(NodeCount)
 	})
 
-	It("Scales the instance's number of nodes", func() {
-		NodeCount = NodeCount + 1
-		err := kudo.UpdateInstanceParameters(
-			TestNamespace,
-			TestInstance,
-			map[string]string{"NODE_COUNT": strconv.Itoa(NodeCount)},
-		)
-		if err != nil {
-			Fail("Failing the full suite: failed to scale the number of nodes")
-		}
-		Expect(err).To(BeNil())
-
-		assertNumberOfCassandraNodes(NodeCount)
-	})
-
 	It("Updates the instance's parameters", func() {
 		parameter := "disk_failure_policy"
 		initialValue := "stop"
@@ -186,6 +171,21 @@ var _ = Describe(TestName, func() {
 		)
 		Expect(err).To(BeNil())
 		Expect(configuration[parameter]).To(Equal(desiredValue))
+
+		assertNumberOfCassandraNodes(NodeCount)
+	})
+
+	It("Scales the instance's number of nodes", func() {
+		NodeCount = NodeCount + 1
+		err := kudo.UpdateInstanceParameters(
+			TestNamespace,
+			TestInstance,
+			map[string]string{"NODE_COUNT": strconv.Itoa(NodeCount)},
+		)
+		if err != nil {
+			Fail("Failing the full suite: failed to scale the number of nodes")
+		}
+		Expect(err).To(BeNil())
 
 		assertNumberOfCassandraNodes(NodeCount)
 	})
