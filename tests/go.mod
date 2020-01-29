@@ -5,15 +5,15 @@ go 1.13
 require (
 	github.com/avast/retry-go v2.4.1+incompatible
 	github.com/imdario/mergo v0.3.8 // indirect
-	github.com/kudobuilder/kudo v0.8.0
+	github.com/kudobuilder/kudo v0.10.0
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/onsi/ginkgo v1.10.1
-	github.com/onsi/gomega v1.7.0
+	github.com/onsi/gomega v1.7.1
 	github.com/sirupsen/logrus v1.4.2
 	golang.org/x/time v0.0.0-20190921001708-c4c64cad1fd0 // indirect
 	k8s.io/api v0.0.0-20191016110408-35e52d86657a
 	k8s.io/apiextensions-apiserver v0.0.0-20191016113550-5357c4baaf65
-	k8s.io/apimachinery v0.0.0-20191004115801-a2eda9f80ab8
+	k8s.io/apimachinery v0.0.0-20191028221656-72ed19daf4bb
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
 )
 

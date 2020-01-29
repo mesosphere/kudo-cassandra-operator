@@ -148,6 +148,8 @@ kubectl exec "${kudo_cassandra_pod_0}" \
 
 - bash 4+ ([macOS](https://formulae.brew.sh/formula/bash))
 - envsubst ([macOS](https://formulae.brew.sh/formula/gettext))
+- (Only for macOS) [coreutils](https://formulae.brew.sh/formula/coreutils) with
+  normal names
 - [goimports](https://godoc.org/golang.org/x/tools/cmd/goimports)
 - [Prettier](https://prettier.io/)
 - [pytablewriter](https://pytablewriter.readthedocs.io/en/latest/)
