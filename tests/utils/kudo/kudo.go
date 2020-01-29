@@ -1,9 +1,12 @@
 package kudo
 
 import (
+	"bufio"
 	"bytes"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"regexp"
 	"strings"
 	"time"
 
@@ -21,8 +24,11 @@ import (
 )
 
 var (
-	kubectlOptions *kubectl.KubectlOptions
-	kudo           *versioned.Clientset
+	kubectlOptions       *kubectl.KubectlOptions
+	kudo                 *versioned.Clientset
+	operatorYamlFilePath = "../../operator/operator.yaml"
+	// https://regex101.com/r/Ly7O1x/3/
+	semVerRegexp = `(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)(?:-(?P<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+(?P<buildmetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?`
 )
 
 // Init TODO function comment.
@@ -33,6 +39,69 @@ func Init(_kubectlOptions *kubectl.KubectlOptions) {
 	kubeconfig, _ := kubectl.BuildKubeConfig(kubectlOptions.ConfigPath)
 	// TODO(mpereira) handle err.
 	kudo, _ = versioned.NewForConfig(kubeconfig)
+}
+
+// OverrideOperatorVersion rewrites `operatorVersion` in operator.yaml. This is
+// currently necessary in integration tests that run upgrades to make it
+// possible to upgrade to a version based on the local filesystem even when the
+// `operatorVersion` is the same as the one being upgraded from.
+//
+// Returns the operator version parsed before overriding and the operator
+// version written.
+func OverrideOperatorVersion(
+	desiredOperatorVersion string,
+) (string, string, error) {
+	operatorYamlBytes, err := ioutil.ReadFile(operatorYamlFilePath)
+	if err != nil {
+		log.Errorf("Failed to read '%s': %v", operatorYamlFilePath, err)
+		return "", "", err
+	}
+
+	scanner := bufio.NewScanner(bytes.NewReader(operatorYamlBytes))
+
+	operatorVersionLineRegexp := fmt.Sprintf(
+		`^operatorVersion:\s*"(%s)"$`, semVerRegexp,
+	)
+	operatorVersionLineLinePattern := regexp.MustCompile(operatorVersionLineRegexp)
+
+	var operatorVersion string
+	for scanner.Scan() {
+		text := scanner.Text()
+		match := operatorVersionLineLinePattern.FindStringSubmatch(text)
+		if len(match) > 0 {
+			operatorVersion = match[1]
+		}
+	}
+
+	if operatorVersion == "" {
+		errorMessage := fmt.Sprintf(
+			"Failed to parse operatorVersion from '%s'", operatorYamlFilePath,
+		)
+		log.Error(errorMessage)
+		return "", "", errors.New(errorMessage)
+	}
+
+	updatedOperatorYamlBytes := bytes.Replace(
+		operatorYamlBytes,
+		[]byte(operatorVersion),
+		[]byte(desiredOperatorVersion),
+		-1,
+	)
+
+	err = ioutil.WriteFile(operatorYamlFilePath, updatedOperatorYamlBytes, 0644)
+
+	if err != nil {
+		log.Errorf("Failed to write updated '%s': %v", operatorYamlFilePath, err)
+		return "", "", err
+	}
+
+	log.Infof(
+		"Overrode operatorVersion from '%s' to '%s'",
+		operatorVersion,
+		desiredOperatorVersion,
+	)
+
+	return operatorVersion, desiredOperatorVersion, nil
 }
 
 // GetInstance TODO function comment.

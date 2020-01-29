@@ -11,6 +11,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/reporters"
 	. "github.com/onsi/gomega"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/mesosphere/kudo-cassandra-operator/tests/utils/cassandra"
 	"github.com/mesosphere/kudo-cassandra-operator/tests/utils/k8s"
@@ -19,13 +20,15 @@ import (
 )
 
 var (
-	TestName          = "sanity-test"
-	OperatorName      = os.Getenv("OPERATOR_NAME")
-	TestNamespace     = fmt.Sprintf("%s-namespace", TestName)
-	TestInstance      = fmt.Sprintf("%s-instance", OperatorName)
-	KubeConfigPath    = os.Getenv("KUBECONFIG")
-	KubectlPath       = os.Getenv("KUBECTL_PATH")
-	OperatorDirectory = os.Getenv("OPERATOR_DIRECTORY")
+	TestName            = "sanity-test"
+	TestOperatorVersion = "99.99.99-testing"
+	OperatorVersion     string
+	OperatorName        = os.Getenv("OPERATOR_NAME")
+	TestNamespace       = fmt.Sprintf("%s-namespace", TestName)
+	TestInstance        = fmt.Sprintf("%s-instance", OperatorName)
+	KubeConfigPath      = os.Getenv("KUBECONFIG")
+	KubectlPath         = os.Getenv("KUBECTL_PATH")
+	OperatorDirectory   = os.Getenv("OPERATOR_DIRECTORY")
 	// TODO(mpereira): read NodeCount from params.yaml.
 	NodeCount      = 3
 	KubectlOptions = kubectl.NewKubectlOptions(
@@ -60,8 +63,17 @@ var _ = Describe(TestName, func() {
 	})
 
 	It("Upgrades the running operator instance from a directory", func() {
-		// TODO(mpereira) Assert that it is running.
-		err := kudo.UpgradeOperator(
+		before, _, err := kudo.OverrideOperatorVersion(TestOperatorVersion)
+		if err != nil {
+			log.Errorf(
+				"Error overriding operatorVersion from '%s' to '%s': %v",
+				OperatorVersion, TestOperatorVersion, err,
+			)
+		}
+		OperatorVersion = before
+		Expect(err).To(BeNil())
+
+		err = kudo.UpgradeOperator(
 			OperatorDirectory, TestNamespace, TestInstance, []string{},
 		)
 		if err != nil {
@@ -195,6 +207,15 @@ var _ = BeforeSuite(func() {
 var _ = AfterSuite(func() {
 	kudo.UninstallOperator(OperatorName, TestNamespace, TestInstance)
 	k8s.DeleteNamespace(TestNamespace)
+	if OperatorVersion != "" {
+		_, _, err := kudo.OverrideOperatorVersion(OperatorVersion)
+		if err != nil {
+			log.Errorf(
+				"Error reverting operatorVersion from '%s' to '%s': %v",
+				TestOperatorVersion, OperatorVersion, err,
+			)
+		}
+	}
 })
 
 func TestService(t *testing.T) {
