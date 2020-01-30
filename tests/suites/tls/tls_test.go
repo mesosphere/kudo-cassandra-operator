@@ -1,4 +1,4 @@
-package cassandra_tls
+package tls
 
 import (
 	"fmt"
@@ -57,10 +57,6 @@ var _ = Describe(TestName, func() {
 		It("Installs the operator from a directory", func() {
 			err := kudo.InstallOperator(
 				OperatorDirectory, TestNamespace, TestInstance, []string{
-					"NODE_CPU_MC=200",
-					"NODE_MEM_MIB=800",
-					"PROMETHEUS_EXPORTER_CPU_MC=100",
-					"PROMETHEUS_EXPORTER_MEM_MIB=200",
 					"TLS_SECRET_NAME=cassandra-tls",
 					"TRANSPORT_ENCRYPTION_ENABLED=true",
 				},
@@ -74,17 +70,16 @@ var _ = Describe(TestName, func() {
 			Expect(err).To(BeNil())
 			assertNumberOfCassandraNodes(NodeCount)
 		})
-		It("Check container logs", func() {
-			output, _ := k8s.FetchLogsOfPod(
+		It("Checks for the container logs", func() {
+			output, _ := k8s.GetPodContainerLogs(
 				TestNamespace,
 				fmt.Sprintf("%s-%s-%d", TestInstance, "node", 0),
 				"cassandra",
 			)
 			Expect(output).To(ContainSubstring("Starting Encrypted Messaging Service on SSL port"))
-			// Expect(output).To(ContainSubstring("Enabling encrypted CQL connections between client and server"))
 		})
-		It("Test data read & write using CQLSH", func() {
-			output, err := cassandra.CQLSH(
+		It("Tests data read & write using CQLSH", func() {
+			output, err := cassandra.Cqlsh(
 				TestNamespace,
 				TestInstance,
 				testCQLScript,
@@ -103,10 +98,6 @@ var _ = Describe(TestName, func() {
 		It("Installs the operator from a directory", func() {
 			err := kudo.InstallOperator(
 				OperatorDirectory, TestNamespace, TestInstance, []string{
-					"NODE_CPU_MC=200",
-					"NODE_MEM_MIB=800",
-					"PROMETHEUS_EXPORTER_CPU_MC=100",
-					"PROMETHEUS_EXPORTER_MEM_MIB=200",
 					"TLS_SECRET_NAME=cassandra-tls",
 					"TRANSPORT_ENCRYPTION_CLIENT_ENABLED=true",
 				},
@@ -120,16 +111,16 @@ var _ = Describe(TestName, func() {
 			Expect(err).To(BeNil())
 			assertNumberOfCassandraNodes(NodeCount)
 		})
-		It("Check container logs", func() {
-			output, _ := k8s.FetchLogsOfPod(
+		It("Checks for the container logs", func() {
+			output, _ := k8s.GetPodContainerLogs(
 				TestNamespace,
 				fmt.Sprintf("%s-%s-%d", TestInstance, "node", 0),
 				"cassandra",
 			)
 			Expect(output).To(ContainSubstring("Enabling encrypted CQL connections between client and server"))
 		})
-		It("Test data read & write using CQLSH", func() {
-			output, err := cassandra.CQLSH(
+		It("Tests data read & write using CQLSH", func() {
+			output, err := cassandra.Cqlsh(
 				TestNamespace,
 				TestInstance,
 				testCQLScript,
@@ -148,10 +139,6 @@ var _ = Describe(TestName, func() {
 		It("Installs the operator from a directory", func() {
 			err := kudo.InstallOperator(
 				OperatorDirectory, TestNamespace, TestInstance, []string{
-					"NODE_CPU_MC=200",
-					"NODE_MEM_MIB=800",
-					"PROMETHEUS_EXPORTER_CPU_MC=100",
-					"PROMETHEUS_EXPORTER_MEM_MIB=200",
 					"TLS_SECRET_NAME=cassandra-tls",
 					"TRANSPORT_ENCRYPTION_ENABLED=true",
 					"TRANSPORT_ENCRYPTION_CLIENT_ENABLED=true",
@@ -166,8 +153,8 @@ var _ = Describe(TestName, func() {
 			Expect(err).To(BeNil())
 			assertNumberOfCassandraNodes(NodeCount)
 		})
-		It("Check container logs", func() {
-			output, _ := k8s.FetchLogsOfPod(
+		It("Checks for the container logs", func() {
+			output, _ := k8s.GetPodContainerLogs(
 				TestNamespace,
 				fmt.Sprintf("%s-%s-%d", TestInstance, "node", 0),
 				"cassandra",
@@ -175,8 +162,8 @@ var _ = Describe(TestName, func() {
 			Expect(output).To(ContainSubstring("Starting Encrypted Messaging Service on SSL port"))
 			Expect(output).To(ContainSubstring("Enabling encrypted CQL connections between client and server"))
 		})
-		It("Test data read & write using CQLSH", func() {
-			output, err := cassandra.CQLSH(
+		It("Tests data read & write using CQLSH", func() {
+			output, err := cassandra.Cqlsh(
 				TestNamespace,
 				TestInstance,
 				testCQLScript,

@@ -154,7 +154,7 @@ spec:
             - name: node-readiness-probe-sh
               mountPath: /etc/cassandra/node-readiness-probe.sh
               subPath: node-readiness-probe.sh
-            - name: cassandra-home
+            - name: dot-cassandra
               mountPath: /home/cassandra/.cassandra/
             - name: generate-cqlshrc-sh
               mountPath: /etc/cassandra/generate-cqlshrc.sh
@@ -222,7 +222,7 @@ spec:
         - name: node-readiness-probe-sh
           configMap:
             name: {{ .Name }}-node-readiness-probe-sh
-        - name: cassandra-home
+        - name: dot-cassandra
           emptyDir: {}
         - name: generate-cqlshrc-sh
           configMap:
@@ -240,8 +240,7 @@ spec:
         - name: generate-tls-artifacts
           configMap:
             name:  {{ .Name }}-generate-tls-artifacts-sh
-            # TODO(mpereira): is 777 really necessary?
-            defaultMode: 0777
+            defaultMode: 0755
         {{ end }}
   volumeClaimTemplates:
     - metadata:

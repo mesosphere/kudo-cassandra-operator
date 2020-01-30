@@ -140,11 +140,11 @@ parameters:
     default: "false"
 
   - name: TRANSPORT_ENCRYPTION_REQUIRE_CLIENT_AUTH
-    description: "TODO"
+    description: "Enable client certificate authentication on node-to-node transport encryption."
     default: "true"
 
   - name: TRANSPORT_ENCRYPTION_CLIENT_REQUIRE_CLIENT_AUTH
-    description: "TODO"
+    description: "Enable client certificate authentication on client-to-node transport encryption."
     default: "true"
 
   - name: TLS_SECRET_NAME
@@ -152,11 +152,11 @@ parameters:
     default: "cassandra-tls"
 
   - name: TLS_KEYSTORE_PASSWORD
-    description: "TODO"
+    description: "The password use to secure the Java Keystore for each cassandra node."
     default: "cassandra"
 
   - name: TLS_TRUSTSTORE_PASSWORD
-    description: "TODO"
+    description: "The password use to secure the Java Truststore for each cassandra node."
     default: "cassandra"
 
   - name: NODE_MIN_HEAP_SIZE_MB

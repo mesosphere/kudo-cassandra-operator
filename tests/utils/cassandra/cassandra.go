@@ -123,8 +123,8 @@ func getConfigurationFromNodeLogs(
 	return configuration, nil
 }
 
-// CQLSH TODO function comment.
-func CQLSH(
+// Cqlsh TODO function comment.
+func Cqlsh(
 	namespaceName, instanceName, cql string,
 ) (*bytes.Buffer, error) {
 	stdout, err := kudo.ExecInPodContainer(

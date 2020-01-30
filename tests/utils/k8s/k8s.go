@@ -128,25 +128,3 @@ func ExecInPodContainer(
 
 	return stdout, nil
 }
-
-func FetchLogsOfPod(namespaceName, podName, containerName string) (*bytes.Buffer, error) {
-	kubectlParameters := []string{
-		"logs",
-		podName,
-		fmt.Sprintf("--namespace=%s", namespaceName),
-		fmt.Sprintf("--container=%s", containerName),
-	}
-
-	_, stdout, _, err := cmd.Exec(
-		kubectlOptions.KubectlPath, kubectlParameters, nil, true,
-	)
-	if err != nil {
-		log.Errorf(
-			"Error getting logs of (container='%s', pod='%s', namespace='%s'): %s",
-			containerName, podName, namespaceName, err,
-		)
-		return &bytes.Buffer{}, err
-	}
-
-	return stdout, nil
-}
