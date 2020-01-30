@@ -1,4 +1,4 @@
-package cassandra_sanity
+package sanity
 
 import (
 	"encoding/base64"

@@ -1,4 +1,4 @@
-package cassandra_externalservice
+package external_service
 
 import (
 	"fmt"
