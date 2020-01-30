@@ -13,7 +13,6 @@ readonly kubeconfig="${KUBECONFIG:-${HOME}/.kube/config}"
 
 readonly container_kubeconfig="/root/.kube/config"
 readonly container_project_directory="/${PROJECT_NAME}"
-readonly container_operator_directory="${container_project_directory}/operator"
 readonly container_tooling_directory="${container_project_directory}/shared"
 readonly container_vendor_directory="${container_project_directory}/shared/vendor"
 
@@ -30,12 +29,10 @@ docker run \
        -e "KUBECONFIG=${container_kubeconfig}" \
        -e "KUBECTL_PATH=${container_vendor_directory}/kubectl.sh"  \
        -e "DS_KUDO_VERSION=v${DS_KUDO_VERSION}" \
-       -e "OPERATOR_DIRECTORY=${container_operator_directory}" \
-       -e "VENDOR_DIRECTORY=${container_vendor_directory}" \
+       -e "TOOLING_DIRECTORY=${container_tooling_directory}" \
        -v "${kubeconfig}:${container_kubeconfig}:ro" \
-       -v "${OPERATOR_DIRECTORY}:${container_operator_directory}" \
        -v "${project_directory}:${container_project_directory}" \
-       -v "${VENDOR_DIRECTORY}:${container_vendor_directory}" \
+       -v "${TOOLING_DIRECTORY}:${container_tooling_directory}" \
        -w "${container_project_directory}" \
        "${INTEGRATION_TESTS_DOCKER_IMAGE}" \
-       bash -c "${container_project_directory}/tests/run.sh"
+       bash -c "${container_project_directory}/shared/deploy-kudo-controller-and-crds.sh"
