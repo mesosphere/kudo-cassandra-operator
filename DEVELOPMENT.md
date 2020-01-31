@@ -27,11 +27,13 @@
     - [Merging pull requests](#merging-pull-requests)
 - [Releasing](#releasing)
   - [Versioning](#versioning)
-  - [Development Cycle](#development-cycle)
-  - [Release Workflow](#release-workflow)
-  - [Backport Workflow](#backport-workflow)
-  - [Snapshots](#snapshots)
-- [Synchronize changes to kudobuilder/operators](#synchronize-changes-to-kudobuilderoperators)
+    - [-](#-)
+  - [Development cycle](#development-cycle)
+  - [Release workflow](#release-workflow)
+  - [Backport workflow](#backport-workflow)
+  - [Additional release work](#additional-release-work)
+  - [Snapshots (to be implemented)](#snapshots-to-be-implemented)
+- [Synchronize changes to [kudobuilder/operators](https://github.com/kudobuilder/operators)](#synchronize-changes-to-kudobuilderoperatorshttpsgithubcomkudobuilderoperators)
 
 ## Requirements
 
