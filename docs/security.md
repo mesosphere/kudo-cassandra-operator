@@ -1,8 +1,8 @@
 # Securing KUDO Cassandra Operator instances
 
-The KUDO Cassandra service supports Cassandra’s native transport **encryption**
+The KUDO Cassandra operator supports Cassandra’s native transport **encryption**
 mechanism. The service provides automation and orchestration to simplify the use
-of these important features. For more information on Cassandra’s security, read
+of these important features. For more information on Apache Cassandra’s security, read
 the
 [security](https://docs.datastax.com/en/cassandra-oss/3.0/cassandra/configuration/secureTOC.html)
 section of official Apache Cassandra documentation.
@@ -37,7 +37,8 @@ KUDO Cassandra is being installed.
 
 ```
 kubectl kudo install cassandra \
-    --instance=cassandra --namespace=kudo-cassandra \
+    --instance=cassandra \
+    --namespace=kudo-cassandra \
     -p TRANSPORT_ENCRYPTION_ENABLED=true \
     -p TLS_SECRET_NAME=cassandra-tls
 ```
@@ -46,7 +47,8 @@ kubectl kudo install cassandra \
 
 ```
 kubectl kudo install cassandra \
-    --instance=cassandra --namespace=kudo-cassandra \
+    --instance=cassandra \
+    --namespace=kudo-cassandra \
     -p TRANSPORT_ENCRYPTION_ENABLED=true \
     -p TRANSPORT_ENCRYPTION_CLIENT_ENABLED=true \
     -p TLS_SECRET_NAME=cassandra-tls
@@ -57,7 +59,8 @@ encrypted traffic in Client-to-node communication.
 
 ```
 kubectl kudo install cassandra \
-    --instance=cassandra --namespace=kudo-cassandra \
+    --instance=cassandra \
+    --namespace=kudo-cassandra \
     -p TRANSPORT_ENCRYPTION_ENABLED=true \
     -p TRANSPORT_ENCRYPTION_CLIENT_ENABLED=true \
     -p TRANSPORT_ENCRYPTION_CLIENT_ALLOW_PLAINTEXT=true \
