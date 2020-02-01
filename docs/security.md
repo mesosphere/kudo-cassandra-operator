@@ -2,8 +2,8 @@
 
 The KUDO Cassandra operator supports Cassandra’s native transport **encryption**
 mechanism. The service provides automation and orchestration to simplify the use
-of these important features. For more information on Apache Cassandra’s security, read
-the
+of these important features. For more information on Apache Cassandra’s
+security, read the
 [security](https://docs.datastax.com/en/cassandra-oss/3.0/cassandra/configuration/secureTOC.html)
 section of official Apache Cassandra documentation.
 
