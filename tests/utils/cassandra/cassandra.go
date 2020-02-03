@@ -123,7 +123,7 @@ func getConfigurationFromNodeLogs(
 	return configuration, nil
 }
 
-// Cqlsh TODO function comment.
+// Cqlsh Wrapper to run cql commands in the cqlsh cli of cassandra 0th node
 func Cqlsh(
 	namespaceName, instanceName, cql string,
 ) (*bytes.Buffer, error) {
