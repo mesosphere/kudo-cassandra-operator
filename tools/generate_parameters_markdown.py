@@ -16,7 +16,7 @@ DEFAULT_PARAMS_YAML = path.realpath(
 )
 
 DEFAULT_DOCS_MARKDOWN = path.realpath(
-    path.join(SCRIPT_DIRECTORY, "../docs/parameters.yaml")
+    path.join(SCRIPT_DIRECTORY, "../docs/parameters.md")
 )
 
 log = logging.getLogger(__name__)
