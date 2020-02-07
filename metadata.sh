@@ -66,3 +66,12 @@ export PROMETHEUS_EXPORTER_DOCKER_IMAGE="${PROMETHEUS_EXPORTER_DOCKER_IMAGE_NAME
 ################################################################################
 
 export INTEGRATION_TESTS_DOCKER_IMAGE="golang:1.13.1-stretch"
+
+################################################################################
+############################# Data Services ####################################
+################################################################################
+
+# DS_KUDO_VERSION is used by the shared data-services-kudo tooling.
+# DS_KUDO_VERSION *may* be set by TeamCity Jobs if a fixed KUDO version is preferred for the test execution
+# If not DS_KUDO_VERSION is set, we use and install the required KUDO version from the operator
+export DS_KUDO_VERSION="${DS_KUDO_VERSION:-v${KUDO_VERSION}}"
