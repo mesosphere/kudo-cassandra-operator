@@ -35,3 +35,18 @@ plans:
           - name: node
             tasks:
               - node
+  upgrade:
+    strategy: serial
+    phases:
+      - name: cleanup
+        strategy: serial
+        steps:
+          - name: cleanup-stateful-set
+            tasks:
+              - remove-stateful-set
+      - name: reinstall
+        strategy: serial
+        steps:
+          - name: node
+            tasks:
+              - node
