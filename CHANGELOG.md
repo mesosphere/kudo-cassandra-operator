@@ -8,6 +8,13 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Changed
+
+### Added
+
+- TLS encryption for node-to-node and client-to-node connections.
+  ([#31](https://github.com/mesosphere/kudo-cassandra-operator/pull/31))
+
 ## [3.11.5-0.1.2] - 2020-01-22
 
 ### Changed

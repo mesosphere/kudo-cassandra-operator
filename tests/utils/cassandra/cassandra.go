@@ -2,6 +2,8 @@ package cassandra
 
 import (
 	"bufio"
+	"bytes"
+	"fmt"
 	"regexp"
 	"strings"
 
@@ -119,4 +121,20 @@ func getConfigurationFromNodeLogs(
 	}
 
 	return configuration, nil
+}
+
+// Cqlsh Wrapper to run cql commands in the cqlsh cli of cassandra 0th node
+func Cqlsh(
+	namespaceName, instanceName, cql string,
+) (*bytes.Buffer, error) {
+	stdout, err := kudo.ExecInPodContainer(
+		namespaceName,
+		instanceName,
+		"node",
+		0,
+		"cassandra",
+		[]string{"cqlsh", fmt.Sprintf("--execute=%s", cql)},
+	)
+
+	return stdout, err
 }
