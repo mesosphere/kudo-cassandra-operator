@@ -1,4 +1,4 @@
-package suites
+package sanity
 
 import (
 	"encoding/base64"
@@ -81,21 +81,6 @@ var _ = Describe(TestName, func() {
 				"Failing the full suite: failed to upgrade operator instance that the " +
 					"following tests depend on",
 			)
-		}
-		Expect(err).To(BeNil())
-
-		assertNumberOfCassandraNodes(NodeCount)
-	})
-
-	It("Scales the instance's number of nodes", func() {
-		NodeCount = NodeCount + 1
-		err := kudo.UpdateInstanceParameters(
-			TestNamespace,
-			TestInstance,
-			map[string]string{"NODE_COUNT": strconv.Itoa(NodeCount)},
-		)
-		if err != nil {
-			Fail("Failing the full suite: failed to scale the number of nodes")
 		}
 		Expect(err).To(BeNil())
 
@@ -186,6 +171,21 @@ var _ = Describe(TestName, func() {
 		)
 		Expect(err).To(BeNil())
 		Expect(configuration[parameter]).To(Equal(desiredValue))
+
+		assertNumberOfCassandraNodes(NodeCount)
+	})
+
+	It("Scales the instance's number of nodes", func() {
+		NodeCount = NodeCount + 1
+		err := kudo.UpdateInstanceParameters(
+			TestNamespace,
+			TestInstance,
+			map[string]string{"NODE_COUNT": strconv.Itoa(NodeCount)},
+		)
+		if err != nil {
+			Fail("Failing the full suite: failed to scale the number of nodes")
+		}
+		Expect(err).To(BeNil())
 
 		assertNumberOfCassandraNodes(NodeCount)
 	})

@@ -1147,40 +1147,42 @@ data:
     # The passwords used in these options must match the passwords used when generating
     # the keystore and truststore.  For instructions on generating these files, see:
     # http://download.oracle.com/javase/6/docs/technotes/guides/security/jsse/JSSERefGuide.html#CreateKeystore
-    #
-    # TODO(mpereira): we'll have to configure this when adding TLS support.
-    server_encryption_options:
-      internode_encryption: none
-      keystore: conf/.keystore
-      keystore_password: cassandra
-      truststore: conf/.truststore
-      truststore_password: cassandra
-      # More advanced defaults below:
-      # protocol: TLS
-      # algorithm: SunX509
-      # store_type: JKS
-      # cipher_suites: [TLS_RSA_WITH_AES_128_CBC_SHA,TLS_RSA_WITH_AES_256_CBC_SHA,TLS_DHE_RSA_WITH_AES_128_CBC_SHA,TLS_DHE_RSA_WITH_AES_256_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA]
-      # require_client_auth: false
-      # require_endpoint_verification: false
 
-    # enable or disable client/server encryption.
-    #
-    # TODO(mpereira): we'll have to configure this when adding TLS support.
+    {{ if eq .Params.TRANSPORT_ENCRYPTION_ENABLED "true" }}
+    server_encryption_options:
+      internode_encryption: all
+      keystore: /etc/cassandra/tls/cassandra.server.keystore.jks
+      keystore_password: {{ .Params.TLS_KEYSTORE_PASSWORD }}
+      truststore: /etc/cassandra/tls/cassandra.server.truststore.jks
+      truststore_password: {{ .Params.TLS_TRUSTSTORE_PASSWORD }}
+      protocol: TLSv1.2
+      cipher_suites: [{{ .Params.TRANSPORT_ENCRYPTION_CIPHERS }}]
+      algorithm: SunX509
+      store_type: JKS
+      require_client_auth: {{ .Params.TRANSPORT_ENCRYPTION_REQUIRE_CLIENT_AUTH }}
+      # require_endpoint_verification: false
+    {{ end }}
+
+    {{ if eq .Params.TRANSPORT_ENCRYPTION_CLIENT_ENABLED "true" }}
     client_encryption_options:
-      enabled: false
-      # If enabled and optional is set to true encrypted and unencrypted connections are handled.
+      # If both 'enabled' and 'optional' are set to 'true', both encrypted and
+      # unencrypted connections are allowed.
+      enabled: true
+      {{ if eq .Params.TRANSPORT_ENCRYPTION_CLIENT_ALLOW_PLAINTEXT "true" }}
+      optional: true
+      {{ else }}
       optional: false
-      keystore: conf/.keystore
-      keystore_password: cassandra
-      # require_client_auth: false
-      # Set trustore and truststore_password if require_client_auth is true
-      # truststore: conf/.truststore
-      # truststore_password: cassandra
-      # More advanced defaults below:
-      # protocol: TLS
-      # algorithm: SunX509
-      # store_type: JKS
-      # cipher_suites: [TLS_RSA_WITH_AES_128_CBC_SHA,TLS_RSA_WITH_AES_256_CBC_SHA,TLS_DHE_RSA_WITH_AES_128_CBC_SHA,TLS_DHE_RSA_WITH_AES_256_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA]
+      {{ end }}
+      keystore: /etc/cassandra/tls/cassandra.server.keystore.jks
+      keystore_password: {{ .Params.TLS_KEYSTORE_PASSWORD }}
+      truststore: /etc/cassandra/tls/cassandra.server.truststore.jks
+      truststore_password: {{ .Params.TLS_TRUSTSTORE_PASSWORD }}
+      protocol: TLSv1.2
+      require_client_auth: {{ .Params.TRANSPORT_ENCRYPTION_CLIENT_REQUIRE_CLIENT_AUTH }}
+      algorithm: SunX509
+      store_type: JKS
+      cipher_suites: [{{ .Params.TRANSPORT_ENCRYPTION_CIPHERS }}]
+    {{ end }}
 
     # internode_compression controls whether traffic between nodes is
     # compressed.

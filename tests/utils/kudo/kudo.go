@@ -26,7 +26,7 @@ import (
 var (
 	kubectlOptions       *kubectl.KubectlOptions
 	kudo                 *versioned.Clientset
-	operatorYamlFilePath = "../../operator/operator.yaml"
+	operatorYamlFilePath = "../../../operator/operator.yaml"
 	// https://regex101.com/r/Ly7O1x/3/
 	semVerRegexp = `(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)(?:-(?P<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+(?P<buildmetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?`
 )
@@ -411,7 +411,7 @@ func UpgradeOperator(
 func UninstallOperator(
 	operatorName string, namespaceName string, instanceName string,
 ) error {
-	uninstallScript := "../../scripts/uninstall_operator.sh"
+	uninstallScript := "../../../scripts/uninstall_operator.sh"
 	uninstallScriptParameters := []string{
 		"--operator", operatorName,
 		"--instance", instanceName,
