@@ -95,12 +95,13 @@ var _ = Describe("external service", func() {
 			TestNamespace,
 			TestInstance,
 			map[string]string{"EXTERNAL_NATIVE_TRANSPORT": "true"},
-			false,
+			true,
 		)
 		Expect(err).To(BeNil())
 
 		assertNumberOfCassandraNodes(NodeCount)
 
+		log.Infof("Verify that external service is started and has 1 open port")
 		svc, err := k8s.GetService(TestNamespace, fmt.Sprintf("%s-svc-external", TestInstance))
 		Expect(err).To(BeNil())
 		Expect(len(svc.Spec.Ports)).To(Equal(1))
@@ -120,6 +121,7 @@ var _ = Describe("external service", func() {
 
 		assertNumberOfCassandraNodes(NodeCount)
 
+		log.Infof("Verify that external service is started and has 2 open ports")
 		svc, err := k8s.GetService(TestNamespace, fmt.Sprintf("%s-svc-external", TestInstance))
 		Expect(err).To(BeNil())
 		Expect(len(svc.Spec.Ports)).To(Equal(2))
