@@ -60,6 +60,7 @@ var _ = Describe(TestName, func() {
 					"TLS_SECRET_NAME=cassandra-tls",
 					"TRANSPORT_ENCRYPTION_ENABLED=true",
 				},
+				true,
 			)
 			if err != nil {
 				Fail(
@@ -101,6 +102,7 @@ var _ = Describe(TestName, func() {
 					"TLS_SECRET_NAME=cassandra-tls",
 					"TRANSPORT_ENCRYPTION_CLIENT_ENABLED=true",
 				},
+				true,
 			)
 			if err != nil {
 				Fail(
@@ -143,6 +145,7 @@ var _ = Describe(TestName, func() {
 					"TRANSPORT_ENCRYPTION_ENABLED=true",
 					"TRANSPORT_ENCRYPTION_CLIENT_ENABLED=true",
 				},
+				true,
 			)
 			if err != nil {
 				Fail(
