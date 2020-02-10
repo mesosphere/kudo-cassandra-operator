@@ -3,7 +3,6 @@ package sanity
 import (
 	"encoding/base64"
 	"fmt"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"math/big"
 	"os"
 	"strconv"
@@ -14,6 +13,7 @@ import (
 	"github.com/onsi/ginkgo/reporters"
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/mesosphere/kudo-cassandra-operator/tests/utils/cassandra"
 	"github.com/mesosphere/kudo-cassandra-operator/tests/utils/k8s"
