@@ -28,7 +28,6 @@ var (
 	TestNamespace       = fmt.Sprintf("%s-namespace", TestName)
 	TestInstance        = fmt.Sprintf("%s-instance", OperatorName)
 	KubeConfigPath      = os.Getenv("KUBECONFIG")
-	KubectlPath         = os.Getenv("KUBECTL_PATH")
 	OperatorDirectory   = os.Getenv("OPERATOR_DIRECTORY")
 	// TODO(mpereira): read NodeCount from params.yaml.
 	NodeCount = 3
@@ -79,25 +78,6 @@ var _ = Describe(TestName, func() {
 				"Failing the full suite: failed to upgrade operator instance that the " +
 					"following tests depend on",
 			)
-		}
-		Expect(err).To(BeNil())
-
-		err = Operator.Instance.WaitForPlanInProgress("deploy")
-		Expect(err).To(BeNil())
-
-		err = Operator.Instance.WaitForPlanComplete("deploy")
-		Expect(err).To(BeNil())
-
-		assertNumberOfCassandraNodes(NodeCount)
-	})
-
-	It("Scales the instance's number of nodes", func() {
-		NodeCount = NodeCount + 1
-		err := Operator.Instance.UpdateParameters(map[string]string{
-			"NODE_COUNT": strconv.Itoa(NodeCount),
-		})
-		if err != nil {
-			Fail("Failing the full suite: failed to scale the number of nodes")
 		}
 		Expect(err).To(BeNil())
 
@@ -200,14 +180,18 @@ var _ = Describe(TestName, func() {
 
 	It("Scales the instance's number of nodes", func() {
 		NodeCount = NodeCount + 1
-		err := kudo.UpdateInstanceParameters(
-			TestNamespace,
-			TestInstance,
-			map[string]string{"NODE_COUNT": strconv.Itoa(NodeCount)},
+		err := Operator.Instance.UpdateParameters(map[string]string{
+			"NODE_COUNT": strconv.Itoa(NodeCount)},
 		)
 		if err != nil {
 			Fail("Failing the full suite: failed to scale the number of nodes")
 		}
+		Expect(err).To(BeNil())
+
+		err = Operator.Instance.WaitForPlanInProgress("deploy")
+		Expect(err).To(BeNil())
+
+		err = Operator.Instance.WaitForPlanComplete("deploy")
 		Expect(err).To(BeNil())
 
 		assertNumberOfCassandraNodes(NodeCount)

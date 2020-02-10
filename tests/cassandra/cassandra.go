@@ -131,6 +131,29 @@ func Nodes(client client.Client, instance kudo.Instance) ([]map[string]string, e
 	return nodes, nil
 }
 
+// Cqlsh Wrapper to run cql commands in the cqlsh cli of cassandra 0th node
+func Cqlsh(client client.Client, instance kudo.Instance, cql string) (string, error) {
+	podName := fmt.Sprintf("%s-%s-%d", instance.Name, "node", 0)
+
+	var stdout strings.Builder
+
+	cmd := cmd.New("cqlsh").
+		WithArguments(fmt.Sprintf("--execute=%s", cql)).
+		WithStdout(&stdout)
+
+	pod, err := kubernetes.GetPod(client, podName, instance.Namespace)
+	if err != nil {
+		return "", err
+	}
+
+	err = pod.ContainerExec("cassandra", cmd)
+	if err != nil {
+		return "", err
+	}
+
+	return stdout.String(), nil
+}
+
 func ClusterConfiguration(client client.Client, instance kudo.Instance) (map[string]string, error) {
 	return configurationFromNodeLogs(
 		client,
