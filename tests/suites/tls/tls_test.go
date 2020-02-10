@@ -80,7 +80,7 @@ var _ = Describe(TestName, func() {
 
 			output, err := pod.ContainerLogs("cassandra")
 			Expect(err).To(BeNil())
-			Expect(output).To(ContainSubstring("Starting Encrypted Messaging Service on SSL port"))
+			Expect(string(output)).To(ContainSubstring("Starting Encrypted Messaging Service on SSL port"))
 		})
 		It("Tests data read & write using CQLSH", func() {
 			output, err := cassandra.Cqlsh(Client, Operator.Instance, testCQLScript)
@@ -117,7 +117,7 @@ var _ = Describe(TestName, func() {
 
 			output, err := pod.ContainerLogs("cassandra")
 			Expect(err).To(BeNil())
-			Expect(output).To(ContainSubstring("Enabling encrypted CQL connections between client and server"))
+			Expect(string(output)).To(ContainSubstring("Enabling encrypted CQL connections between client and server"))
 		})
 		It("Tests data read & write using CQLSH", func() {
 			output, err := cassandra.Cqlsh(Client, Operator.Instance, testCQLScript)
@@ -155,8 +155,8 @@ var _ = Describe(TestName, func() {
 
 			output, err := pod.ContainerLogs("cassandra")
 			Expect(err).To(BeNil())
-			Expect(output).To(ContainSubstring("Starting Encrypted Messaging Service on SSL port"))
-			Expect(output).To(ContainSubstring("Enabling encrypted CQL connections between client and server"))
+			Expect(string(output)).To(ContainSubstring("Starting Encrypted Messaging Service on SSL port"))
+			Expect(string(output)).To(ContainSubstring("Enabling encrypted CQL connections between client and server"))
 		})
 		It("Tests data read & write using CQLSH", func() {
 			output, err := cassandra.Cqlsh(Client, Operator.Instance, testCQLScript)
