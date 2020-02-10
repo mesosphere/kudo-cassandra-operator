@@ -3,6 +3,8 @@ package sanity
 import (
 	"encoding/base64"
 	"fmt"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"math/big"
 	"os"
 	"strconv"
 	"strings"
@@ -83,6 +85,42 @@ var _ = Describe(TestName, func() {
 			)
 		}
 		Expect(err).To(BeNil())
+
+		assertNumberOfCassandraNodes(NodeCount)
+	})
+
+	It("Updates the instance's cpu and memory", func() {
+		newMemMiB := 3192
+		newMemLimitMiB := 3192
+		newMemBytes := 3347054592
+
+		newCpu := 800
+		newCpuLimit := 1100
+
+		err := kudo.UpdateInstanceParameters(
+			TestNamespace,
+			TestInstance,
+			map[string]string{
+				"NODE_MEM_MIB":       strconv.Itoa(newMemMiB),
+				"NODE_MEM_LIMIT_MIB": strconv.Itoa(newMemLimitMiB),
+				"NODE_CPU_MC":        strconv.Itoa(newCpu),
+				"NODE_CPU_LIMIT_MC":  strconv.Itoa(newCpuLimit),
+			},
+		)
+		Expect(err).To(BeNil())
+
+		client, err := kubectl.GetKubernetesClientFromOptions(KubectlOptions)
+		Expect(err).To(BeNil())
+
+		pod, err := client.CoreV1().Pods(TestNamespace).Get(TestInstance+"-node-0", v1.GetOptions{})
+		Expect(err).To(BeNil())
+		Expect(pod).To(Not(BeNil()))
+
+		Expect(pod.Spec.Containers[0].Resources.Requests.Cpu().AsDec().UnscaledBig()).To(Equal(big.NewInt(int64(newCpu))))
+		Expect(pod.Spec.Containers[0].Resources.Requests.Memory().AsDec().UnscaledBig()).To(Equal(big.NewInt(int64(newMemBytes))))
+
+		Expect(pod.Spec.Containers[0].Resources.Limits.Cpu().AsDec().UnscaledBig()).To(Equal(big.NewInt(int64(newCpuLimit))))
+		Expect(pod.Spec.Containers[0].Resources.Limits.Memory().AsDec().UnscaledBig()).To(Equal(big.NewInt(int64(newMemBytes))))
 
 		assertNumberOfCassandraNodes(NodeCount)
 	})

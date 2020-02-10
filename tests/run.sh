@@ -36,4 +36,10 @@ go install github.com/onsi/ginkgo/ginkgo
 
 ${KUBECTL_PATH} kudo version
 
-${GINKGO_PATH} ./suites/... ${TESTS_FOCUS:+--ginkgo.focus=${TESTS_FOCUS}}
+if [[ -z $1 ]]
+then
+    ${GINKGO_PATH} ./suites/... ${TESTS_FOCUS:+--ginkgo.focus=${TESTS_FOCUS}}
+else
+    ${GINKGO_PATH} ./suites/$1/... ${TESTS_FOCUS:+--ginkgo.focus=${TESTS_FOCUS}}
+fi
+
