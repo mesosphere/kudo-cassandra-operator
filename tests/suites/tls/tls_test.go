@@ -107,6 +107,13 @@ var _ = Describe(TestName, func() {
 				}).
 				Do(Client)
 			Expect(err).To(BeNil())
+
+			err = Operator.Instance.WaitForPlanInProgress("deploy")
+			Expect(err).To(BeNil())
+
+			err = Operator.Instance.WaitForPlanComplete("deploy")
+			Expect(err).To(BeNil())
+
 			assertNumberOfCassandraNodes(NodeCount)
 		})
 		It("Checks for the container logs", func() {
@@ -145,6 +152,13 @@ var _ = Describe(TestName, func() {
 				}).
 				Do(Client)
 			Expect(err).To(BeNil())
+
+			err = Operator.Instance.WaitForPlanInProgress("deploy")
+			Expect(err).To(BeNil())
+
+			err = Operator.Instance.WaitForPlanComplete("deploy")
+			Expect(err).To(BeNil())
+
 			assertNumberOfCassandraNodes(NodeCount)
 		})
 		It("Checks for the container logs", func() {
