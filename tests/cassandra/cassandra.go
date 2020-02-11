@@ -136,10 +136,12 @@ func Cqlsh(client client.Client, instance kudo.Instance, cql string) (string, er
 	podName := fmt.Sprintf("%s-%s-%d", instance.Name, "node", 0)
 
 	var stdout strings.Builder
+	var stderr strings.Builder
 
 	cmd := cmd.New("cqlsh").
 		WithArguments(fmt.Sprintf("--execute=%s", cql)).
-		WithStdout(&stdout)
+		WithStdout(&stdout).
+		WithStderr(&stderr)
 
 	pod, err := kubernetes.GetPod(client, podName, instance.Namespace)
 	if err != nil {
@@ -148,6 +150,7 @@ func Cqlsh(client client.Client, instance kudo.Instance, cql string) (string, er
 
 	err = pod.ContainerExec("cassandra", cmd)
 	if err != nil {
+		log.Errorf("StdErr of failed CqlSh: %v", stderr.String())
 		return "", err
 	}
 
