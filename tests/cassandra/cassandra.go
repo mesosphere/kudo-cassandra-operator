@@ -157,6 +157,26 @@ func Cqlsh(client client.Client, instance kudo.Instance, cql string) (string, er
 	return stdout.String(), nil
 }
 
+func Uninstall(client client.Client, operator kudo.Operator) error {
+	if err := operator.Uninstall(); err != nil {
+		return err
+	}
+
+	pvcs, err := kubernetes.ListPersistentVolumeClaims(client, operator.Instance.Namespace)
+	if err != nil {
+		return err
+	}
+
+	for _, pvc := range pvcs {
+		err := pvc.Delete()
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func ClusterConfiguration(client client.Client, instance kudo.Instance) (map[string]string, error) {
 	return configurationFromNodeLogs(
 		client,

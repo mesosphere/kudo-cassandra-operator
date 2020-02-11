@@ -198,7 +198,7 @@ var _ = Describe(TestName, func() {
 	})
 
 	It("Uninstalls the operator", func() {
-		err := Operator.Uninstall()
+		err := cassandra.Uninstall(Client, Operator)
 		Expect(err).To(BeNil())
 		// TODO(mpereira) Assert that it isn't running.
 	})
