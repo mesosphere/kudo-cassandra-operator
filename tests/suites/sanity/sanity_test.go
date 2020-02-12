@@ -31,8 +31,9 @@ var (
 	TestInstance        = fmt.Sprintf("%s-instance", OperatorName)
 	KubeConfigPath      = os.Getenv("KUBECONFIG")
 	OperatorDirectory   = os.Getenv("OPERATOR_DIRECTORY")
-	// TODO(mpereira): read NodeCount from params.yaml.
-	NodeCount = 3
+
+	// Node Count of 1 for Sanity test to have the tests a little bit faster
+	NodeCount = 1
 	Client    = client.Client{}
 	Operator  = kudo.Operator{}
 )
@@ -130,10 +131,12 @@ var _ = Describe(TestName, func() {
 			WithStderr(&stderr)
 
 		err = pod.ContainerExec("curl", cmd)
-
-		log.Errorf("Curl Output: StdErr: %v\n StdOut: %v\n", stderr.String(), stdout.String())
-
 		Expect(err).To(BeNil())
+
+		log.Info("Curl Output:\n StdErr: %v\n StdOut: %v\n", stderr.String(), stdout.String())
+
+		expectedOutput := `{"status":"success","data":{"resultType":"vector","result":[]}}`
+		Expect(stdout.String()).To(Equal(expectedOutput))
 
 		err = pod.Delete()
 		Expect(err).To(BeNil())
