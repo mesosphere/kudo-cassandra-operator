@@ -5,16 +5,16 @@ import (
 	"os"
 	"testing"
 
-	"github.com/mesosphere/kudo-cassandra-operator/tests/utils/cassandra"
-	"github.com/mesosphere/kudo-cassandra-operator/tests/utils/kubectl"
+	"github.com/kudobuilder/test-tools/pkg/client"
+	"github.com/kudobuilder/test-tools/pkg/kubernetes"
+	"github.com/kudobuilder/test-tools/pkg/kudo"
 	"github.com/onsi/ginkgo/reporters"
+	log "github.com/sirupsen/logrus"
 
-	"github.com/mesosphere/kudo-cassandra-operator/tests/utils/k8s"
-	"github.com/mesosphere/kudo-cassandra-operator/tests/utils/kudo"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/mesosphere/kudo-cassandra-operator/tests/cassandra"
 )
 
 var (
@@ -28,35 +28,42 @@ var (
 	KubectlPath         = os.Getenv("KUBECTL_PATH")
 	OperatorDirectory   = os.Getenv("OPERATOR_DIRECTORY")
 	// TODO(mpereira): read NodeCount from params.yaml.
-	NodeCount      = 3
-	KubectlOptions = kubectl.NewKubectlOptions(
-		KubectlPath,
-		KubeConfigPath,
-		TestNamespace,
-		"",
-	)
+
+	NodeCount = 3
+	Client    = client.Client{}
+	Operator  = kudo.Operator{}
 )
 
 var _ = BeforeSuite(func() {
-	k8s.Init(KubectlOptions)
-	kudo.Init(KubectlOptions)
-	_ = kudo.UninstallOperator(OperatorName, TestNamespace, TestInstance)
-	_ = k8s.CreateNamespace(TestNamespace)
+	Client, _ = client.NewForConfig(KubeConfigPath)
+	kubernetes.CreateNamespace(Client, TestNamespace)
 })
 
 var _ = AfterSuite(func() {
-	_ = kudo.UninstallOperator(OperatorName, TestNamespace, TestInstance)
-	_ = k8s.DeleteNamespace(TestNamespace)
-	if OperatorVersion != "" {
-		_, _, err := kudo.OverrideOperatorVersion(OperatorVersion)
-		if err != nil {
-			log.Errorf(
-				"Error reverting operatorVersion from '%s' to '%s': %v",
-				TestOperatorVersion, OperatorVersion, err,
-			)
-		}
-	}
+	Operator.Uninstall()
+	kubernetes.DeleteNamespace(Client, TestNamespace)
 })
+
+//var _ = BeforeSuite(func() {
+//	k8s.Init(KubectlOptions)
+//	kudo.Init(KubectlOptions)
+//	_ = kudo.UninstallOperator(OperatorName, TestNamespace, TestInstance)
+//	_ = k8s.CreateNamespace(TestNamespace)
+//})
+//
+//var _ = AfterSuite(func() {
+//	_ = kudo.UninstallOperator(OperatorName, TestNamespace, TestInstance)
+//	_ = k8s.DeleteNamespace(TestNamespace)
+//	if OperatorVersion != "" {
+//		_, _, err := kudo.OverrideOperatorVersion(OperatorVersion)
+//		if err != nil {
+//			log.Errorf(
+//				"Error reverting operatorVersion from '%s' to '%s': %v",
+//				TestOperatorVersion, OperatorVersion, err,
+//			)
+//		}
+//	}
+//})
 
 func TestService(t *testing.T) {
 	RegisterFailHandler(Fail)
@@ -67,7 +74,7 @@ func TestService(t *testing.T) {
 }
 
 func assertNumberOfCassandraNodes(nodeCount int) {
-	nodes, err := cassandra.Nodes(TestNamespace, TestInstance)
+	nodes, err := cassandra.Nodes(Client, Operator.Instance)
 	Expect(err).To(BeNil())
 	Expect(len(nodes)).To(Equal(nodeCount))
 }
@@ -76,59 +83,54 @@ var _ = Describe("external service", func() {
 	NodeCount = 3
 
 	It("Installs the operator from the current directory", func() {
-		err := kudo.InstallOperator(
-			OperatorDirectory, TestNamespace, TestInstance, []string{}, true,
-		)
-		if err != nil {
-			Fail(
-				"Failing the full suite: failed to install operator instance that the " +
-					"following tests depend on",
-			)
-		}
+		var err error
+
+		Operator, err = kudo.InstallOperator(OperatorDirectory).
+			WithNamespace(TestNamespace).
+			WithInstance(TestInstance).
+			Do(Client)
+		Expect(err).To(BeNil())
+
+		err = Operator.Instance.WaitForPlanInProgress("deploy")
+		Expect(err).To(BeNil())
+
+		err = Operator.Instance.WaitForPlanComplete("deploy")
 		Expect(err).To(BeNil())
 
 		assertNumberOfCassandraNodes(NodeCount)
 	})
 
 	It("Allows external access to the cassandra cluster", func() {
-		err := kudo.UpdateInstanceParameters(
-			TestNamespace,
-			TestInstance,
-			map[string]string{"EXTERNAL_NATIVE_TRANSPORT": "true"},
-			true,
-		)
+		err := Operator.Instance.UpdateParameters(map[string]string{
+			"EXTERNAL_NATIVE_TRANSPORT": "true",
+		})
 		Expect(err).To(BeNil())
 
 		assertNumberOfCassandraNodes(NodeCount)
 
 		log.Infof("Verify that external service is started and has 1 open port")
-		svc, err := k8s.GetService(TestNamespace, fmt.Sprintf("%s-svc-external", TestInstance))
+		svc, err := kubernetes.GetService(Client, fmt.Sprintf("%s-svc-external", TestInstance), TestNamespace)
 		Expect(err).To(BeNil())
 		Expect(len(svc.Spec.Ports)).To(Equal(1))
 	})
 
 	It("Opens a second port if rpc is enabled", func() {
-		err := kudo.UpdateInstanceParameters(
-			TestNamespace,
-			TestInstance,
-			map[string]string{
-				"START_RPC":    "true",
-				"EXTERNAL_RPC": "true",
-			},
-			true,
-		)
+		err := Operator.Instance.UpdateParameters(map[string]string{
+			"START_RPC":    "true",
+			"EXTERNAL_RPC": "true",
+		})
 		Expect(err).To(BeNil())
 
 		assertNumberOfCassandraNodes(NodeCount)
 
 		log.Infof("Verify that external service is started and has 2 open ports")
-		svc, err := k8s.GetService(TestNamespace, fmt.Sprintf("%s-svc-external", TestInstance))
+		svc, err := kubernetes.GetService(Client, fmt.Sprintf("%s-svc-external", TestInstance), TestNamespace)
 		Expect(err).To(BeNil())
 		Expect(len(svc.Spec.Ports)).To(Equal(2))
 	})
 
 	It("Uninstalls the operator", func() {
-		err := kudo.UninstallOperator(OperatorName, TestNamespace, TestInstance)
+		err := cassandra.Uninstall(Client, Operator)
 		Expect(err).To(BeNil())
 	})
 })
