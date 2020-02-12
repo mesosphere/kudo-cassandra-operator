@@ -15,10 +15,11 @@ import (
 	log "github.com/sirupsen/logrus"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/mesosphere/kudo-cassandra-operator/tests/utils/cassandra"
-	"github.com/mesosphere/kudo-cassandra-operator/tests/utils/k8s"
-	"github.com/mesosphere/kudo-cassandra-operator/tests/utils/kubectl"
-	"github.com/mesosphere/kudo-cassandra-operator/tests/utils/kudo"
+	"github.com/kudobuilder/test-tools/pkg/client"
+	"github.com/kudobuilder/test-tools/pkg/kubernetes"
+	"github.com/kudobuilder/test-tools/pkg/kudo"
+
+	"github.com/mesosphere/kudo-cassandra-operator/tests/cassandra"
 )
 
 var (
@@ -29,43 +30,41 @@ var (
 	TestNamespace       = fmt.Sprintf("%s-namespace", TestName)
 	TestInstance        = fmt.Sprintf("%s-instance", OperatorName)
 	KubeConfigPath      = os.Getenv("KUBECONFIG")
-	KubectlPath         = os.Getenv("KUBECTL_PATH")
 	OperatorDirectory   = os.Getenv("OPERATOR_DIRECTORY")
 	// TODO(mpereira): read NodeCount from params.yaml.
-	NodeCount      = 3
-	KubectlOptions = kubectl.NewKubectlOptions(
-		KubectlPath,
-		KubeConfigPath,
-		TestNamespace,
-		"",
-	)
+	NodeCount = 3
+	Client    = client.Client{}
+	Operator  = kudo.Operator{}
 )
 
 func assertNumberOfCassandraNodes(nodeCount int) {
-	nodes, err := cassandra.Nodes(TestNamespace, TestInstance)
+	nodes, err := cassandra.Nodes(Client, Operator.Instance)
 	Expect(err).To(BeNil())
 	Expect(len(nodes)).To(Equal(nodeCount))
 }
 
 var _ = Describe(TestName, func() {
 	It("Installs the latest operator from the package registry", func() {
+		var err error
+
 		// TODO(mpereira) Assert that it isn't running.
-		err := kudo.InstallOperator(
-			OperatorName, TestNamespace, TestInstance, []string{},
-		)
-		if err != nil {
-			Fail(
-				"Failing the full suite: failed to install operator instance that the " +
-					"following tests depend on",
-			)
-		}
+		Operator, err = kudo.InstallOperator(OperatorName).
+			WithNamespace(TestNamespace).
+			WithInstance(TestInstance).
+			Do(Client)
+		Expect(err).To(BeNil())
+
+		err = Operator.Instance.WaitForPlanInProgress("deploy")
+		Expect(err).To(BeNil())
+
+		err = Operator.Instance.WaitForPlanComplete("deploy")
 		Expect(err).To(BeNil())
 
 		assertNumberOfCassandraNodes(NodeCount)
 	})
 
 	It("Upgrades the running operator instance from a directory", func() {
-		before, _, err := kudo.OverrideOperatorVersion(TestOperatorVersion)
+		before, _, err := cassandra.OverrideOperatorVersion(TestOperatorVersion)
 		if err != nil {
 			log.Errorf(
 				"Error overriding operatorVersion from '%s' to '%s': %v",
@@ -75,15 +74,19 @@ var _ = Describe(TestName, func() {
 		OperatorVersion = before
 		Expect(err).To(BeNil())
 
-		err = kudo.UpgradeOperator(
-			OperatorDirectory, TestNamespace, TestInstance, []string{},
-		)
+		err = kudo.UpgradeOperator().WithOperator(OperatorDirectory).Do(&Operator)
 		if err != nil {
 			Fail(
 				"Failing the full suite: failed to upgrade operator instance that the " +
 					"following tests depend on",
 			)
 		}
+		Expect(err).To(BeNil())
+
+		err = Operator.Instance.WaitForPlanInProgress("deploy")
+		Expect(err).To(BeNil())
+
+		err = Operator.Instance.WaitForPlanComplete("deploy")
 		Expect(err).To(BeNil())
 
 		assertNumberOfCassandraNodes(NodeCount)
@@ -130,22 +133,22 @@ var _ = Describe(TestName, func() {
 		initialValue := "stop"
 		desiredValue := "ignore"
 
-		configuration, err := cassandra.ClusterConfiguration(
-			TestNamespace, TestInstance,
-		)
+		configuration, err := cassandra.ClusterConfiguration(Client, Operator.Instance)
 		Expect(err).To(BeNil())
 		Expect(configuration[parameter]).To(Equal(initialValue))
 
-		err = kudo.UpdateInstanceParameters(
-			TestNamespace,
-			TestInstance,
-			map[string]string{strings.ToUpper(parameter): desiredValue},
-		)
+		err = Operator.Instance.UpdateParameters(map[string]string{
+			strings.ToUpper(parameter): desiredValue,
+		})
 		Expect(err).To(BeNil())
 
-		configuration, err = cassandra.ClusterConfiguration(
-			TestNamespace, TestInstance,
-		)
+		err = Operator.Instance.WaitForPlanInProgress("deploy")
+		Expect(err).To(BeNil())
+
+		err = Operator.Instance.WaitForPlanComplete("deploy")
+		Expect(err).To(BeNil())
+
+		configuration, err = cassandra.ClusterConfiguration(Client, Operator.Instance)
 		Expect(err).To(BeNil())
 		Expect(configuration[parameter]).To(Equal(desiredValue))
 
@@ -160,22 +163,22 @@ var _ = Describe(TestName, func() {
 			[]byte(parameter + ": " + desiredValue),
 		)
 
-		configuration, err := cassandra.ClusterConfiguration(
-			TestNamespace, TestInstance,
-		)
+		configuration, err := cassandra.ClusterConfiguration(Client, Operator.Instance)
 		Expect(err).To(BeNil())
 		Expect(configuration[parameter]).To(Equal(initialValue))
 
-		err = kudo.UpdateInstanceParameters(
-			TestNamespace,
-			TestInstance,
-			map[string]string{"CUSTOM_CASSANDRA_YAML_BASE64": desiredEncodedProperties},
-		)
+		err = Operator.Instance.UpdateParameters(map[string]string{
+			"CUSTOM_CASSANDRA_YAML_BASE64": desiredEncodedProperties,
+		})
 		Expect(err).To(BeNil())
 
-		configuration, err = cassandra.ClusterConfiguration(
-			TestNamespace, TestInstance,
-		)
+		err = Operator.Instance.WaitForPlanInProgress("deploy")
+		Expect(err).To(BeNil())
+
+		err = Operator.Instance.WaitForPlanComplete("deploy")
+		Expect(err).To(BeNil())
+
+		configuration, err = cassandra.ClusterConfiguration(Client, Operator.Instance)
 		Expect(err).To(BeNil())
 		Expect(configuration[parameter]).To(Equal(desiredValue))
 
@@ -190,23 +193,23 @@ var _ = Describe(TestName, func() {
 			[]byte(parameter + "=" + desiredValue),
 		)
 
-		configuration, err := cassandra.NodeJvmOptions(
-			TestNamespace, TestInstance,
-		)
+		configuration, err := cassandra.NodeJVMOptions(Client, Operator.Instance)
 
 		Expect(err).To(BeNil())
 		Expect(configuration[parameter]).To(Equal(initialValue))
 
-		err = kudo.UpdateInstanceParameters(
-			TestNamespace,
-			TestInstance,
-			map[string]string{"CUSTOM_JVM_OPTIONS_BASE64": desiredEncodedProperties},
-		)
+		err = Operator.Instance.UpdateParameters(map[string]string{
+			"CUSTOM_JVM_OPTIONS_BASE64": desiredEncodedProperties,
+		})
 		Expect(err).To(BeNil())
 
-		configuration, err = cassandra.NodeJvmOptions(
-			TestNamespace, TestInstance,
-		)
+		err = Operator.Instance.WaitForPlanInProgress("deploy")
+		Expect(err).To(BeNil())
+
+		err = Operator.Instance.WaitForPlanComplete("deploy")
+		Expect(err).To(BeNil())
+
+		configuration, err = cassandra.NodeJVMOptions(Client, Operator.Instance)
 		Expect(err).To(BeNil())
 		Expect(configuration[parameter]).To(Equal(desiredValue))
 
@@ -215,45 +218,38 @@ var _ = Describe(TestName, func() {
 
 	It("Scales the instance's number of nodes", func() {
 		NodeCount = NodeCount + 1
-		err := kudo.UpdateInstanceParameters(
-			TestNamespace,
-			TestInstance,
-			map[string]string{"NODE_COUNT": strconv.Itoa(NodeCount)},
+		err := Operator.Instance.UpdateParameters(map[string]string{
+			"NODE_COUNT": strconv.Itoa(NodeCount)},
 		)
 		if err != nil {
 			Fail("Failing the full suite: failed to scale the number of nodes")
 		}
 		Expect(err).To(BeNil())
 
+		err = Operator.Instance.WaitForPlanInProgress("deploy")
+		Expect(err).To(BeNil())
+
+		err = Operator.Instance.WaitForPlanComplete("deploy")
+		Expect(err).To(BeNil())
+
 		assertNumberOfCassandraNodes(NodeCount)
 	})
 
 	It("Uninstalls the operator", func() {
-		err := kudo.UninstallOperator(OperatorName, TestNamespace, TestInstance)
+		err := cassandra.Uninstall(Client, Operator)
 		Expect(err).To(BeNil())
 		// TODO(mpereira) Assert that it isn't running.
 	})
 })
 
 var _ = BeforeSuite(func() {
-	k8s.Init(KubectlOptions)
-	kudo.Init(KubectlOptions)
-	kudo.UninstallOperator(OperatorName, TestNamespace, TestInstance)
-	k8s.CreateNamespace(TestNamespace)
+	Client, _ = client.NewForConfig(KubeConfigPath)
+	kubernetes.CreateNamespace(Client, TestNamespace)
 })
 
 var _ = AfterSuite(func() {
-	kudo.UninstallOperator(OperatorName, TestNamespace, TestInstance)
-	k8s.DeleteNamespace(TestNamespace)
-	if OperatorVersion != "" {
-		_, _, err := kudo.OverrideOperatorVersion(OperatorVersion)
-		if err != nil {
-			log.Errorf(
-				"Error reverting operatorVersion from '%s' to '%s': %v",
-				TestOperatorVersion, OperatorVersion, err,
-			)
-		}
-	}
+	Operator.Uninstall()
+	kubernetes.DeleteNamespace(Client, TestNamespace)
 })
 
 func TestService(t *testing.T) {
