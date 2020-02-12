@@ -8,14 +8,16 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/kudobuilder/test-tools/pkg/client"
+	"github.com/kudobuilder/test-tools/pkg/cmd"
+	"github.com/kudobuilder/test-tools/pkg/kubernetes"
+	"github.com/kudobuilder/test-tools/pkg/kudo"
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/reporters"
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
-
-	"github.com/kudobuilder/test-tools/pkg/client"
-	"github.com/kudobuilder/test-tools/pkg/kubernetes"
-	"github.com/kudobuilder/test-tools/pkg/kudo"
+	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/mesosphere/kudo-cassandra-operator/tests/cassandra"
 )
@@ -88,6 +90,53 @@ var _ = Describe(TestName, func() {
 		Expect(err).To(BeNil())
 
 		assertNumberOfCassandraNodes(NodeCount)
+	})
+
+	It("provides metrics to prometheus", func() {
+		podTpl := v1.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "curl-pod",
+				Namespace: "default",
+			},
+			Spec: v1.PodSpec{
+				Containers: []v1.Container{
+					{
+						Name:    "curl",
+						Image:   "curlimages/curl",
+						Command: []string{"sleep", "300"},
+					},
+				},
+			},
+		}
+
+		pod, err := kubernetes.NewPod(Client, podTpl)
+		Expect(err).To(BeNil())
+
+		for {
+			if pod.Status.Phase == v1.PodRunning {
+				break
+			} else {
+				pod, err = kubernetes.GetPod(Client, pod.Name, pod.Namespace)
+				Expect(err).To(BeNil())
+			}
+		}
+
+		var stdout strings.Builder
+		var stderr strings.Builder
+
+		cmd := cmd.New("curl").
+			WithArguments("-s", "prometheus-kubeaddons-prom-prometheus.kubeaddons.svc.cluster.local:9090/api/v1/query?query=cassandra").
+			WithStdout(&stdout).
+			WithStderr(&stderr)
+
+		err = pod.ContainerExec("curl", cmd)
+
+		log.Errorf("Curl Output: StdErr: %v\n StdOut: %v\n", stderr.String(), stdout.String())
+
+		Expect(err).To(BeNil())
+
+		err = pod.Delete()
+		Expect(err).To(BeNil())
 	})
 
 	It("Updates the instance's parameters", func() {
