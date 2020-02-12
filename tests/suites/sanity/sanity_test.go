@@ -29,8 +29,8 @@ var (
 	TestInstance        = fmt.Sprintf("%s-instance", OperatorName)
 	KubeConfigPath      = os.Getenv("KUBECONFIG")
 	OperatorDirectory   = os.Getenv("OPERATOR_DIRECTORY")
-	// TODO(mpereira): read NodeCount from params.yaml.
-	NodeCount = 3
+
+	NodeCount = 1
 	Client    = client.Client{}
 	Operator  = kudo.Operator{}
 )
@@ -104,6 +104,12 @@ var _ = Describe(TestName, func() {
 			"NODE_CPU_MC":        strconv.Itoa(newCpu),
 			"NODE_CPU_LIMIT_MC":  strconv.Itoa(newCpuLimit),
 		})
+		Expect(err).To(BeNil())
+
+		err = Operator.Instance.WaitForPlanInProgress("deploy")
+		Expect(err).To(BeNil())
+
+		err = Operator.Instance.WaitForPlanComplete("deploy")
 		Expect(err).To(BeNil())
 
 		pod, err := kubernetes.GetPod(Client, TestInstance+"-node-0", TestNamespace)
