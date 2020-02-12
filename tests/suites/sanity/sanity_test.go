@@ -9,15 +9,13 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/kudobuilder/test-tools/pkg/client"
+	"github.com/kudobuilder/test-tools/pkg/kubernetes"
+	"github.com/kudobuilder/test-tools/pkg/kudo"
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/reporters"
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	"github.com/kudobuilder/test-tools/pkg/client"
-	"github.com/kudobuilder/test-tools/pkg/kubernetes"
-	"github.com/kudobuilder/test-tools/pkg/kudo"
 
 	"github.com/mesosphere/kudo-cassandra-operator/tests/cassandra"
 )
@@ -100,22 +98,16 @@ var _ = Describe(TestName, func() {
 		newCpu := 800
 		newCpuLimit := 1100
 
-		err := kudo.UpdateInstanceParameters(
-			TestNamespace,
-			TestInstance,
-			map[string]string{
-				"NODE_MEM_MIB":       strconv.Itoa(newMemMiB),
-				"NODE_MEM_LIMIT_MIB": strconv.Itoa(newMemLimitMiB),
-				"NODE_CPU_MC":        strconv.Itoa(newCpu),
-				"NODE_CPU_LIMIT_MC":  strconv.Itoa(newCpuLimit),
-			},
-		)
+		err := Operator.Instance.UpdateParameters(map[string]string{
+			"NODE_MEM_MIB":       strconv.Itoa(newMemMiB),
+			"NODE_MEM_LIMIT_MIB": strconv.Itoa(newMemLimitMiB),
+			"NODE_CPU_MC":        strconv.Itoa(newCpu),
+			"NODE_CPU_LIMIT_MC":  strconv.Itoa(newCpuLimit),
+		})
 		Expect(err).To(BeNil())
 
-		client, err := kubectl.GetKubernetesClientFromOptions(KubectlOptions)
-		Expect(err).To(BeNil())
+		pod, err := kubernetes.GetPod(Client, TestInstance+"-node-0", TestNamespace)
 
-		pod, err := client.CoreV1().Pods(TestNamespace).Get(TestInstance+"-node-0", v1.GetOptions{})
 		Expect(err).To(BeNil())
 		Expect(pod).To(Not(BeNil()))
 
