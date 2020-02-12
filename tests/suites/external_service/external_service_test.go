@@ -27,9 +27,8 @@ var (
 	KubeConfigPath      = os.Getenv("KUBECONFIG")
 	KubectlPath         = os.Getenv("KUBECTL_PATH")
 	OperatorDirectory   = os.Getenv("OPERATOR_DIRECTORY")
-	// TODO(mpereira): read NodeCount from params.yaml.
 
-	NodeCount = 3
+	NodeCount = 1
 	Client    = client.Client{}
 	Operator  = kudo.Operator{}
 )

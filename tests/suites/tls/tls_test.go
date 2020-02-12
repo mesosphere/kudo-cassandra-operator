@@ -24,8 +24,8 @@ var (
 	TestInstance      = fmt.Sprintf("%s-instance", OperatorName)
 	KubeConfigPath    = os.Getenv("KUBECONFIG")
 	OperatorDirectory = os.Getenv("OPERATOR_DIRECTORY")
-	// TODO(mpereira): read NodeCount from params.yaml.
-	NodeCount = 3
+
+	NodeCount = 2
 	Client    = client.Client{}
 	Operator  = kudo.Operator{}
 )
