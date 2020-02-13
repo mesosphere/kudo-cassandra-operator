@@ -3,19 +3,19 @@ package sanity
 import (
 	"encoding/base64"
 	"fmt"
+	"math/big"
 	"os"
 	"strconv"
 	"strings"
 	"testing"
 
+	"github.com/kudobuilder/test-tools/pkg/client"
+	"github.com/kudobuilder/test-tools/pkg/kubernetes"
+	"github.com/kudobuilder/test-tools/pkg/kudo"
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/reporters"
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
-
-	"github.com/kudobuilder/test-tools/pkg/client"
-	"github.com/kudobuilder/test-tools/pkg/kubernetes"
-	"github.com/kudobuilder/test-tools/pkg/kudo"
 
 	"github.com/mesosphere/kudo-cassandra-operator/tests/cassandra"
 )
@@ -29,8 +29,8 @@ var (
 	TestInstance        = fmt.Sprintf("%s-instance", OperatorName)
 	KubeConfigPath      = os.Getenv("KUBECONFIG")
 	OperatorDirectory   = os.Getenv("OPERATOR_DIRECTORY")
-	// TODO(mpereira): read NodeCount from params.yaml.
-	NodeCount = 3
+
+	NodeCount = 1
 	Client    = client.Client{}
 	Operator  = kudo.Operator{}
 )
@@ -49,6 +49,9 @@ var _ = Describe(TestName, func() {
 		Operator, err = kudo.InstallOperator(OperatorName).
 			WithNamespace(TestNamespace).
 			WithInstance(TestInstance).
+			WithParameters(map[string]string{
+				"NODE_COUNT": strconv.Itoa(NodeCount),
+			}).
 			Do(Client)
 		Expect(err).To(BeNil())
 
@@ -86,6 +89,43 @@ var _ = Describe(TestName, func() {
 
 		err = Operator.Instance.WaitForPlanComplete("deploy")
 		Expect(err).To(BeNil())
+
+		assertNumberOfCassandraNodes(NodeCount)
+	})
+
+	It("Updates the instance's cpu and memory", func() {
+		newMemMiB := 3192
+		newMemLimitMiB := 3192
+		newMemBytes := newMemMiB * 1024 * 1024
+		newMemLimitBytes := newMemLimitMiB * 1024 * 1024
+
+		newCpu := 800
+		newCpuLimit := 1100
+
+		err := Operator.Instance.UpdateParameters(map[string]string{
+			"NODE_MEM_MIB":       strconv.Itoa(newMemMiB),
+			"NODE_MEM_LIMIT_MIB": strconv.Itoa(newMemLimitMiB),
+			"NODE_CPU_MC":        strconv.Itoa(newCpu),
+			"NODE_CPU_LIMIT_MC":  strconv.Itoa(newCpuLimit),
+		})
+		Expect(err).To(BeNil())
+
+		err = Operator.Instance.WaitForPlanInProgress("deploy")
+		Expect(err).To(BeNil())
+
+		err = Operator.Instance.WaitForPlanComplete("deploy")
+		Expect(err).To(BeNil())
+
+		pod, err := kubernetes.GetPod(Client, TestInstance+"-node-0", TestNamespace)
+
+		Expect(err).To(BeNil())
+		Expect(pod).To(Not(BeNil()))
+
+		Expect(pod.Spec.Containers[0].Resources.Requests.Cpu().AsDec().UnscaledBig()).To(Equal(big.NewInt(int64(newCpu))))
+		Expect(pod.Spec.Containers[0].Resources.Requests.Memory().AsDec().UnscaledBig()).To(Equal(big.NewInt(int64(newMemBytes))))
+
+		Expect(pod.Spec.Containers[0].Resources.Limits.Cpu().AsDec().UnscaledBig()).To(Equal(big.NewInt(int64(newCpuLimit))))
+		Expect(pod.Spec.Containers[0].Resources.Limits.Memory().AsDec().UnscaledBig()).To(Equal(big.NewInt(int64(newMemLimitBytes))))
 
 		assertNumberOfCassandraNodes(NodeCount)
 	})
