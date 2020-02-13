@@ -3,6 +3,7 @@ package external_service
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"testing"
 
 	"github.com/kudobuilder/test-tools/pkg/client"
@@ -79,7 +80,6 @@ func assertNumberOfCassandraNodes(nodeCount int) {
 }
 
 var _ = Describe("external service", func() {
-	NodeCount = 3
 
 	It("Installs the operator from the current directory", func() {
 		var err error
@@ -87,6 +87,9 @@ var _ = Describe("external service", func() {
 		Operator, err = kudo.InstallOperator(OperatorDirectory).
 			WithNamespace(TestNamespace).
 			WithInstance(TestInstance).
+			WithParameters(map[string]string{
+				"NODE_COUNT": strconv.Itoa(NodeCount),
+			}).
 			Do(Client)
 		Expect(err).To(BeNil())
 

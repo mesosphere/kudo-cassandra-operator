@@ -3,6 +3,7 @@ package tls
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"testing"
 
 	. "github.com/onsi/ginkgo"
@@ -58,6 +59,7 @@ var _ = Describe(TestName, func() {
 				WithNamespace(TestNamespace).
 				WithInstance(TestInstance).
 				WithParameters(map[string]string{
+					"NODE_COUNT":                   strconv.Itoa(NodeCount),
 					"TLS_SECRET_NAME":              "cassandra-tls",
 					"TRANSPORT_ENCRYPTION_ENABLED": "true",
 				}).
