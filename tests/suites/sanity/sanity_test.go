@@ -96,7 +96,8 @@ var _ = Describe(TestName, func() {
 	It("Updates the instance's cpu and memory", func() {
 		newMemMiB := 3192
 		newMemLimitMiB := 3192
-		newMemBytes := 3347054592
+		newMemBytes := newMemMiB * 1024 * 1024
+		newMemLimitBytes := newMemLimitMiB * 1024 * 1024
 
 		newCpu := 800
 		newCpuLimit := 1100
@@ -124,7 +125,7 @@ var _ = Describe(TestName, func() {
 		Expect(pod.Spec.Containers[0].Resources.Requests.Memory().AsDec().UnscaledBig()).To(Equal(big.NewInt(int64(newMemBytes))))
 
 		Expect(pod.Spec.Containers[0].Resources.Limits.Cpu().AsDec().UnscaledBig()).To(Equal(big.NewInt(int64(newCpuLimit))))
-		Expect(pod.Spec.Containers[0].Resources.Limits.Memory().AsDec().UnscaledBig()).To(Equal(big.NewInt(int64(newMemBytes))))
+		Expect(pod.Spec.Containers[0].Resources.Limits.Memory().AsDec().UnscaledBig()).To(Equal(big.NewInt(int64(newMemLimitBytes))))
 
 		assertNumberOfCassandraNodes(NodeCount)
 	})
