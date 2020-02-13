@@ -233,6 +233,8 @@ var _ = Describe(TestName, func() {
 	})
 
 	It("Scales the instance's number of nodes", func() {
+
+		// Make sure we create an actual cluster of three nodes
 		NodeCount = NodeCount + 2
 		err := Operator.Instance.UpdateParameters(map[string]string{
 			"NODE_COUNT": strconv.Itoa(NodeCount)},
