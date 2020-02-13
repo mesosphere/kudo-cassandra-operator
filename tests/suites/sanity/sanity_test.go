@@ -52,6 +52,9 @@ var _ = Describe(TestName, func() {
 		Operator, err = kudo.InstallOperator(OperatorName).
 			WithNamespace(TestNamespace).
 			WithInstance(TestInstance).
+			WithParameters(map[string]string{
+				"NODE_COUNT": strconv.Itoa(NodeCount),
+			}).
 			Do(Client)
 		Expect(err).To(BeNil())
 

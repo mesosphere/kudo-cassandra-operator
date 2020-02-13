@@ -3,6 +3,7 @@ package tls
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"testing"
 
 	. "github.com/onsi/ginkgo"
@@ -24,8 +25,8 @@ var (
 	TestInstance      = fmt.Sprintf("%s-instance", OperatorName)
 	KubeConfigPath    = os.Getenv("KUBECONFIG")
 	OperatorDirectory = os.Getenv("OPERATOR_DIRECTORY")
-	// TODO(mpereira): read NodeCount from params.yaml.
-	NodeCount = 3
+
+	NodeCount = 2
 	Client    = client.Client{}
 	Operator  = kudo.Operator{}
 )
@@ -58,6 +59,7 @@ var _ = Describe(TestName, func() {
 				WithNamespace(TestNamespace).
 				WithInstance(TestInstance).
 				WithParameters(map[string]string{
+					"NODE_COUNT":                   strconv.Itoa(NodeCount),
 					"TLS_SECRET_NAME":              "cassandra-tls",
 					"TRANSPORT_ENCRYPTION_ENABLED": "true",
 				}).
