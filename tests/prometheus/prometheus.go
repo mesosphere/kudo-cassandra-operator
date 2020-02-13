@@ -3,9 +3,10 @@ package prometheus
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
+
 	"github.com/kudobuilder/test-tools/pkg/client"
 	"github.com/mesosphere/kudo-cassandra-operator/tests/curl"
-	"strings"
 )
 
 type PrometheusSearch struct {

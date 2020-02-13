@@ -2,13 +2,14 @@ package curl
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/kudobuilder/test-tools/pkg/client"
 	"github.com/kudobuilder/test-tools/pkg/cmd"
 	"github.com/kudobuilder/test-tools/pkg/kubernetes"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/uuid"
-	"strings"
 )
 
 func RunCommand(client client.Client, namespace string, arguments ...string) (string, string, error) {
