@@ -117,7 +117,7 @@ var _ = Describe("external service", func() {
 		Expect(err).To(BeNil())
 		Expect(len(svc.Spec.Ports)).To(Equal(1))
 		Expect(svc.Spec.Ports[0].Name).To(Equal("native-transport"))
-		Expect(svc.Spec.Ports[0].Port).To(Equal(nativeTransportPort))
+		Expect(svc.Spec.Ports[0].Port).To(Equal(int32(nativeTransportPort)))
 	})
 
 	It("Opens a second port if rpc is enabled", func() {
@@ -136,7 +136,7 @@ var _ = Describe("external service", func() {
 		Expect(err).To(BeNil())
 		Expect(len(svc.Spec.Ports)).To(Equal(2))
 		Expect(svc.Spec.Ports[1].Name).To(Equal("rpc"))
-		Expect(svc.Spec.Ports[1].Port).To(Equal(rpcPort))
+		Expect(svc.Spec.Ports[1].Port).To(Equal(int32(rpcPort)))
 	})
 
 	It("Uninstalls the operator", func() {
