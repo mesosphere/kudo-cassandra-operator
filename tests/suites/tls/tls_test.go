@@ -191,16 +191,16 @@ var _ = Describe(TestName, func() {
 
 var _ = BeforeSuite(func() {
 	Client, _ = client.NewForConfig(KubeConfigPath)
-	kubernetes.CreateNamespace(Client, TestNamespace)
-	tls.CreateCertSecret("cassandra-tls").
+	_ = kubernetes.CreateNamespace(Client, TestNamespace)
+	_, _ = tls.CreateCertSecret("cassandra-tls").
 		WithNamespace(TestNamespace).
 		WithCommonName("CassandraCA").
 		Do(Client)
 })
 
 var _ = AfterSuite(func() {
-	Operator.Uninstall()
-	kubernetes.DeleteNamespace(Client, TestNamespace)
+	_ = Operator.Uninstall()
+	_ = kubernetes.DeleteNamespace(Client, TestNamespace)
 })
 
 func TestService(t *testing.T) {

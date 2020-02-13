@@ -7,14 +7,16 @@ import (
 	"github.com/kudobuilder/test-tools/pkg/kubernetes"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/uuid"
 	"strings"
 )
 
 func RunCommand(client client.Client, namespace string, arguments ...string) (string, string, error) {
+	curlPodName := fmt.Sprintf("curl-%s", uuid.NewUUID())
+
 	podTpl := v1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			// TODO: When this is more generic, pod name should probably be randomized
-			Name:      "curl-pod",
+			Name:      curlPodName,
 			Namespace: namespace,
 		},
 		Spec: v1.PodSpec{

@@ -4,25 +4,22 @@ import (
 	"encoding/base64"
 	"fmt"
 	"math/big"
-	"github.com/mesosphere/kudo-cassandra-operator/tests/prometheus"
 	"os"
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/kudobuilder/test-tools/pkg/client"
 	"github.com/kudobuilder/test-tools/pkg/kubernetes"
 	"github.com/kudobuilder/test-tools/pkg/kudo"
-	"github.com/kudobuilder/test-tools/pkg/client"
-	"github.com/kudobuilder/test-tools/pkg/kubernetes"
-	"github.com/kudobuilder/test-tools/pkg/kudo"
-	"github.com/mesosphere/kudo-cassandra-operator/tests/cassandra"
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/reporters"
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/mesosphere/kudo-cassandra-operator/tests/cassandra"
+	"github.com/mesosphere/kudo-cassandra-operator/tests/prometheus"
 )
 
 var (
@@ -99,6 +96,17 @@ var _ = Describe(TestName, func() {
 		assertNumberOfCassandraNodes(NodeCount)
 	})
 
+	It("provides metrics to prometheus", func() {
+		prometheusSvc := "prometheus-kubeaddons-prom-prometheus.kubeaddons.svc.cluster.local:9090"
+
+		Eventually(func() bool {
+			promResult, err := prometheus.QueryForStats(Client, TestNamespace, prometheusSvc, "cassandra_stats")
+			Expect(err).To(BeNil())
+
+			return len(promResult.Data.Result) > 0
+		}, 5*time.Minute, 30*time.Second).Should(BeTrue())
+	})
+
 	It("Updates the instance's cpu and memory", func() {
 		newMemMiB := 3192
 		newMemLimitMiB := 3192
@@ -134,13 +142,6 @@ var _ = Describe(TestName, func() {
 		Expect(pod.Spec.Containers[0].Resources.Limits.Memory().AsDec().UnscaledBig()).To(Equal(big.NewInt(int64(newMemLimitBytes))))
 
 		assertNumberOfCassandraNodes(NodeCount)
-	})
-
-	It("provides metrics to prometheus", func() {
-		promResult, err := prometheus.QueryForStats(Client, TestNamespace, "prometheus-kubeaddons-prom-prometheus.kubeaddons.svc.cluster.local:9090", "cassandra_stats")
-		Expect(err).To(BeNil())
-
-		Expect(len(promResult.Data.Result) > 0).To(BeTrue(), "Expected Prometheus Search results, found no entries")
 	})
 
 	It("Updates the instance's parameters", func() {
