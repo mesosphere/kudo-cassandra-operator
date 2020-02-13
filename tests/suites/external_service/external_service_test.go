@@ -103,8 +103,10 @@ var _ = Describe("external service", func() {
 	})
 
 	It("Allows external access to the cassandra cluster", func() {
+		nativeTransportPort := 9043
 		err := Operator.Instance.UpdateParameters(map[string]string{
-			"EXTERNAL_NATIVE_TRANSPORT": "true",
+			"EXTERNAL_NATIVE_TRANSPORT":      "true",
+			"EXTERNAL_NATIVE_TRANSPORT_PORT": strconv.Itoa(nativeTransportPort),
 		})
 		Expect(err).To(BeNil())
 
@@ -114,12 +116,16 @@ var _ = Describe("external service", func() {
 		svc, err := kubernetes.GetService(Client, fmt.Sprintf("%s-svc-external", TestInstance), TestNamespace)
 		Expect(err).To(BeNil())
 		Expect(len(svc.Spec.Ports)).To(Equal(1))
+		Expect(svc.Spec.Ports[0].Name).To(Equal("native-transport"))
+		Expect(svc.Spec.Ports[0].Port).To(Equal(nativeTransportPort))
 	})
 
 	It("Opens a second port if rpc is enabled", func() {
+		rpcPort := 9161
 		err := Operator.Instance.UpdateParameters(map[string]string{
-			"START_RPC":    "true",
-			"EXTERNAL_RPC": "true",
+			"START_RPC":         "true",
+			"EXTERNAL_RPC":      "true",
+			"EXTERNAL_RPC_PORT": strconv.Itoa(rpcPort),
 		})
 		Expect(err).To(BeNil())
 
@@ -129,6 +135,8 @@ var _ = Describe("external service", func() {
 		svc, err := kubernetes.GetService(Client, fmt.Sprintf("%s-svc-external", TestInstance), TestNamespace)
 		Expect(err).To(BeNil())
 		Expect(len(svc.Spec.Ports)).To(Equal(2))
+		Expect(svc.Spec.Ports[1].Name).To(Equal("rpc"))
+		Expect(svc.Spec.Ports[1].Port).To(Equal(rpcPort))
 	})
 
 	It("Uninstalls the operator", func() {
