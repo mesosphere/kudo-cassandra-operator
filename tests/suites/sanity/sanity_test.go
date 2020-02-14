@@ -8,6 +8,9 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
+
+	"github.com/mesosphere/kudo-cassandra-operator/tests/curl"
 
 	"github.com/kudobuilder/test-tools/pkg/client"
 	"github.com/kudobuilder/test-tools/pkg/kubernetes"
@@ -18,6 +21,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/mesosphere/kudo-cassandra-operator/tests/cassandra"
+	"github.com/mesosphere/kudo-cassandra-operator/tests/prometheus"
 )
 
 var (
@@ -30,6 +34,7 @@ var (
 	KubeConfigPath      = os.Getenv("KUBECONFIG")
 	OperatorDirectory   = os.Getenv("OPERATOR_DIRECTORY")
 
+	// Node Count of 1 for Sanity test to have the tests a little bit faster
 	NodeCount = 1
 	Client    = client.Client{}
 	Operator  = kudo.Operator{}
@@ -91,6 +96,19 @@ var _ = Describe(TestName, func() {
 		Expect(err).To(BeNil())
 
 		assertNumberOfCassandraNodes(NodeCount)
+	})
+
+	It("provides metrics to prometheus", func() {
+		prometheusSvc := "prometheus-kubeaddons-prom-prometheus.kubeaddons.svc.cluster.local:9090"
+
+		curlRunner := curl.New(Client, TestNamespace)
+
+		Eventually(func() bool {
+			promResult, err := prometheus.QueryForStats(curlRunner, prometheusSvc, "cassandra_stats")
+			Expect(err).To(BeNil())
+
+			return len(promResult.Data.Result) > 0
+		}, 5*time.Minute, 30*time.Second).Should(BeTrue())
 	})
 
 	It("Updates the instance's cpu and memory", func() {
@@ -248,12 +266,12 @@ var _ = Describe(TestName, func() {
 
 var _ = BeforeSuite(func() {
 	Client, _ = client.NewForConfig(KubeConfigPath)
-	kubernetes.CreateNamespace(Client, TestNamespace)
+	_ = kubernetes.CreateNamespace(Client, TestNamespace)
 })
 
 var _ = AfterSuite(func() {
-	Operator.Uninstall()
-	kubernetes.DeleteNamespace(Client, TestNamespace)
+	_ = Operator.Uninstall()
+	_ = kubernetes.DeleteNamespace(Client, TestNamespace)
 })
 
 func TestService(t *testing.T) {
