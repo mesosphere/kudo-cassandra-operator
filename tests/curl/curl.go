@@ -12,13 +12,29 @@ import (
 	"k8s.io/apimachinery/pkg/util/uuid"
 )
 
-func RunCommand(client client.Client, namespace string, arguments ...string) (string, string, error) {
+type Runner interface {
+	Run(arguments ...string) (string, string, error)
+}
+
+type Executor struct {
+	client    client.Client
+	namespace string
+}
+
+func New(client client.Client, namespace string) Runner {
+	return &Executor{
+		client:    client,
+		namespace: namespace,
+	}
+}
+
+func (c *Executor) Run(arguments ...string) (string, string, error) {
 	curlPodName := fmt.Sprintf("curl-%s", uuid.NewUUID())
 
 	podTpl := v1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      curlPodName,
-			Namespace: namespace,
+			Namespace: c.namespace,
 		},
 		Spec: v1.PodSpec{
 			Containers: []v1.Container{
@@ -31,12 +47,15 @@ func RunCommand(client client.Client, namespace string, arguments ...string) (st
 		},
 	}
 
-	pod, err := kubernetes.NewPod(client, podTpl)
+	pod, err := kubernetes.NewPod(c.client, podTpl)
 	if err != nil {
 		return "", "", fmt.Errorf("failed to create new curl pod: %v", err)
 	}
 	defer func() {
-		_ = pod.Delete()
+		fErr := pod.Delete()
+		if fErr != nil {
+			fmt.Printf("Failed to delete temporary curl pod %s: %v", pod.Name, fErr)
+		}
 	}()
 
 	for {
@@ -50,18 +69,18 @@ func RunCommand(client client.Client, namespace string, arguments ...string) (st
 		}
 	}
 
-	var stdout strings.Builder
-	var stderr strings.Builder
+	var stdOut strings.Builder
+	var stdErr strings.Builder
 
 	cmd := cmd.New("curl").
 		WithArguments(arguments...).
-		WithStdout(&stdout).
-		WithStderr(&stderr)
+		WithStdout(&stdOut).
+		WithStderr(&stdErr)
 
 	err = pod.ContainerExec("curl", cmd)
 	if err != nil {
 		return "", "", fmt.Errorf("failed to exec in container: %v", err)
 	}
 
-	return stdout.String(), stderr.String(), nil
+	return stdOut.String(), stdErr.String(), nil
 }

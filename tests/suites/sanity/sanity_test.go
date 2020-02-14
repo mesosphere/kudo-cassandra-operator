@@ -10,6 +10,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/mesosphere/kudo-cassandra-operator/tests/curl"
+
 	"github.com/kudobuilder/test-tools/pkg/client"
 	"github.com/kudobuilder/test-tools/pkg/kubernetes"
 	"github.com/kudobuilder/test-tools/pkg/kudo"
@@ -99,8 +101,10 @@ var _ = Describe(TestName, func() {
 	It("provides metrics to prometheus", func() {
 		prometheusSvc := "prometheus-kubeaddons-prom-prometheus.kubeaddons.svc.cluster.local:9090"
 
+		curlRunner := curl.New(Client, TestNamespace)
+
 		Eventually(func() bool {
-			promResult, err := prometheus.QueryForStats(Client, TestNamespace, prometheusSvc, "cassandra_stats")
+			promResult, err := prometheus.QueryForStats(curlRunner, prometheusSvc, "cassandra_stats")
 			Expect(err).To(BeNil())
 
 			return len(promResult.Data.Result) > 0
