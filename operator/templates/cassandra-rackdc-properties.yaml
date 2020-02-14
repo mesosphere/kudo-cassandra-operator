@@ -1,0 +1,12 @@
+{{ if (eq .Params.ENDPOINT_SNITCH "GossipingPropertyFileSnitch") }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Name }}-cassandra-rackdc-properties
+  namespace: {{ .Namespace }}
+data:
+  cassandra-rackdc.properties: |
+    dc={{ .Params.NODE_DATACENTER }}
+    rack={{ .Params.NODE_RACK }}
+{{ end }}

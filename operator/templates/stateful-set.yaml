@@ -165,6 +165,11 @@ spec:
             - name: generate-tls-artifacts
               mountPath: /etc/tls/bin
           {{ end }}
+          {{ if (eq .Params.ENDPOINT_SNITCH "GossipingPropertyFileSnitch") }}
+            - name: cassandra-rackdc-properties
+              mountPath: /etc/cassandra/cassandra-rackdc.properties
+              subPath: cassandra-rackdc.properties
+          {{ end }}
         {{ if eq .Params.PROMETHEUS_EXPORTER_ENABLED "true" }}
         - name: prometheus-exporter
           image: {{ .Params.PROMETHEUS_EXPORTER_DOCKER_IMAGE }}
@@ -241,6 +246,11 @@ spec:
           configMap:
             name:  {{ .Name }}-generate-tls-artifacts-sh
             defaultMode: 0755
+        {{ end }}
+        {{ if (eq .Params.ENDPOINT_SNITCH "GossipingPropertyFileSnitch") }}
+        - name: cassandra-rackdc-properties
+          configMap:
+            name: {{ .Name }}-cassandra-rackdc-properties
         {{ end }}
   volumeClaimTemplates:
     - metadata:

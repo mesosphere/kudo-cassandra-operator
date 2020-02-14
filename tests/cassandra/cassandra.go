@@ -104,26 +104,38 @@ func Nodes(client client.Client, instance kudo.Instance) ([]map[string]string, e
 		return nil, err
 	}
 
+	// Datacenter: dc1
+	dcRegexp := `^Datacenter:\s+(\w+)$`
+	dcLinePattern := regexp.MustCompile(dcRegexp)
+
 	// --  Address         Load        Tokens  Owns   Host ID                               Rack
 	// UN  192.168.196.13  105.29 KiB  256     68.8%  440b2d75-059c-444a-ab01-9cea29b387d8  rack1
-	nodeRegexp := "^(\\w{2})\\s+([\\w\\.]+)\\s+([\\w\\.]+\\s\\w+)\\s+(\\d+)\\s+([\\d\\.]+%)\\s+([\\w-]+)\\s+(\\w+)$"
+	nodeRegexp := `^(\w{2})\s+([\w\.]+)\s+([\w\.]+\s\w+)\s+(\d+)\s+([\d\.]+%)\s+([\w-]+)\s+(\w+)$`
 	nodeLinePattern := regexp.MustCompile(nodeRegexp)
 
 	var nodes []map[string]string
 
 	scanner := bufio.NewScanner(strings.NewReader(stdout.String()))
 
+	datacenter := ""
+
 	for scanner.Scan() {
-		match := nodeLinePattern.FindStringSubmatch(scanner.Text())
-		if len(match) > 0 {
+		dcMatch := dcLinePattern.FindStringSubmatch(scanner.Text())
+		if dcMatch != nil {
+			datacenter = dcMatch[1]
+		}
+
+		nodeMatch := nodeLinePattern.FindStringSubmatch(scanner.Text())
+		if nodeMatch != nil {
 			nodes = append(nodes, map[string]string{
-				"status":  match[1],
-				"address": match[2],
-				"load":    match[3],
-				"tokens":  match[4],
-				"owns":    match[5],
-				"host_id": match[6],
-				"rack":    match[7],
+				"status":     nodeMatch[1],
+				"address":    nodeMatch[2],
+				"load":       nodeMatch[3],
+				"tokens":     nodeMatch[4],
+				"owns":       nodeMatch[5],
+				"host_id":    nodeMatch[6],
+				"rack":       nodeMatch[7],
+				"datacenter": datacenter,
 			})
 		}
 	}
