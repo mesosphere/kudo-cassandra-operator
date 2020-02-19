@@ -43,7 +43,7 @@ export KUDO_VERSION="0.10.1"
 export KUBERNETES_VERSION="1.15.0"
 
 export CASSANDRA_EXPORTER_DOCKER_IMAGE="criteord/cassandra_exporter"
-export CASSANDRA_EXPORTER_VERSION="2.2.1"
+export CASSANDRA_EXPORTER_VERSION="2.3.3"
 
 ################################################################################
 ############################## Docker images ###################################
