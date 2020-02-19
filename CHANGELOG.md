@@ -10,6 +10,9 @@ and this project adheres to
 
 ### Changed
 
+- Bumped Cassandra Prometheus Exporter to 2.3.3.
+  ([#56](https://github.com/mesosphere/kudo-cassandra-operator/pull/56))
+
 ### Added
 
 - TLS encryption for node-to-node and client-to-node connections.

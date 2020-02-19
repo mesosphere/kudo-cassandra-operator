@@ -113,7 +113,7 @@ parameters:
 
   - name: PROMETHEUS_EXPORTER_DOCKER_IMAGE
     description: "Prometheus exporter Docker image."
-    default: "mesosphere/cassandra-prometheus-exporter:2.2.1-0.1.2-SNAPSHOT"
+    default: "mesosphere/cassandra-prometheus-exporter:2.3.3-0.1.2-SNAPSHOT"
 
   - name: PROMETHEUS_EXPORTER_DOCKER_IMAGE_PULL_POLICY
     description: "Prometheus exporter Docker image pull policy."
