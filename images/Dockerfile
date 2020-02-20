@@ -1,6 +1,7 @@
 FROM cassandra:3.11.5
 
 RUN set -eux; \
+  rm /etc/apt/sources.list.d/cassandra.list; \
   apt-get update; \
   apt-get install -y --no-install-recommends libcap2-bin; \
   # Setting this capability will cause running the Java binary to not be
