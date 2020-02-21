@@ -70,7 +70,7 @@ var _ = Describe(TestName, func() {
 	It("Upgrades the running operator instance from a directory", func() {
 		before, _, err := cassandra.OverrideOperatorVersion(TestOperatorVersion)
 		if err != nil {
-			log.Errorf(
+			fmt.Printf(
 				"Error overriding operatorVersion from '%s' to '%s': %v",
 				OperatorVersion, TestOperatorVersion, err,
 			)
