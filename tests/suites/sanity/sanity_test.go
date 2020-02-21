@@ -10,17 +10,15 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mesosphere/kudo-cassandra-operator/tests/curl"
-
 	"github.com/kudobuilder/test-tools/pkg/client"
 	"github.com/kudobuilder/test-tools/pkg/kubernetes"
 	"github.com/kudobuilder/test-tools/pkg/kudo"
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/reporters"
 	. "github.com/onsi/gomega"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/mesosphere/kudo-cassandra-operator/tests/cassandra"
+	"github.com/mesosphere/kudo-cassandra-operator/tests/curl"
 	"github.com/mesosphere/kudo-cassandra-operator/tests/prometheus"
 )
 
@@ -80,7 +78,10 @@ var _ = Describe(TestName, func() {
 		OperatorVersion = before
 		Expect(err).To(BeNil())
 
-		err = kudo.UpgradeOperator().WithOperator(OperatorDirectory).Do(&Operator)
+		err = kudo.UpgradeOperator().WithOperator(OperatorDirectory).WithParameters(
+			map[string]string{
+				"JMX_LOCAL_ONLY": "true",
+			}).Do(&Operator)
 		if err != nil {
 			Fail(
 				"Failing the full suite: failed to upgrade operator instance that the " +
@@ -108,6 +109,54 @@ var _ = Describe(TestName, func() {
 			Expect(err).To(BeNil())
 
 			return len(promResult.Data.Result) > 0
+		}, 5*time.Minute, 30*time.Second).Should(BeTrue())
+	})
+
+	It("prevents JMX access from within the cluster", func() {
+		node0 := fmt.Sprintf("%s-node-0.%s-svc.%s.svc.cluster.local", TestInstance, TestInstance, TestNamespace)
+
+		nodeTool := cassandra.NewNodeTool(Client, "test")
+
+		fmt.Printf("Run nodetool against %s\n", node0)
+
+		Eventually(func() bool {
+			stdOut, stdErr, err := nodeTool.Run("-h", node0, "info")
+
+			fmt.Printf("Ran NodeTool: StdOut: %s, StdErr: %s", stdOut, stdErr)
+
+			Expect(err).To(Not(BeNil()))
+
+			return true
+		}, 5*time.Minute, 30*time.Second).Should(BeTrue())
+	})
+
+	It("allows JMX access from within the cluster with JMX_LOCAL_ONLY=false", func() {
+		fmt.Printf("Updating deployment with new parameter\n")
+		err := Operator.Instance.UpdateParameters(map[string]string{
+			"JMX_LOCAL_ONLY": "false",
+		})
+		Expect(err).To(BeNil())
+
+		err = Operator.Instance.WaitForPlanInProgress("deploy")
+		Expect(err).To(BeNil())
+
+		err = Operator.Instance.WaitForPlanComplete("deploy")
+		Expect(err).To(BeNil())
+
+		node0 := fmt.Sprintf("%s-node-0.%s-svc.%s.svc.cluster.local", TestInstance, TestInstance, TestNamespace)
+
+		nodeTool := cassandra.NewNodeTool(Client, "test")
+
+		fmt.Printf("Run nodetool against %s\n", node0)
+
+		Eventually(func() bool {
+			stdOut, stdErr, err := nodeTool.Run("-h", node0, "info")
+
+			fmt.Printf("Ran NodeTool: StdOut: %s, StdErr: %s", stdOut, stdErr)
+
+			Expect(err).To(BeNil())
+
+			return true
 		}, 5*time.Minute, 30*time.Second).Should(BeTrue())
 	})
 
