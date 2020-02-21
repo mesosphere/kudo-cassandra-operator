@@ -115,7 +115,7 @@ var _ = Describe(TestName, func() {
 	It("prevents JMX access from within the cluster", func() {
 		node0 := fmt.Sprintf("%s-node-0.%s-svc.%s.svc.cluster.local", TestInstance, TestInstance, TestNamespace)
 
-		nodeTool := cassandra.NewNodeTool(Client, "test")
+		nodeTool := cassandra.NewNodeTool(Client, TestNamespace)
 
 		fmt.Printf("Run nodetool against %s\n", node0)
 
@@ -145,7 +145,7 @@ var _ = Describe(TestName, func() {
 
 		node0 := fmt.Sprintf("%s-node-0.%s-svc.%s.svc.cluster.local", TestInstance, TestInstance, TestNamespace)
 
-		nodeTool := cassandra.NewNodeTool(Client, "test")
+		nodeTool := cassandra.NewNodeTool(Client, TestNamespace)
 
 		fmt.Printf("Run nodetool against %s\n", node0)
 
