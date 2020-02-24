@@ -145,7 +145,7 @@ parameters:
 
   - name: JMX_LOCAL_ONLY
     description: "If true, the JMX port will only be opened on localhost and not be available to the cluster"
-    default: "false"
+    default: "true"
 
   - name: TRANSPORT_ENCRYPTION_ENABLED
     description: "Enable node-to-node encryption."
