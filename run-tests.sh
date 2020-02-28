@@ -25,6 +25,8 @@ docker run \
        -e "DS_KUDO_VERSION=v${KUDO_VERSION}" \
        -e "OPERATOR_DIRECTORY=${container_operator_directory}" \
        -e "VENDOR_DIRECTORY=${container_vendor_directory}" \
+       -e "AWS_ACCESS_KEY_ID" \
+       -e "AWS_SECRET_ACCESS_KEY" \
        -v "${kubeconfig}:${container_kubeconfig}:ro" \
        -v "${OPERATOR_DIRECTORY}:${container_operator_directory}" \
        -v "${project_directory}:${container_project_directory}" \
