@@ -226,6 +226,7 @@ spec:
                 secretKeyRef:
                   name: {{ .Params.BACKUP_AWS_CREDENTIALS_SECRET }}
                   key: security-token
+                  optional: true
             - name: NODE_NAME
               valueFrom:
                 fieldRef:
