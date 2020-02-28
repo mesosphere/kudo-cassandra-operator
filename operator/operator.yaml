@@ -25,6 +25,17 @@ tasks:
         - generate-tls-artifacts-sh.yaml
         - generate-cqlshrc-sh.yaml
         - external-service.yaml
+        - medusa-config-ini.yaml
+  - name: backup-cleanup
+    kind: Delete
+    spec:
+      resources:
+        - backup-job.yaml
+  - name: backup
+    kind: Apply
+    spec:
+      resources:
+        - backup-job.yaml
 plans:
   deploy:
     strategy: serial
@@ -35,3 +46,15 @@ plans:
           - name: node
             tasks:
               - node
+  backup:
+    strategy: serial
+    phases:
+      - name: backup
+        strategy: serial
+        steps:
+          - name: cleanup
+            tasks:
+             - backup-cleanup
+          - name: backup
+            tasks:
+             - backup

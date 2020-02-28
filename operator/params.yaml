@@ -85,6 +85,22 @@ parameters:
     default: "9160"
 
   ################################################################################
+  ########################## Backup and Restore settings #########################
+  ################################################################################
+
+  - name: BACKUP_RESTORE_ENABLED
+    description: "TODO"
+    default: "true"
+
+  - name: BACKUP_TRIGGER
+    description: "Dummy param to trigger backup"
+    default: "1"
+    trigger: backup
+
+  - name: BACKUP_AWS_CREDENTIALS_SECRET
+    description: If set, can be used to provide the access_key, secret_key and security_token with a secret
+
+  ################################################################################
   ######################### Prometheus exporter settings #########################
   ################################################################################
 

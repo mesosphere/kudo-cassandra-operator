@@ -218,13 +218,15 @@ data:
     # will spread data evenly across them, subject to the granularity of
     # the configured compaction strategy.
     # If not set, the default directory is $CASSANDRA_HOME/data/data.
-    # data_file_directories:
-    #     - /var/lib/cassandra/data
+    data_file_directories:
+        - /var/lib/cassandra/data
 
     # commit log.  when running on magnetic HDD, this should be a
     # separate spindle than the data directories.
     {{ if .Params.COMMITLOG_DIRECTORY }}
     commitlog_directory: {{ .Params.COMMITLOG_DIRECTORY }}
+    {{ else }}
+    commitlog_directory: /var/lib/cassandra/commitlog
     {{ end }}
 
     # Enable / disable CDC functionality on a per-node basis. This modifies the logic used
@@ -410,6 +412,8 @@ data:
     # saved_caches_directory: /var/lib/cassandra/saved_caches
     {{ if .Params.SAVED_CACHES_DIRECTORY }}
     saved_caches_directory: {{ .Params.SAVED_CACHES_DIRECTORY }}
+    {{ else }}
+    saved_caches_directory: /var/lib/cassandra/saved_caches
     {{ end }}
 
     # commitlog_sync may be either "periodic" or "batch."
