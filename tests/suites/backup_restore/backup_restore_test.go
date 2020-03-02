@@ -13,6 +13,7 @@ import (
 	"github.com/onsi/ginkgo/reporters"
 	. "github.com/onsi/gomega"
 
+	"github.com/mesosphere/kudo-cassandra-operator/tests/aws"
 	"github.com/mesosphere/kudo-cassandra-operator/tests/cassandra"
 )
 
@@ -30,6 +31,8 @@ var (
 	NodeCount = 2
 	Client    = client.Client{}
 	Operator  = kudo.Operator{}
+
+	BackupPrefix = "test1"
 )
 
 const createSchema = "CREATE SCHEMA schema1 WITH replication = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 };"
@@ -48,6 +51,16 @@ const testCQLScriptOutput = `
 (1 rows)`
 
 var _ = BeforeSuite(func() {
+	buildNumber := os.Getenv("BUILD_NUMBER")
+	if buildNumber != "" {
+		BackupPrefix = "TC-" + buildNumber
+	}
+
+	fmt.Printf("DeleteFolderInS3:")
+	if err := aws.DeleteFolderInS3(BackupPrefix); err != nil {
+		fmt.Printf("Error AWS: %v\n", err)
+	}
+
 	Client, _ = client.NewForConfig(KubeConfigPath)
 	if err := kubernetes.CreateNamespace(Client, TestNamespace); err != nil {
 		fmt.Printf("Failed to create namespace: %v\n", err)
@@ -117,6 +130,7 @@ var _ = Describe("backup and restore", func() {
 				"NODE_CPU_MC":                   "1000",
 				"NODE_CPU_LIMIT_MC":             "1500",
 				"BACKUP_AWS_CREDENTIALS_SECRET": awsSecretName,
+				"BACKUP_PREFIX":                 BackupPrefix,
 			}).
 			Do(Client)
 		Expect(err).To(BeNil())

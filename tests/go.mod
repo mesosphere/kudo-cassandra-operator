@@ -3,6 +3,7 @@ module github.com/mesosphere/kudo-cassandra-operator/tests
 go 1.13
 
 require (
+	github.com/aws/aws-sdk-go v1.29.14
 	github.com/imdario/mergo v0.3.8 // indirect
 	github.com/kudobuilder/kudo v0.10.1
 	github.com/kudobuilder/test-tools v0.2.2

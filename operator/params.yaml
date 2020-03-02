@@ -100,6 +100,9 @@ parameters:
   - name: BACKUP_AWS_CREDENTIALS_SECRET
     description: If set, can be used to provide the access_key, secret_key and security_token with a secret
 
+  - name: BACKUP_PREFIX
+    description: A prefix to be used inside the S3 bucket
+
   ################################################################################
   ######################### Prometheus exporter settings #########################
   ################################################################################

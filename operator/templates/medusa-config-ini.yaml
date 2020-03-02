@@ -32,16 +32,17 @@ data:
     ; JSON key file for service account with access to GCS bucket or AWS credentials file (home-dir/.aws/credentials)
     ;key_file = /home/cassandra/.aws/credentials
     ;key_file = /etc/medusa/credentials
-    ;api_profile = 327650738955_Mesosphere-PowerUser
 
     ; Path of the local storage bucket (used only with 'local' storage provider)
     ;base_path = /path/to/backups
 
     ; Any prefix used for multitenancy in the same bucket
-    ;prefix = clusterA
+    {{ if .Params.BACKUP_PREFIX }}
+    prefix = {{ .Params.BACKUP_PREFIX }}
+    {{ end }}
 
     ;fqdn = <enforce the name of the local node. Computed automatically if not provided.>
-    fqdn = {{ .Name }}-node-0.{{ .Name }}-svc.{{ .Namespace }}.svc.cluster.local
+    ;fqdn = {{ .Name }}-node-0.{{ .Name }}-svc.{{ .Namespace }}.svc.cluster.local
 
     ; Number of days before backups are purged. 0 means backups don't get purged by age (default)
     max_backup_age = 0
