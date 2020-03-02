@@ -56,11 +56,6 @@ var _ = BeforeSuite(func() {
 		BackupPrefix = "TC-" + buildNumber
 	}
 
-	fmt.Printf("DeleteFolderInS3:")
-	if err := aws.DeleteFolderInS3(BackupPrefix); err != nil {
-		fmt.Printf("Error AWS: %v\n", err)
-	}
-
 	Client, _ = client.NewForConfig(KubeConfigPath)
 	if err := kubernetes.CreateNamespace(Client, TestNamespace); err != nil {
 		fmt.Printf("Failed to create namespace: %v\n", err)
@@ -68,12 +63,16 @@ var _ = BeforeSuite(func() {
 })
 
 var _ = AfterSuite(func() {
-	//if err := Operator.Uninstall(); err != nil {
-	//	fmt.Printf("Failed to uninstall operator: %v\n", err)
-	//}
-	//if err := kubernetes.DeleteNamespace(Client, TestNamespace); err != nil {
-	//	fmt.Printf("Failed to delete namespace: %v\n", err)
-	//}
+	if err := Operator.Uninstall(); err != nil {
+		fmt.Printf("Failed to uninstall operator: %v\n", err)
+	}
+	if err := kubernetes.DeleteNamespace(Client, TestNamespace); err != nil {
+		fmt.Printf("Failed to delete namespace: %v\n", err)
+	}
+
+	if err := aws.DeleteFolderInS3(BackupPrefix); err != nil {
+		fmt.Printf("Error while cleaning up S3 bucket: %v\n", err)
+	}
 })
 
 func TestService(t *testing.T) {
@@ -129,6 +128,7 @@ var _ = Describe("backup and restore", func() {
 				"NODE_MEM_LIMIT_MIB":            "1024",
 				"NODE_CPU_MC":                   "1000",
 				"NODE_CPU_LIMIT_MC":             "1500",
+				"BACKUP_RESTORE_ENABLED":        "true",
 				"BACKUP_AWS_CREDENTIALS_SECRET": awsSecretName,
 				"BACKUP_PREFIX":                 BackupPrefix,
 			}).

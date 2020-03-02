@@ -90,7 +90,7 @@ parameters:
 
   - name: BACKUP_RESTORE_ENABLED
     description: "TODO"
-    default: "true"
+    default: "false"
 
   - name: BACKUP_TRIGGER
     description: "Dummy param to trigger backup"
