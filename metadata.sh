@@ -65,7 +65,11 @@ export PROMETHEUS_EXPORTER_DOCKER_IMAGE="${PROMETHEUS_EXPORTER_DOCKER_IMAGE_NAME
 ################################# Testing ######################################
 ################################################################################
 
-export INTEGRATION_TESTS_DOCKER_IMAGE="golang:1.13.1-stretch"
+export INTEGRATION_TESTS_DOCKER_IMAGE_FROM="golang:1.13.1-stretch"
+export INTEGRATION_TESTS_DOCKER_IMAGE_NAMESPACE="mesosphere"
+export INTEGRATION_TESTS_DOCKER_IMAGE_NAME="kudo-cassandra-tests"
+export INTEGRATION_TESTS_DOCKER_IMAGE_TAG="latest"
+export INTEGRATION_TESTS_DOCKER_IMAGE="${INTEGRATION_TESTS_DOCKER_IMAGE_NAMESPACE}/${INTEGRATION_TESTS_DOCKER_IMAGE_NAME}:${INTEGRATION_TESTS_DOCKER_IMAGE_TAG}"
 
 ################################################################################
 ############################# Data Services ####################################
