@@ -45,8 +45,8 @@ export KUBERNETES_VERSION="1.15.0"
 export CASSANDRA_EXPORTER_DOCKER_IMAGE="criteord/cassandra_exporter"
 export CASSANDRA_EXPORTER_VERSION="2.2.1"
 
-export MEDUSA_BACKUP_DOCKER_IMAGE="criteord/cassandra_exporter"
-export MEDUSA_BACKUP_VERSION="2.2.1"
+# https://github.com/thelastpickle/cassandra-medusa/releases
+export MEDUSA_BACKUP_VERSION="0.5.1"
 
 ################################################################################
 ############################## Docker images ###################################
@@ -67,7 +67,7 @@ export PROMETHEUS_EXPORTER_DOCKER_IMAGE="${PROMETHEUS_EXPORTER_DOCKER_IMAGE_NAME
 export MEDUSA_BACKUP_DOCKER_IMAGE_FROM="cassandra:${CASSANDRA_VERSION}"
 export MEDUSA_BACKUP_DOCKER_IMAGE_NAMESPACE="mesosphere"
 export MEDUSA_BACKUP_DOCKER_IMAGE_NAME="kudo-cassandra-medusa"
-export MEDUSA_BACKUP_DOCKER_IMAGE_TAG="${CASSANDRA_EXPORTER_VERSION}-${OPERATOR_VERSION}${POSSIBLE_SNAPSHOT_SUFFIX}"
+export MEDUSA_BACKUP_DOCKER_IMAGE_TAG="${MEDUSA_BACKUP_VERSION}-${OPERATOR_VERSION}${POSSIBLE_SNAPSHOT_SUFFIX}"
 export MEDUSA_BACKUP_DOCKER_IMAGE="${MEDUSA_BACKUP_DOCKER_IMAGE_NAMESPACE}/${MEDUSA_BACKUP_DOCKER_IMAGE_NAME}:${MEDUSA_BACKUP_DOCKER_IMAGE_TAG}"
 
 
