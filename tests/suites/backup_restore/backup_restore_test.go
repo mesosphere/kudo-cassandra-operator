@@ -52,6 +52,7 @@ const testCQLScriptOutput = `
 
 var _ = BeforeSuite(func() {
 	buildNumber := os.Getenv("BUILD_NUMBER")
+	fmt.Printf("Using Build Number %s\n", buildNumber)
 	if buildNumber != "" {
 		BackupPrefix = "TC-" + buildNumber
 	}
