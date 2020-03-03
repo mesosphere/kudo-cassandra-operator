@@ -11,6 +11,7 @@ source "${project_directory}/metadata.sh"
 
 readonly cassandra_docker_image="${CASSANDRA_DOCKER_IMAGE:-}"
 readonly prometheus_exporter_docker_image="${PROMETHEUS_EXPORTER_DOCKER_IMAGE:-}"
+readonly medusa_backup_docker_image="${MEDUSA_BACKUP_DOCKER_IMAGE:-}"
 readonly integration_tests_docker_image="${INTEGRATION_TESTS_DOCKER_IMAGE:-}"
 
 if [[ -z ${cassandra_docker_image} ]]; then
@@ -20,6 +21,11 @@ fi
 
 if [[ -z ${prometheus_exporter_docker_image} ]]; then
   echo "Missing PROMETHEUS_EXPORTER_DOCKER_IMAGE" >&2
+  exit 1
+fi
+
+if [[ -z ${medusa_backup_docker_image} ]]; then
+  echo "Missing MEDUSA_BACKUP_DOCKER_IMAGE" >&2
   exit 1
 fi
 
@@ -39,6 +45,11 @@ docker image build \
        "${project_directory}/images"
 
 docker image build \
+       -t "${medusa_backup_docker_image}" \
+       -f "${project_directory}/images/Dockerfile.medusa-backup" \
+       "${project_directory}/images"
+
+docker image build \
        -t "${integration_tests_docker_image}" \
        -f "${project_directory}/images/Dockerfile.integration-tests" \
        "${project_directory}/images"
@@ -46,5 +57,6 @@ docker image build \
 if [[ "${1:-}" == "push" ]]; then
   docker push "${cassandra_docker_image}"
   docker push "${prometheus_exporter_docker_image}"
+  docker push "${medusa_backup_docker_image}"
   docker push "${integration_tests_docker_image}"
 fi

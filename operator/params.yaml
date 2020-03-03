@@ -105,6 +105,30 @@ parameters:
     description: A prefix to be used inside the S3 bucket
     required: false
 
+  - name: BACKUP_MEDUSA_CPU_MC
+    description: "CPU request (in millicores) for the Medusa backup containers."
+    default: "100"
+
+  - name: BACKUP_MEDUSA_CPU_LIMIT_MC
+    description: "CPU limit (in millicores) for the Medusa backup containers."
+    default: "500"
+
+  - name: BACKUP_MEDUSA_MEM_MIB
+    description: "Memory request (in MiB) for the Medusa backup containers."
+    default: "256"
+
+  - name: BACKUP_MEDUSA_MEM_LIMIT_MIB
+    description: "Memory limit (in MiB) for the Medusa backup containers."
+    default: "512"
+
+  - name: BACKUP_MEDUSA_DOCKER_IMAGE
+    description: "Medusa backup Docker image."
+    default: "mesosphere/kudo-cassandra-medusa:latest"
+
+  - name: BACKUP_MEDUSA_DOCKER_IMAGE_PULL_POLICY
+    description: "Medusa backup Docker image pull policy."
+    default: "Always"
+
   ################################################################################
   ######################### Prometheus exporter settings #########################
   ################################################################################

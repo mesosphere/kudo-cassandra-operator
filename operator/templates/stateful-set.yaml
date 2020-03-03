@@ -208,8 +208,8 @@ spec:
         {{ end }}
         {{ if eq .Params.BACKUP_RESTORE_ENABLED "true" }}
         - name: backup-restore
-          image: mesosphere/kudo-cassandra-medusa:latest
-          imagePullPolicy: Always
+          image: {{ .Params.BACKUP_MEDUSA_DOCKER_IMAGE }}
+          imagePullPolicy: {{ .Params.BACKUP_MEDUSA_DOCKER_IMAGE_PULL_POLICY }}
           env:
             - name: AWS_ACCESS_KEY_ID
               valueFrom:
@@ -253,11 +253,11 @@ spec:
                   fieldPath: metadata.uid
           resources:
             requests:
-              memory: "256Mi"
-              cpu: "100m"
+              memory: "{{ .Params.BACKUP_MEDUSA_MEM_MIB }}Mi"
+              cpu: "{{ .Params.BACKUP_MEDUSA_CPU_MC }}m"
             limits:
-              memory: "256Mi"
-              cpu: "500m"
+              memory: "{{ .Params.BACKUP_MEDUSA_MEM_LIMIT_MIB }}Mi"
+              cpu: "{{ .Params.BACKUP_MEDUSA_CPU_LIMIT_MC }}m"
           ports:
             - containerPort: 8082
               name: management
