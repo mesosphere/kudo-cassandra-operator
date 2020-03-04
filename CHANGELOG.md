@@ -10,7 +10,7 @@ and this project adheres to
 
 ### Changed
 
-- Bumped Cassandra Prometheus Exporter to 2.3.3.
+- Bumped Cassandra Prometheus Exporter to 2.3.4.
   ([#56](https://github.com/mesosphere/kudo-cassandra-operator/pull/56))
 
 ### Added

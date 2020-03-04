@@ -53,7 +53,7 @@ data:
        # Don't scrape metrics from Criteo
        - com:criteo:nosql:cassandra:exporter:.*
 
-    maxScrapeFrequencyInSec:
+    maxScrapFrequencyInSec:
       50:
         - .*
 

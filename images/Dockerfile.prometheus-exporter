@@ -1,1 +1,1 @@
-FROM criteord/cassandra_exporter:2.3.3
+FROM criteord/cassandra_exporter:2.3.4
