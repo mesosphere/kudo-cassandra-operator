@@ -1,6 +1,7 @@
 FROM cassandra:3.11.5
 
 COPY medusa/medusa-frontend.py /
+COPY medusa/cassandra-sudoer /etc/sudoers.d/
 
 ENV LC_ALL C.UTF-8
 ENV LANG C.UTF-8

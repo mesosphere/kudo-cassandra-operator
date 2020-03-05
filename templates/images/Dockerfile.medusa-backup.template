@@ -1,6 +1,7 @@
 FROM ${MEDUSA_BACKUP_DOCKER_IMAGE_FROM}
 
 COPY medusa/medusa-frontend.py /
+COPY medusa/cassandra-sudoer /etc/sudoers.d/
 
 ENV LC_ALL C.UTF-8
 ENV LANG C.UTF-8

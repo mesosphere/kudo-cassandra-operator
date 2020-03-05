@@ -7,6 +7,8 @@ metadata:
 data:
   medusa.ini: |
     [cassandra]
+    stop_cmd = true
+    start_cmd = true
     ;stop_cmd = /etc/init.d/cassandra stop
     ;start_cmd = /etc/init.d/cassandra start
     ;config_file = <path to cassandra.yaml. Defaults to /etc/cassandra/cassandra.yaml>
