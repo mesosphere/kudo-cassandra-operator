@@ -1,0 +1,23 @@
+{{- $root := . -}}
+  {{ range $i, $v := until (int .Params.NODE_COUNT) }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: var-lib-cassandra-{{ $root.Name }}-node-{{ $v }}
+  namespace: {{ $root.Namespace }}
+  # The annotation below result in the volume only be writable by Pods
+  # using the same GID.
+  # https://kubernetes.io/docs/tasks/configure-pod-container/configure-persistent-volume-storage/#access-control
+  annotations:
+    pv.beta.kubernetes.io/gid: "999"
+spec:
+  accessModes: ["ReadWriteOnce"]
+  persistentVolumeReclaimPolicy: Retain
+  resources:
+    requests:
+      storage: "{{ $root.Params.NODE_DISK_SIZE_GIB }}Gi"
+  {{ if $root.Params.NODE_STORAGE_CLASS }}
+  storageClassName: {{ $root.Params.NODE_STORAGE_CLASS }}
+  {{ end }}
+{{ end }}

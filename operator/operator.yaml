@@ -10,6 +10,11 @@ maintainers:
 url: http://cassandra.apache.org/
 
 tasks:
+  - name: pvc
+    kind: Apply
+    spec:
+      resources:
+        - pvc.yaml
   - name: node
     kind: Apply
     spec:

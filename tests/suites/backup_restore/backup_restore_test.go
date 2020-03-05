@@ -88,9 +88,11 @@ func TestService(t *testing.T) {
 }
 
 func assertNumberOfCassandraNodes(nodeCount int) {
-	nodes, err := cassandra.Nodes(Client, Operator.Instance)
-	Expect(err).To(BeNil())
-	Expect(len(nodes)).To(Equal(nodeCount))
+	Eventually(func() int {
+		nodes, err := cassandra.Nodes(Client, Operator.Instance)
+		Expect(err).To(BeNil())
+		return len(nodes)
+	}, "60s", "2s").Should(Equal(nodeCount))
 }
 
 func createAwsCredentials() string {
@@ -121,69 +123,68 @@ func createAwsCredentials() string {
 
 var _ = Describe("backup and restore", func() {
 
-	//It("Installs the operator from the current directory", func() {
-	//	var err error
-	//
-	//	awsSecretName := createAwsCredentials()
-	//
-	//	By("Installing the operator from current directory")
-	//	Operator, err = kudo.InstallOperator(OperatorDirectory).
-	//		WithNamespace(TestNamespace).
-	//		WithInstance(TestInstance).
-	//		WithParameters(map[string]string{
-	//			"NODE_COUNT":                    strconv.Itoa(NodeCount),
-	//			"JMX_LOCAL_ONLY":                "false",
-	//			"PROMETHEUS_EXPORTER_ENABLED":   "false",
-	//			"NODE_MEM_MIB":                  "768",
-	//			"NODE_MEM_LIMIT_MIB":            "1024",
-	//			"NODE_CPU_MC":                   "1000",
-	//			"NODE_CPU_LIMIT_MC":             "1500",
-	//			"BACKUP_RESTORE_ENABLED":        "true",
-	//			"BACKUP_AWS_CREDENTIALS_SECRET": awsSecretName,
-	//			"BACKUP_PREFIX":                 BackupPrefix,
-	//			"BACKUP_NAME":					 BackupName,
-	//		}).
-	//		Do(Client)
-	//	Expect(err).To(BeNil())
-	//
-	//	err = Operator.Instance.WaitForPlanInProgress("deploy")
-	//	Expect(err).To(BeNil())
-	//
-	//	By("Waiting for the plan to complete")
-	//	err = Operator.Instance.WaitForPlanComplete("deploy")
-	//	Expect(err).To(BeNil())
-	//
-	//	assertNumberOfCassandraNodes(NodeCount)
-	//
-	//	By("Writing Data to the cassandra cluster")
-	//	output, err := cassandra.Cqlsh(Client, Operator.Instance, testCQLScript)
-	//	Expect(err).To(BeNil())
-	//	Expect(output).To(ContainSubstring(testCQLScriptOutput))
-	//
-	//	By("Running the backup plan")
-	//	err = Operator.Instance.UpdateParameters(map[string]string{
-	//		"BACKUP_TRIGGER": "2",
-	//	})
-	//	Expect(err).To(BeNil())
-	//
-	//	err = Operator.Instance.WaitForPlanInProgress("backup")
-	//	Expect(err).To(BeNil())
-	//
-	//	By("Waiting for the plan to complete")
-	//	err = Operator.Instance.WaitForPlanComplete("backup")
-	//	Expect(err).To(BeNil())
-	//})
-
-	//It("Uninstalls the operator", func() {
-	//	err := cassandra.Uninstall(Client, Operator)
-	//	Expect(err).To(BeNil())
-	//})
-
-	It("Restores a backup into a new instance", func() {
-
+	It("Installs the operator from the current directory", func() {
 		var err error
 
 		awsSecretName := createAwsCredentials()
+
+		By("Installing the operator from current directory")
+		Operator, err = kudo.InstallOperator(OperatorDirectory).
+			WithNamespace(TestNamespace).
+			WithInstance(TestInstance).
+			WithParameters(map[string]string{
+				"NODE_COUNT":                    strconv.Itoa(NodeCount),
+				"JMX_LOCAL_ONLY":                "false",
+				"PROMETHEUS_EXPORTER_ENABLED":   "false",
+				"NODE_MEM_MIB":                  "768",
+				"NODE_MEM_LIMIT_MIB":            "1024",
+				"NODE_CPU_MC":                   "1000",
+				"NODE_CPU_LIMIT_MC":             "1500",
+				"BACKUP_RESTORE_ENABLED":        "true",
+				"BACKUP_AWS_CREDENTIALS_SECRET": awsSecretName,
+				"BACKUP_PREFIX":                 BackupPrefix,
+				"BACKUP_NAME":                   BackupName,
+			}).
+			Do(Client)
+		Expect(err).To(BeNil())
+
+		err = Operator.Instance.WaitForPlanInProgress("deploy")
+		Expect(err).To(BeNil())
+
+		By("Waiting for the plan to complete")
+		err = Operator.Instance.WaitForPlanComplete("deploy")
+		Expect(err).To(BeNil())
+
+		assertNumberOfCassandraNodes(NodeCount)
+
+		By("Writing Data to the cassandra cluster")
+		output, err := cassandra.Cqlsh(Client, Operator.Instance, testCQLScript)
+		Expect(err).To(BeNil())
+		Expect(output).To(ContainSubstring(testCQLScriptOutput))
+
+		By("Running the backup plan")
+		err = Operator.Instance.UpdateParameters(map[string]string{
+			"BACKUP_TRIGGER": "2",
+		})
+		Expect(err).To(BeNil())
+
+		err = Operator.Instance.WaitForPlanInProgress("backup")
+		Expect(err).To(BeNil())
+
+		By("Waiting for the plan to complete")
+		err = Operator.Instance.WaitForPlanComplete("backup")
+		Expect(err).To(BeNil())
+
+		By("Uninstalling the operator instance")
+		err = cassandra.Uninstall(Client, Operator)
+		Expect(err).To(BeNil())
+		Eventually(func() int {
+			pods, _ := kubernetes.ListPods(Client, TestNamespace)
+			fmt.Printf("Polling pods: %v\n", len(pods))
+			return len(pods)
+		}, "300s", "10s").Should(Equal(0))
+
+		By("Restoring the backup into a new instance")
 
 		By("Installing the operator from current directory")
 		Operator, err = kudo.InstallOperator(OperatorDirectory).
@@ -219,7 +220,7 @@ var _ = Describe("backup and restore", func() {
 		assertNumberOfCassandraNodes(NodeCount)
 
 		By("Reading Data from the cassandra cluster")
-		output, err := cassandra.Cqlsh(Client, Operator.Instance, confirmCQLScript)
+		output, err = cassandra.Cqlsh(Client, Operator.Instance, confirmCQLScript)
 		Expect(err).To(BeNil())
 		Expect(output).To(ContainSubstring(testCQLScriptOutput))
 
