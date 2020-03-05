@@ -207,8 +207,8 @@ spec:
               subPath: config.yml
         {{ end }}
         {{ if eq .Params.BACKUP_RESTORE_ENABLED "true" }}
-        - name: backup-restore
-          image: {{ .Params.BACKUP_MEDUSA_DOCKER_IMAGE }}
+        - name: medusa-backup
+          image: mesosphere/kudo-cassandra-medusa:latest
           imagePullPolicy: {{ .Params.BACKUP_MEDUSA_DOCKER_IMAGE_PULL_POLICY }}
           env:
             - name: AWS_ACCESS_KEY_ID
@@ -274,6 +274,77 @@ spec:
               mountPath: /etc/medusa/medusa.ini
               subPath: medusa.ini
         {{ end }}
+      {{ if eq .Params.RESTORE_FLAG "true" }}
+      initContainers:
+        - name: medusa-restore
+          image: mesosphere/kudo-cassandra-medusa:latest
+          imagePullPolicy: {{ .Params.BACKUP_MEDUSA_DOCKER_IMAGE_PULL_POLICY }}
+          command:
+            - bash
+            - -c
+          args:
+            - POD_ID=`echo $POD_NAME | sed -n -e 's/.*-node-\([0-9]\{1,4\}\)$/\1/p'`; mkdir -p /var/lib/cassandra/data; /usr/local/bin/medusa --fqdn {{ .Params.RESTORE_OLD_NAME }}-node-$POD_ID.{{ .Params.RESTORE_OLD_NAME }}-svc.{{ .Params.RESTORE_OLD_NAMESPACE }}.svc.cluster.local restore-node --backup-name {{ .Params.BACKUP_NAME }}
+          env:
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Params.BACKUP_AWS_CREDENTIALS_SECRET }}
+                  key: access-key
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Params.BACKUP_AWS_CREDENTIALS_SECRET }}
+                  key: secret-key
+            - name: AWS_SECURITY_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Params.BACKUP_AWS_CREDENTIALS_SECRET }}
+                  key: security-token
+                  optional: true
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_SERVICE_ACCOUNT
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.serviceAccountName
+            - name: POD_UID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.uid
+          resources:
+            requests:
+              memory: "{{ .Params.BACKUP_MEDUSA_MEM_MIB }}Mi"
+              cpu: "{{ .Params.BACKUP_MEDUSA_CPU_MC }}m"
+            limits:
+              memory: "{{ .Params.BACKUP_MEDUSA_MEM_LIMIT_MIB }}Mi"
+              cpu: "{{ .Params.BACKUP_MEDUSA_CPU_LIMIT_MC }}m"
+          volumeMounts:
+            - name: var-lib-cassandra
+              mountPath: /var/lib/cassandra/
+            # Overwriting /etc/cassandra/ available in the Docker image.
+            - name: etc-cassandra
+              mountPath: /etc/cassandra/
+            - name: cassandra-yaml
+              mountPath: /etc/cassandra/cassandra.yaml
+              subPath: cassandra.yaml
+            - name: cassandra-medusa-config-ini
+              mountPath: /etc/medusa/medusa.ini
+              subPath: medusa.ini
+      {{ end }}
       volumes:
         # Overwriting /etc/cassandra/ available in the Docker image.
         - name: etc-cassandra

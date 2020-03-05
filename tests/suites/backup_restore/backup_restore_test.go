@@ -13,7 +13,6 @@ import (
 	"github.com/onsi/ginkgo/reporters"
 	. "github.com/onsi/gomega"
 
-	"github.com/mesosphere/kudo-cassandra-operator/tests/aws"
 	"github.com/mesosphere/kudo-cassandra-operator/tests/cassandra"
 )
 
@@ -24,6 +23,7 @@ var (
 	OperatorName        = os.Getenv("OPERATOR_NAME")
 	TestNamespace       = fmt.Sprintf("%s", TestName)
 	TestInstance        = fmt.Sprintf("%s", OperatorName)
+	RestoreInstance     = fmt.Sprintf("%s-restore", OperatorName)
 	KubeConfigPath      = os.Getenv("KUBECONFIG")
 	KubectlPath         = os.Getenv("KUBECTL_PATH")
 	OperatorDirectory   = os.Getenv("OPERATOR_DIRECTORY")
@@ -32,7 +32,8 @@ var (
 	Client    = client.Client{}
 	Operator  = kudo.Operator{}
 
-	BackupPrefix = "test1"
+	BackupPrefix = "test2"
+	BackupName   = "first"
 )
 
 const createSchema = "CREATE SCHEMA schema1 WITH replication = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 };"
@@ -43,6 +44,8 @@ const selectData = "SELECT * FROM users;"
 
 const testCQLScript = createSchema + useSchma + createTable + insertData + selectData
 
+const confirmCQLScript = useSchma + selectData
+
 const testCQLScriptOutput = `
  user_id | age | first | last
 ---------+-----+-------+-------
@@ -52,10 +55,10 @@ const testCQLScriptOutput = `
 
 var _ = BeforeSuite(func() {
 	buildNumber := os.Getenv("BUILD_NUMBER")
-	fmt.Printf("Using Build Number %s\n", buildNumber)
 	if buildNumber != "" {
 		BackupPrefix = "TC-" + buildNumber
 	}
+	fmt.Printf("Using backup prefix %s\n", BackupPrefix)
 
 	Client, _ = client.NewForConfig(KubeConfigPath)
 	if err := kubernetes.CreateNamespace(Client, TestNamespace); err != nil {
@@ -63,18 +66,18 @@ var _ = BeforeSuite(func() {
 	}
 })
 
-var _ = AfterSuite(func() {
-	if err := Operator.Uninstall(); err != nil {
-		fmt.Printf("Failed to uninstall operator: %v\n", err)
-	}
-	if err := kubernetes.DeleteNamespace(Client, TestNamespace); err != nil {
-		fmt.Printf("Failed to delete namespace: %v\n", err)
-	}
-
-	if err := aws.DeleteFolderInS3(BackupPrefix); err != nil {
-		fmt.Printf("Error while cleaning up S3 bucket: %v\n", err)
-	}
-})
+//var _ = AfterSuite(func() {
+//	if err := Operator.Uninstall(); err != nil {
+//		fmt.Printf("Failed to uninstall operator: %v\n", err)
+//	}
+//	if err := kubernetes.DeleteNamespace(Client, TestNamespace); err != nil {
+//		fmt.Printf("Failed to delete namespace: %v\n", err)
+//	}
+//
+//	if err := aws.DeleteFolderInS3(BackupPrefix); err != nil {
+//		fmt.Printf("Error while cleaning up S3 bucket: %v\n", err)
+//	}
+//})
 
 func TestService(t *testing.T) {
 	RegisterFailHandler(Fail)
@@ -90,37 +93,102 @@ func assertNumberOfCassandraNodes(nodeCount int) {
 	Expect(len(nodes)).To(Equal(nodeCount))
 }
 
+func createAwsCredentials() string {
+	awsSecretName := "aws-credentials"
+
+	awsAccessKey := os.Getenv("AWS_ACCESS_KEY_ID")
+	awsSecretKey := os.Getenv("AWS_SECRET_ACCESS_KEY")
+	awsSecurityToken := os.Getenv("AWS_SECURITY_TOKEN")
+
+	if awsAccessKey == "" || awsSecretKey == "" {
+		Fail("No AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY defined. These are required for backup to AWS S3")
+	}
+
+	awsCredentials := make(map[string]string, 2)
+	awsCredentials["access-key"] = awsAccessKey
+	awsCredentials["secret-key"] = awsSecretKey
+	if awsSecurityToken != "" {
+		awsCredentials["security-token"] = awsSecurityToken
+	}
+
+	By("Creating a aws-credentials secret")
+	_, _ = kubernetes.CreateSecret(awsSecretName).
+		WithNamespace(TestNamespace).
+		WithStringData(awsCredentials).Do(Client)
+
+	return awsSecretName
+}
+
 var _ = Describe("backup and restore", func() {
 
-	It("Installs the operator from the current directory", func() {
+	//It("Installs the operator from the current directory", func() {
+	//	var err error
+	//
+	//	awsSecretName := createAwsCredentials()
+	//
+	//	By("Installing the operator from current directory")
+	//	Operator, err = kudo.InstallOperator(OperatorDirectory).
+	//		WithNamespace(TestNamespace).
+	//		WithInstance(TestInstance).
+	//		WithParameters(map[string]string{
+	//			"NODE_COUNT":                    strconv.Itoa(NodeCount),
+	//			"JMX_LOCAL_ONLY":                "false",
+	//			"PROMETHEUS_EXPORTER_ENABLED":   "false",
+	//			"NODE_MEM_MIB":                  "768",
+	//			"NODE_MEM_LIMIT_MIB":            "1024",
+	//			"NODE_CPU_MC":                   "1000",
+	//			"NODE_CPU_LIMIT_MC":             "1500",
+	//			"BACKUP_RESTORE_ENABLED":        "true",
+	//			"BACKUP_AWS_CREDENTIALS_SECRET": awsSecretName,
+	//			"BACKUP_PREFIX":                 BackupPrefix,
+	//			"BACKUP_NAME":					 BackupName,
+	//		}).
+	//		Do(Client)
+	//	Expect(err).To(BeNil())
+	//
+	//	err = Operator.Instance.WaitForPlanInProgress("deploy")
+	//	Expect(err).To(BeNil())
+	//
+	//	By("Waiting for the plan to complete")
+	//	err = Operator.Instance.WaitForPlanComplete("deploy")
+	//	Expect(err).To(BeNil())
+	//
+	//	assertNumberOfCassandraNodes(NodeCount)
+	//
+	//	By("Writing Data to the cassandra cluster")
+	//	output, err := cassandra.Cqlsh(Client, Operator.Instance, testCQLScript)
+	//	Expect(err).To(BeNil())
+	//	Expect(output).To(ContainSubstring(testCQLScriptOutput))
+	//
+	//	By("Running the backup plan")
+	//	err = Operator.Instance.UpdateParameters(map[string]string{
+	//		"BACKUP_TRIGGER": "2",
+	//	})
+	//	Expect(err).To(BeNil())
+	//
+	//	err = Operator.Instance.WaitForPlanInProgress("backup")
+	//	Expect(err).To(BeNil())
+	//
+	//	By("Waiting for the plan to complete")
+	//	err = Operator.Instance.WaitForPlanComplete("backup")
+	//	Expect(err).To(BeNil())
+	//})
+
+	//It("Uninstalls the operator", func() {
+	//	err := cassandra.Uninstall(Client, Operator)
+	//	Expect(err).To(BeNil())
+	//})
+
+	It("Restores a backup into a new instance", func() {
+
 		var err error
 
-		awsSecretName := "aws-credentials"
-
-		awsAccessKey := os.Getenv("AWS_ACCESS_KEY_ID")
-		awsSecretKey := os.Getenv("AWS_SECRET_ACCESS_KEY")
-		awsSecurityToken := os.Getenv("AWS_SECURITY_TOKEN")
-
-		if awsAccessKey == "" || awsSecretKey == "" {
-			Fail("No AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY defined. These are required for backup to AWS S3")
-		}
-
-		awsCredentials := make(map[string]string, 2)
-		awsCredentials["access-key"] = awsAccessKey
-		awsCredentials["secret-key"] = awsSecretKey
-		if awsSecurityToken != "" {
-			awsCredentials["security-token"] = awsSecurityToken
-		}
-
-		By("Creating a aws-credentials secret")
-		_, err = kubernetes.CreateSecret(awsSecretName).
-			WithNamespace(TestNamespace).
-			WithStringData(awsCredentials).Do(Client)
+		awsSecretName := createAwsCredentials()
 
 		By("Installing the operator from current directory")
 		Operator, err = kudo.InstallOperator(OperatorDirectory).
 			WithNamespace(TestNamespace).
-			WithInstance(TestInstance).
+			WithInstance(RestoreInstance).
 			WithParameters(map[string]string{
 				"NODE_COUNT":                    strconv.Itoa(NodeCount),
 				"JMX_LOCAL_ONLY":                "false",
@@ -132,8 +200,13 @@ var _ = Describe("backup and restore", func() {
 				"BACKUP_RESTORE_ENABLED":        "true",
 				"BACKUP_AWS_CREDENTIALS_SECRET": awsSecretName,
 				"BACKUP_PREFIX":                 BackupPrefix,
+				"BACKUP_NAME":                   BackupName,
+				"RESTORE_FLAG":                  "true",
+				"RESTORE_OLD_NAMESPACE":         TestNamespace,
+				"RESTORE_OLD_NAME":              TestInstance,
 			}).
 			Do(Client)
+
 		Expect(err).To(BeNil())
 
 		err = Operator.Instance.WaitForPlanInProgress("deploy")
@@ -145,27 +218,15 @@ var _ = Describe("backup and restore", func() {
 
 		assertNumberOfCassandraNodes(NodeCount)
 
-		By("Writing Data to the cassandra cluster")
-		output, err := cassandra.Cqlsh(Client, Operator.Instance, testCQLScript)
+		By("Reading Data from the cassandra cluster")
+		output, err := cassandra.Cqlsh(Client, Operator.Instance, confirmCQLScript)
 		Expect(err).To(BeNil())
 		Expect(output).To(ContainSubstring(testCQLScriptOutput))
 
-		By("Running the backup plan")
-		err = Operator.Instance.UpdateParameters(map[string]string{
-			"BACKUP_TRIGGER": "2",
-		})
-		Expect(err).To(BeNil())
-
-		err = Operator.Instance.WaitForPlanInProgress("backup")
-		Expect(err).To(BeNil())
-
-		By("Waiting for the plan to complete")
-		err = Operator.Instance.WaitForPlanComplete("backup")
-		Expect(err).To(BeNil())
 	})
 
-	It("Uninstalls the operator", func() {
-		err := cassandra.Uninstall(Client, Operator)
-		Expect(err).To(BeNil())
-	})
+	//It("Uninstalls the operator", func() {
+	//	err := cassandra.Uninstall(Client, Operator)
+	//	Expect(err).To(BeNil())
+	//})
 })
