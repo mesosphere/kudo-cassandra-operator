@@ -83,6 +83,9 @@ spec:
               /etc/tls/bin/generate-tls-artifacts.sh;
               {{ end }}
               /etc/cassandra/generate-cqlshrc.sh;
+              if [ "$POD_NAME" != "{{ .Name }}-node-0" ]; then
+                while :; do cqlsh {{ .Name }}-node-0.{{ .Name }}-svc.{{ .Namespace }}.svc.cluster.local -e "SELECT uuid() FROM system.local" > /dev/null 2>&1 && break; echo "Waiting for node 0 to be available..."; sleep 5; done;
+              fi;
               cassandra -f
           # Comment the `command` above and uncomment the one below if pods are
           # crash-looping and you would like to investigate their state. This is
@@ -157,6 +160,9 @@ spec:
             - name: node-readiness-probe-sh
               mountPath: /etc/cassandra/node-readiness-probe.sh
               subPath: node-readiness-probe.sh
+            - name: node-readiness-probe-sh
+              mountPath: /etc/cassandra/node-token-save.sh
+              subPath: node-token-save.sh
             - name: dot-cassandra
               mountPath: /home/cassandra/.cassandra/
             - name: generate-cqlshrc-sh
@@ -210,7 +216,7 @@ spec:
               subPath: config.yml
         {{ end }}
         {{ if eq .Params.BACKUP_RESTORE_ENABLED "true" }}
-        - name: backup-restore
+        - name: medusa-backup
           image: {{ .Params.BACKUP_MEDUSA_DOCKER_IMAGE }}
           imagePullPolicy: {{ .Params.BACKUP_MEDUSA_DOCKER_IMAGE_PULL_POLICY }}
           env:
@@ -277,6 +283,80 @@ spec:
               mountPath: /etc/medusa/medusa.ini
               subPath: medusa.ini
         {{ end }}
+      {{ if eq .Params.RESTORE_FLAG "true" }}
+      initContainers:
+        - name: medusa-restore
+          image: {{ .Params.BACKUP_MEDUSA_DOCKER_IMAGE }}
+          imagePullPolicy: {{ .Params.BACKUP_MEDUSA_DOCKER_IMAGE_PULL_POLICY }}
+          command:
+            - bash
+            - -c
+          args:
+            - POD_ID=`echo $POD_NAME | sed -n -e 's/.*-node-\([0-9]\{1,4\}\)$/\1/p'`; echo "Start Restore for node '{{ .Params.RESTORE_OLD_NAME }}' from backup '{{ .Params.BACKUP_NAME }}' in prefix '{{ .Params.BACKUP_PREFIX }}'"; mkdir -p /var/lib/cassandra/data; /usr/local/bin/medusa --fqdn {{ .Params.RESTORE_OLD_NAME }}-node-$POD_ID.{{ .Params.RESTORE_OLD_NAME }}-svc.{{ .Params.RESTORE_OLD_NAMESPACE }}.svc.cluster.local restore-node --backup-name {{ .Params.BACKUP_NAME }}
+          env:
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Params.BACKUP_AWS_CREDENTIALS_SECRET }}
+                  key: access-key
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Params.BACKUP_AWS_CREDENTIALS_SECRET }}
+                  key: secret-key
+            - name: AWS_SECURITY_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Params.BACKUP_AWS_CREDENTIALS_SECRET }}
+                  key: security-token
+                  optional: true
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_SERVICE_ACCOUNT
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.serviceAccountName
+            - name: POD_UID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.uid
+          resources:
+            requests:
+              memory: "{{ .Params.BACKUP_MEDUSA_MEM_MIB }}Mi"
+              cpu: "{{ .Params.BACKUP_MEDUSA_CPU_MC }}m"
+            limits:
+              memory: "{{ .Params.BACKUP_MEDUSA_MEM_LIMIT_MIB }}Mi"
+              cpu: "{{ .Params.BACKUP_MEDUSA_CPU_LIMIT_MC }}m"
+          volumeMounts:
+            - name: var-lib-cassandra
+              mountPath: /var/lib/cassandra/
+            # Overwriting /etc/cassandra/ available in the Docker image.
+            - name: etc-cassandra
+              mountPath: /etc/cassandra/
+            - name: cassandra-yaml
+              mountPath: /etc/cassandra/cassandra.yaml
+              subPath: cassandra.yaml
+            - name: cassandra-medusa-config-ini
+              mountPath: /etc/medusa/medusa.ini
+              subPath: medusa.ini
+            - name: node-readiness-probe-sh
+              mountPath: /etc/cassandra/restore-capture-tokenmap.sh
+              subPath: restore-capture-tokenmap.sh
+      {{ end }}
       volumes:
         # Overwriting /etc/cassandra/ available in the Docker image.
         - name: etc-cassandra
@@ -293,6 +373,7 @@ spec:
         - name: node-readiness-probe-sh
           configMap:
             name: {{ .Name }}-node-readiness-probe-sh
+            defaultMode: 0755
         - name: dot-cassandra
           emptyDir: {}
         - name: generate-cqlshrc-sh

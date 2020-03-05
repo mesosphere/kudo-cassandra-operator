@@ -10,6 +10,11 @@ maintainers:
 url: http://cassandra.apache.org/
 
 tasks:
+  - name: pvc
+    kind: Apply
+    spec:
+      resources:
+        - pvc.yaml
   - name: node
     kind: Apply
     spec:
@@ -37,6 +42,11 @@ tasks:
     spec:
       resources:
         - backup-job.yaml
+  - name: remove-stateful-set
+    kind: Delete
+    spec:
+      resources:
+        - stateful-set.yaml
 plans:
   deploy:
     strategy: serial
