@@ -217,7 +217,7 @@ spec:
         {{ end }}
         {{ if eq .Params.BACKUP_RESTORE_ENABLED "true" }}
         - name: medusa-backup
-          image: mesosphere/kudo-cassandra-medusa:latest
+          image: {{ .Params.BACKUP_MEDUSA_DOCKER_IMAGE }}
           imagePullPolicy: {{ .Params.BACKUP_MEDUSA_DOCKER_IMAGE_PULL_POLICY }}
           env:
             - name: AWS_ACCESS_KEY_ID
@@ -286,7 +286,7 @@ spec:
       {{ if eq .Params.RESTORE_FLAG "true" }}
       initContainers:
         - name: medusa-restore
-          image: mesosphere/kudo-cassandra-medusa:latest
+          image: {{ .Params.BACKUP_MEDUSA_DOCKER_IMAGE }}
           imagePullPolicy: {{ .Params.BACKUP_MEDUSA_DOCKER_IMAGE_PULL_POLICY }}
           command:
             - bash
