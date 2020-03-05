@@ -11,7 +11,7 @@ spec:
       containers:
         - name: backup
           image: "curlimages/curl"
-          command: [ "sh", "-c", "curl --silent -X GET http://{{ $root.Name }}-node-{{ $v }}.{{ $root.Name }}-svc.{{ $root.Namespace }}.svc.cluster.local:8082/backup | tee /tmp/req; grep \"Done: 0\" /tmp/req" ]
+          command: [ "sh", "-c", "curl --silent -X GET http://{{ $root.Name }}-node-{{ $v }}.{{ $root.Name }}-svc.{{ $root.Namespace }}.svc.cluster.local:8082/backup?name={{ $root.Params.BACKUP_NAME }} | tee /tmp/req; grep \"Done: 0\" /tmp/req" ]
           imagePullPolicy: {{ $root.Params.NODE_DOCKER_IMAGE_PULL_POLICY }}
       restartPolicy: Never
   backoffLimit: 0
