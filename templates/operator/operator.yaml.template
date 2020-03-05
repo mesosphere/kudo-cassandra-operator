@@ -26,6 +26,7 @@ tasks:
         - generate-cqlshrc-sh.yaml
         - external-service.yaml
         - medusa-config-ini.yaml
+        - pdb.yaml
   - name: backup-cleanup
     kind: Delete
     spec:
@@ -58,3 +59,18 @@ plans:
           - name: backup
             tasks:
              - backup
+  upgrade:
+    strategy: serial
+    phases:
+      - name: cleanup
+        strategy: serial
+        steps:
+          - name: cleanup-stateful-set
+            tasks:
+              - remove-stateful-set
+      - name: reinstall
+        strategy: serial
+        steps:
+          - name: node
+            tasks:
+              - node

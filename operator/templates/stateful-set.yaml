@@ -15,6 +15,9 @@ spec:
       cassandra: {{ .OperatorName }}
   serviceName: {{ .Name }}-svc
   replicas: {{ .Params.NODE_COUNT }}
+  podManagementPolicy: Parallel
+  updateStrategy:
+    type: RollingUpdate
   template:
     metadata:
       labels:
