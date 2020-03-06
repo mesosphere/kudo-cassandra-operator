@@ -9,8 +9,6 @@ data:
     [cassandra]
     stop_cmd = true
     start_cmd = /etc/cassandra/restore-capture-tokenmap.sh
-    ;stop_cmd = /etc/init.d/cassandra stop
-    ;start_cmd = /etc/init.d/cassandra start
     ;config_file = <path to cassandra.yaml. Defaults to /etc/cassandra/cassandra.yaml>
     ;cql_username = <username>
     ;cql_password = <password>
@@ -25,12 +23,12 @@ data:
     ;check_running = nodetool version
 
     [storage]
-    storage_provider = s3_us_west_oregon
+    storage_provider = {{ .Params.BACKUP_AWS_S3_STORAGE_PROVIDER }}
     ; storage_provider should be either of "local", "google_storage" or the s3_* values from
     ; https://github.com/apache/libcloud/blob/trunk/libcloud/storage/types.py
 
     ; Name of the bucket used for storing backups
-    bucket_name = kudo-cassandra-backup-test
+    bucket_name = {{ .Params.BACKUP_AWS_S3_BUCKET_NAME }}
 
     ; JSON key file for service account with access to GCS bucket or AWS credentials file (home-dir/.aws/credentials)
     ;key_file = /home/cassandra/.aws/credentials
@@ -45,7 +43,6 @@ data:
     {{ end }}
 
     ;fqdn = <enforce the name of the local node. Computed automatically if not provided.>
-    ;fqdn = {{ .Name }}-node-0.{{ .Name }}-svc.{{ .Namespace }}.svc.cluster.local
 
     ; Number of days before backups are purged. 0 means backups don't get purged by age (default)
     max_backup_age = 0

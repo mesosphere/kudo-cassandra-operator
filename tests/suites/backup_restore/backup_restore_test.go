@@ -32,7 +32,8 @@ var (
 	Client    = client.Client{}
 	Operator  = kudo.Operator{}
 
-	BackupPrefix = "test2"
+	BackupBucket = "kudo-cassandra-backup-test"
+	BackupPrefix = "localtest"
 	BackupName   = "first"
 )
 
@@ -145,6 +146,7 @@ var _ = Describe("backup and restore", func() {
 				"BACKUP_AWS_CREDENTIALS_SECRET": awsSecretName,
 				"BACKUP_PREFIX":                 BackupPrefix,
 				"BACKUP_NAME":                   BackupName,
+				"BACKUP_AWS_S3_BUCKET_NAME":     BackupBucket,
 			}).
 			Do(Client)
 		Expect(err).To(BeNil())
@@ -203,6 +205,7 @@ var _ = Describe("backup and restore", func() {
 				"BACKUP_AWS_CREDENTIALS_SECRET": awsSecretName,
 				"BACKUP_PREFIX":                 BackupPrefix,
 				"BACKUP_NAME":                   BackupName,
+				"BACKUP_AWS_S3_BUCKET_NAME":     BackupBucket,
 				"RESTORE_FLAG":                  "true",
 				"RESTORE_OLD_NAMESPACE":         TestNamespace,
 				"RESTORE_OLD_NAME":              TestInstance,
