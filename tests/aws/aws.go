@@ -2,26 +2,26 @@ package aws
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 )
 
-func DeleteFolderInS3(folderName string) error {
+func DeleteFolderInS3(bucket string, folderName string) error {
+	awsProfile := os.Getenv("AWS_PROFILE")
 
 	// The session the S3 Uploader will use
 	sess := session.Must(session.NewSessionWithOptions(session.Options{
 		// Specify profile to load for the session's config
-		Profile: "327650738955_Mesosphere-PowerUser",
+		Profile: awsProfile,
 
 		// Provide SDK Config options, such as Region.
 		Config: aws.Config{
 			Region: aws.String("us-west-2"),
 		}},
 	))
-
-	bucket := "kudo-cassandra-backup-test"
 
 	svc := s3.New(sess)
 	res, err := svc.ListObjects(&s3.ListObjectsInput{

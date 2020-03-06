@@ -75,7 +75,7 @@ var _ = AfterSuite(func() {
 		fmt.Printf("Failed to delete namespace: %v\n", err)
 	}
 
-	if err := aws.DeleteFolderInS3(BackupPrefix); err != nil {
+	if err := aws.DeleteFolderInS3(BackupBucket, BackupPrefix); err != nil {
 		fmt.Printf("Error while cleaning up S3 bucket: %v\n", err)
 	}
 })
