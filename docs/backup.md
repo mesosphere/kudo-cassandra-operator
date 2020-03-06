@@ -59,10 +59,11 @@ kubectl apply --namespace $NAMESPACE -f aws-credentials.yaml
 
 To allow the backup plan to run, the cluster must be set up with a specific configuration:
 
-- `BACKUP_RESTORE_ENABLED=true` This enables the backup functionality in general
-- `BACKUP_AWS_CREDENTIALS_SECRET=<the name of a Kubernets secret>` Allows the instances to access the AWS credentials without storing them in the operator itself
-- `BACKUP_PREFIX=<prefix>` Prepends a prefix to the backups in the S3 buckets and allows multiple KUDO Cassandra clusters to reside in the same bucket 
-- `EXTERNAL_NATIVE_TRANSPORT=true` is not required for the backup, but allows us to access the cluster with `cqlsh` from the local machine
+- `BACKUP_RESTORE_ENABLED` This enables the backup functionality in general
+- `BACKUP_AWS_CREDENTIALS_SECRET` Allows the instances to access the AWS credentials without storing them in the operator itself
+- `BACKUP_AWS_S3_BUCKET_NAME` Defines the AWS S3 bucket where the backup will be stored
+- `BACKUP_PREFIX` Prepends a prefix to the backups in the S3 buckets and allows multiple KUDO Cassandra clusters to reside in the same bucket 
+- `EXTERNAL_NATIVE_TRANSPORT` Setting this to true is not required for the backup, but allows us to access the cluster with `cqlsh` from the local machine
 
 ```
 kubectl kudo install cassandra \
@@ -168,7 +169,7 @@ backup-node-1   1/1           21s        33s
 backup-node-2   1/1           23s        33s
 ```
 
-Next, lets view a list of all the backup pods:
+Next, lets view a list of all the pods:
 ```bash
 kubectl get pods --namespace=$NAMESPACE
 ```
@@ -245,7 +246,7 @@ KUDO Cassandra currently only supports a full restore into a new cluster.
 
 ### Remove the old KUDO Cassandra instance (optional)
 
-This is not required, but may help if your cluster does not have enough resources to run two Cassandra clusters at the same time.
+This step is not required, but may help if your cluster does not have enough resources to run two Cassandra clusters at the same time.
 
 ```bash
 kubectl kudo uninstall --instance $INSTANCE_NAME --namespace $NAMESPACE
@@ -276,11 +277,11 @@ persistentvolumeclaim "var-lib-cassandra-cassandra-node-1" deleted
 persistentvolumeclaim "var-lib-cassandra-cassandra-node-2" deleted
 ```
 
-Now we have a clean cluster and can start the restore process
+Now we have a clean namespace and can start the restore process
 
 ### Install KUDO Cassandra with an existing backup
 
-To create a full cluster restore, the operator needs to create a new cluster.
+To create a full restore, the operator needs to create a new cluster.
 
 *Important*: At the moment, only a restore with the very same settings are supported, this is especially true for:
 - NODE_COUNT: A different node count will fail to create a successful restore.
@@ -288,7 +289,7 @@ To create a full cluster restore, the operator needs to create a new cluster.
 
 Namespace and instance name can differ, but the namespace and instance name from the backed up cluster is important.
 
-Additonal to the backup parameters used in the installation for the first cluster, these new parameters are used:
+Additional to the backup parameters used in the installation for the first cluster, these new parameters are used:
 - RESTORE_FLAG: If true, an initContainer is created that restores a backup before the cluster is started
 - RESTORE_OLD_NAMESPACE: The Namespace of the cluster that was backed up
 - RESTORE_OLD_NAME: The instance name of the cluster that was backed up. Both parameters need to be set so the operator can identify the correct data to restore
@@ -307,6 +308,30 @@ kubectl kudo install cassandra \
         -p RESTORE_OLD_NAMESPACE=$NAMESPACE \
         -p RESTORE_OLD_NAME=$INSTANCE_NAME \
         -p BACKUP_NAME=$BACKUP_NAME
+```
+
+Again, we should check if the plan is executed correctly and no ERRORS show up:
+```bash
+kubectl kudo plan status --instance=$INSTANCE_NAME -n $NAMESPACE
+```
+
+```
+Plan(s) for "cassandra" in namespace "default":
+.
+└── cassandra (Operator-Version: "cassandra-0.1.2" Active-Plan: "deploy")
+    ├── Plan deploy (serial strategy) [IN_PROGRESS]
+    │   └── Phase nodes (parallel strategy) [IN_PROGRESS]
+    │       └── Step node [IN_PROGRESS]
+    ├── Plan upgrade (serial strategy) [NOT ACTIVE]
+    │   ├── Phase cleanup (serial strategy) [NOT ACTIVE]
+    │   │   └── Step cleanup-stateful-set [NOT ACTIVE]
+    │   └── Phase reinstall (serial strategy) [NOT ACTIVE]
+    │       └── Step node [NOT ACTIVE]
+    └── Plan backup (serial strategy) [NOT ACTIVE]
+        └── Phase backup (serial strategy) [NOT ACTIVE]
+            ├── Step cleanup [NOT ACTIVE]
+            └── Step backup [NOT ACTIVE]
+
 ```
 
 We can look into the restore process that happens in the init container before the actual pod starts:
