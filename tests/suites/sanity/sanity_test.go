@@ -3,7 +3,6 @@ package sanity
 import (
 	"encoding/base64"
 	"fmt"
-	"github.com/onsi/ginkgo/reporters"
 	"math/big"
 	"os"
 	"strconv"
@@ -11,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mesosphere/kudo-cassandra-operator/tests/curl"
+	"github.com/onsi/ginkgo/reporters"
 
 	"github.com/kudobuilder/test-tools/pkg/client"
 	"github.com/kudobuilder/test-tools/pkg/kubernetes"
@@ -20,7 +19,9 @@ import (
 	. "github.com/onsi/gomega"
 
 	"github.com/mesosphere/kudo-cassandra-operator/tests/cassandra"
+	"github.com/mesosphere/kudo-cassandra-operator/tests/curl"
 	"github.com/mesosphere/kudo-cassandra-operator/tests/prometheus"
+	"github.com/mesosphere/kudo-cassandra-operator/tests/suites"
 )
 
 var (
@@ -35,16 +36,9 @@ var (
 	NodeCount = 1
 	Client    = client.Client{}
 	Operator  = kudo.Operator{}
-
-	testMetrics = true
 )
 
 var _ = BeforeSuite(func() {
-	// Check for local build
-	if os.Getenv("BUILD_NUMBER") == "" {
-		testMetrics = false
-	}
-
 	Client, _ = client.NewForConfig(KubeConfigPath)
 	_ = kubernetes.CreateNamespace(Client, TestNamespace)
 })
@@ -75,9 +69,7 @@ var _ = Describe(TestName, func() {
 		parameters := map[string]string{
 			"NODE_COUNT": strconv.Itoa(NodeCount),
 		}
-		if !testMetrics {
-			parameters["PROMETHEUS_EXPORTER_ENABLED"] = "false"
-		}
+		suites.SetLocalOnlyParameters(parameters)
 
 		Operator, err = kudo.InstallOperator(OperatorDirectory).
 			WithNamespace(TestNamespace).
@@ -93,7 +85,7 @@ var _ = Describe(TestName, func() {
 		Expect(err).To(BeNil())
 		assertNumberOfCassandraNodes(NodeCount)
 
-		if testMetrics {
+		if !suites.IsLocal() {
 			By("providing metrics to prometheus")
 			prometheusSvc := "prometheus-kubeaddons-prom-prometheus.kubeaddons.svc.cluster.local:9090"
 
@@ -248,9 +240,9 @@ var _ = Describe(TestName, func() {
 		assertNumberOfCassandraNodes(NodeCount)
 	})
 
-	//It("Uninstalls the operator", func() {
-	//	err := cassandra.Uninstall(Client, Operator)
-	//	Expect(err).To(BeNil())
-	//	// TODO(mpereira) Assert that it isn't running.
-	//})
+	It("Uninstalls the operator", func() {
+		err := cassandra.Uninstall(Client, Operator)
+		Expect(err).To(BeNil())
+		// TODO(mpereira) Assert that it isn't running.
+	})
 })

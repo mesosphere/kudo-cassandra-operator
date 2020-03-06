@@ -2,6 +2,9 @@ package upgrade
 
 import (
 	"fmt"
+	"os"
+	"strconv"
+
 	"github.com/kudobuilder/test-tools/pkg/client"
 	"github.com/kudobuilder/test-tools/pkg/kubernetes"
 	"github.com/kudobuilder/test-tools/pkg/kudo"
@@ -9,8 +12,6 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
-	"os"
-	"strconv"
 )
 
 var (

@@ -13,20 +13,19 @@ import (
 	"github.com/onsi/ginkgo/reporters"
 	. "github.com/onsi/gomega"
 
+	"github.com/mesosphere/kudo-cassandra-operator/tests/aws"
 	"github.com/mesosphere/kudo-cassandra-operator/tests/cassandra"
+	"github.com/mesosphere/kudo-cassandra-operator/tests/suites"
 )
 
 var (
-	TestName            = "backup-restore-test"
-	TestOperatorVersion = "99.99.99-testing"
-	OperatorVersion     string
-	OperatorName        = os.Getenv("OPERATOR_NAME")
-	TestNamespace       = fmt.Sprintf("%s", TestName)
-	TestInstance        = fmt.Sprintf("%s", OperatorName)
-	RestoreInstance     = fmt.Sprintf("%s-restore", OperatorName)
-	KubeConfigPath      = os.Getenv("KUBECONFIG")
-	KubectlPath         = os.Getenv("KUBECTL_PATH")
-	OperatorDirectory   = os.Getenv("OPERATOR_DIRECTORY")
+	TestName          = "backup-restore-test"
+	OperatorName      = os.Getenv("OPERATOR_NAME")
+	TestNamespace     = fmt.Sprintf("%s", TestName)
+	TestInstance      = fmt.Sprintf("%s", OperatorName)
+	RestoreInstance   = fmt.Sprintf("%s-restore", OperatorName)
+	KubeConfigPath    = os.Getenv("KUBECONFIG")
+	OperatorDirectory = os.Getenv("OPERATOR_DIRECTORY")
 
 	NodeCount = 2
 	Client    = client.Client{}
@@ -68,18 +67,18 @@ var _ = BeforeSuite(func() {
 	}
 })
 
-//var _ = AfterSuite(func() {
-//	if err := Operator.Uninstall(); err != nil {
-//		fmt.Printf("Failed to uninstall operator: %v\n", err)
-//	}
-//	if err := kubernetes.DeleteNamespace(Client, TestNamespace); err != nil {
-//		fmt.Printf("Failed to delete namespace: %v\n", err)
-//	}
-//
-//	if err := aws.DeleteFolderInS3(BackupPrefix); err != nil {
-//		fmt.Printf("Error while cleaning up S3 bucket: %v\n", err)
-//	}
-//})
+var _ = AfterSuite(func() {
+	if err := Operator.Uninstall(); err != nil {
+		fmt.Printf("Failed to uninstall operator: %v\n", err)
+	}
+	if err := kubernetes.DeleteNamespace(Client, TestNamespace); err != nil {
+		fmt.Printf("Failed to delete namespace: %v\n", err)
+	}
+
+	if err := aws.DeleteFolderInS3(BackupPrefix); err != nil {
+		fmt.Printf("Error while cleaning up S3 bucket: %v\n", err)
+	}
+})
 
 func TestService(t *testing.T) {
 	RegisterFailHandler(Fail)
@@ -130,24 +129,22 @@ var _ = Describe("backup and restore", func() {
 
 		awsSecretName := createAwsCredentials()
 
+		parameters := map[string]string{
+			"NODE_COUNT":                    strconv.Itoa(NodeCount),
+			"JMX_LOCAL_ONLY":                "false",
+			"BACKUP_RESTORE_ENABLED":        "true",
+			"BACKUP_AWS_CREDENTIALS_SECRET": awsSecretName,
+			"BACKUP_PREFIX":                 BackupPrefix,
+			"BACKUP_NAME":                   BackupName,
+			"BACKUP_AWS_S3_BUCKET_NAME":     BackupBucket,
+		}
+		suites.SetLocalOnlyParameters(parameters)
+
 		By("Installing the operator from current directory")
 		Operator, err = kudo.InstallOperator(OperatorDirectory).
 			WithNamespace(TestNamespace).
 			WithInstance(TestInstance).
-			WithParameters(map[string]string{
-				"NODE_COUNT":                    strconv.Itoa(NodeCount),
-				"JMX_LOCAL_ONLY":                "false",
-				"PROMETHEUS_EXPORTER_ENABLED":   "false",
-				"NODE_MEM_MIB":                  "768",
-				"NODE_MEM_LIMIT_MIB":            "1024",
-				"NODE_CPU_MC":                   "1000",
-				"NODE_CPU_LIMIT_MC":             "1500",
-				"BACKUP_RESTORE_ENABLED":        "true",
-				"BACKUP_AWS_CREDENTIALS_SECRET": awsSecretName,
-				"BACKUP_PREFIX":                 BackupPrefix,
-				"BACKUP_NAME":                   BackupName,
-				"BACKUP_AWS_S3_BUCKET_NAME":     BackupBucket,
-			}).
+			WithParameters(parameters).
 			Do(Client)
 		Expect(err).To(BeNil())
 
@@ -190,26 +187,24 @@ var _ = Describe("backup and restore", func() {
 		By("Restoring the backup into a new instance")
 
 		By("Installing the operator from current directory")
+		parameters = map[string]string{
+			"NODE_COUNT":                    strconv.Itoa(NodeCount),
+			"JMX_LOCAL_ONLY":                "false",
+			"BACKUP_RESTORE_ENABLED":        "true",
+			"BACKUP_AWS_CREDENTIALS_SECRET": awsSecretName,
+			"BACKUP_PREFIX":                 BackupPrefix,
+			"BACKUP_NAME":                   BackupName,
+			"BACKUP_AWS_S3_BUCKET_NAME":     BackupBucket,
+			"RESTORE_FLAG":                  "true",
+			"RESTORE_OLD_NAMESPACE":         TestNamespace,
+			"RESTORE_OLD_NAME":              TestInstance,
+		}
+		suites.SetLocalOnlyParameters(parameters)
+
 		Operator, err = kudo.InstallOperator(OperatorDirectory).
 			WithNamespace(TestNamespace).
 			WithInstance(RestoreInstance).
-			WithParameters(map[string]string{
-				"NODE_COUNT":                    strconv.Itoa(NodeCount),
-				"JMX_LOCAL_ONLY":                "false",
-				"PROMETHEUS_EXPORTER_ENABLED":   "false",
-				"NODE_MEM_MIB":                  "768",
-				"NODE_MEM_LIMIT_MIB":            "1024",
-				"NODE_CPU_MC":                   "1000",
-				"NODE_CPU_LIMIT_MC":             "1500",
-				"BACKUP_RESTORE_ENABLED":        "true",
-				"BACKUP_AWS_CREDENTIALS_SECRET": awsSecretName,
-				"BACKUP_PREFIX":                 BackupPrefix,
-				"BACKUP_NAME":                   BackupName,
-				"BACKUP_AWS_S3_BUCKET_NAME":     BackupBucket,
-				"RESTORE_FLAG":                  "true",
-				"RESTORE_OLD_NAMESPACE":         TestNamespace,
-				"RESTORE_OLD_NAME":              TestInstance,
-			}).
+			WithParameters(parameters).
 			Do(Client)
 
 		Expect(err).To(BeNil())
@@ -230,8 +225,8 @@ var _ = Describe("backup and restore", func() {
 
 	})
 
-	//It("Uninstalls the operator", func() {
-	//	err := cassandra.Uninstall(Client, Operator)
-	//	Expect(err).To(BeNil())
-	//})
+	It("Uninstalls the operator", func() {
+		err := cassandra.Uninstall(Client, Operator)
+		Expect(err).To(BeNil())
+	})
 })
