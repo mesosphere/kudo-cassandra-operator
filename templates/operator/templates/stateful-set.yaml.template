@@ -292,7 +292,10 @@ spec:
             - bash
             - -c
           args:
-            - POD_ID=`echo $POD_NAME | sed -n -e 's/.*-node-\([0-9]\{1,4\}\)$/\1/p'`; echo "Start Restore for node '{{ .Params.RESTORE_OLD_NAME }}' from backup '{{ .Params.BACKUP_NAME }}' in prefix '{{ .Params.BACKUP_PREFIX }}'"; mkdir -p /var/lib/cassandra/data; /usr/local/bin/medusa --fqdn {{ .Params.RESTORE_OLD_NAME }}-node-$POD_ID.{{ .Params.RESTORE_OLD_NAME }}-svc.{{ .Params.RESTORE_OLD_NAMESPACE }}.svc.cluster.local restore-node --backup-name {{ .Params.BACKUP_NAME }}
+            - POD_ID=`echo $POD_NAME | sed -n -e 's/.*-node-\([0-9]\{1,4\}\)$/\1/p'`;
+              echo "Start Restore for node '{{ .Params.RESTORE_OLD_NAME }}' from backup '{{ .Params.BACKUP_NAME }}' in prefix '{{ .Params.BACKUP_PREFIX }}'";
+              mkdir -p /var/lib/cassandra/data;
+              /usr/local/bin/medusa --fqdn {{ .Params.RESTORE_OLD_NAME }}-node-$POD_ID.{{ .Params.RESTORE_OLD_NAME }}-svc.{{ .Params.RESTORE_OLD_NAMESPACE }}.svc.cluster.local restore-node --backup-name {{ .Params.BACKUP_NAME }}
           env:
             - name: AWS_ACCESS_KEY_ID
               valueFrom:
