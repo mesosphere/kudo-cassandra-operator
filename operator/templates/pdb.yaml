@@ -9,4 +9,4 @@ spec:
       app: {{ .Name }}
       cassandra: {{ .OperatorName }}
       kudo.dev/instance: {{ .Name }}
-  maxUnavailable: 1
+  maxUnavailable: {{ .Params.MAX_UNAVAILABLE_NODES }}

@@ -32,8 +32,8 @@ fi
 # Give more priority to vendored executables.
 export PATH=${VENDOR_DIRECTORY}:${PATH}
 
-cd "${project_directory}"
-./tools/compile_templates.sh --check-only
+#cd "${project_directory}"
+#./tools/compile_templates.sh --check-only
 
 cd "${project_directory}/tests"
 

@@ -8,6 +8,7 @@ data:
     nodetool status -p {{ .Params.JMX_PORT }} | grep -q "UN  ${POD_IP}"
   node-token-save.sh: |
     # Used to capture the token map from a newly created cluster and save it
+    # Not used at the moment
     if [ ! -f /var/lib/cassandra/token_map ]; then
         while [ -z $NODE_TOKENS ]; do
             NODE_ID=`nodetool info | grep ID | sed -n -e 's/ID[[:space:]]*\:[[:space:]]*\(.*\)$/\1/p'`
@@ -21,3 +22,9 @@ data:
     if [ ! -z "$JVM_OPTS" ]; then
       echo "$JVM_OPTS" | sed -n -e 's/-Dcassandra.initial_token=\([-0-9,]*\)[[:space:]].*/\1/p' > /var/lib/cassandra/token_map
     fi
+  wait-for-node-zero.sh: |
+    # With parallel startup of all nodes, we still need to make sure that the first node is reachable for all others, otherwise
+    # we may end up with separate clusters. So every node except node-0 waits for node-0 to be reachable
+    if [ "$POD_NAME" != "{{ .Name }}-node-0" ]; then
+      while :; do cqlsh {{ .Name }}-node-0.{{ .Name }}-svc.{{ .Namespace }}.svc.cluster.local -e "SELECT uuid() FROM system.local" > /dev/null 2>&1 && break; echo "Waiting for node-0 to be available..."; sleep 5; done;
+    fi;
