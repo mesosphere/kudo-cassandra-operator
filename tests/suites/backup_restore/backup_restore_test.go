@@ -55,8 +55,9 @@ const testCQLScriptOutput = `
 
 var _ = BeforeSuite(func() {
 	buildNumber := os.Getenv("BUILD_NUMBER")
-	if buildNumber != "" {
-		BackupPrefix = "TC-" + buildNumber
+	tcProject := os.Getenv("TEAMCITY_PROJECT_NAME")
+	if buildNumber != "" && tcProject != "" {
+		BackupPrefix = "TC-" + tcProject + "-" + buildNumber
 	}
 	fmt.Printf("Using backup prefix %s\n", BackupPrefix)
 
