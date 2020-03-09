@@ -60,13 +60,22 @@ parameters:
     description: "When a pod starts and the probe fails, `failure_threshold` attempts will be made before marking the pod as 'unready'."
     default: "3"
 
-  - name: NODE_DATACENTER
-    description: "Defines the datacenter that includes this node. Needs the ENDPOINT_SNITCH parameter set to 'GossipingPropertyFileSnitch' to have an effect."
-    default: ""
+  - name: NODE_TOPOLOGY
+    description: "TODO. DATACENTER_LABEL and RACK_LABEL are required Needs the ENDPOINT_SNITCH parameter set to 'GossipingPropertyFileSnitch' to have an effect."
+    default: []
+    type: array
 
-  - name: NODE_RACK
-    description: "Defines the rack that includes this node. Needs the ENDPOINT_SNITCH parameter set to 'GossipingPropertyFileSnitch' to have an effect."
-    default: ""
+  - name: DATACENTER_LABEL
+    description: "TODO"
+    default: "topology.kubernetes.io/region"
+
+  - name: RACK_LABEL
+    description: "TODO"
+    default: "topology.kubernetes.io/zone"
+
+  - name: NODE_ANTI_AFFINITY
+    description: "Ensure that every Cassandra node is deployed on separate hosts"
+    default: "false"
 
   - name: OVERRIDE_CLUSTER_NAME
     description: "Override the name of the Cassandra cluster set by the operator. This shouldn't be explicit set, unless you know what you're doing."
