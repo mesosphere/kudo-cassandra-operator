@@ -59,11 +59,26 @@ var _ = Describe("Fault tolerance tests", func() {
 
 	Context("when configured with the 'GossipingPropertyFileSnitch' snitch", func() {
 		BeforeEach(func() {
+			topology, err := cassandra.NodeTopology{
+				{
+					Datacenter: "dc1",
+					Rack: "rac1",
+					Nodes: 2,
+				},
+				{
+					Datacenter: "dc2",
+					Rack: "rac1",
+					Nodes: 1,
+				},
+			}.ToYAML()
+			Expect(err).NotTo(HaveOccurred())
+
 			parameters = map[string]string{
-				"NODE_COUNT":      "2",
+				"NODE_COUNT": "1", // NODE_TOPOLOGY should override this value
 				"ENDPOINT_SNITCH": "GossipingPropertyFileSnitch",
-				"NODE_DATACENTER": "dc1",
-				"NODE_RACK":       "r1",
+				"NODE_TOPOLOGY": topology,
+				"DATACENTER_LABEL": "",
+				"RACK_LABEL": "",
 			}
 		})
 
@@ -77,15 +92,33 @@ var _ = Describe("Fault tolerance tests", func() {
 
 			nodes, err := cassandra.Nodes(client, operator.Instance)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(nodes).To(HaveLen(2))
+			Expect(nodes).To(HaveLen(3))
 
-			By("Checking that node status reports datacenter and rack")
+			By("Checking that node status reports correct datacenter and rack")
+
+			var nodesInDC1 int
+			var nodesInDC2 int
 
 			for _, node := range nodes {
-				Expect(node["datacenter"]).To(Equal("dc1"))
-				Expect(node["rack"]).To(Equal("r1"))
+				switch node["datacenter"] {
+				case "dc1":
+					nodesInDC1 += 1
+				case "dc2":
+					nodesInDC2 += 1
+				default:
+					Fail("unknown datacenter")
+				}
+
+				Expect(node["rack"]).To(Equal("rac1"))
 			}
+
+			Expect(nodesInDC1).To(Equal(2))
+			Expect(nodesInDC2).To(Equal(1))
 		})
+
+		// TODO: test pod anti-affinity
+
+		// TODO: test node selection
 	})
 })
 

@@ -25,7 +25,6 @@ tasks:
         - generate-tls-artifacts-sh.yaml
         - generate-cqlshrc-sh.yaml
         - external-service.yaml
-        - cassandra-rackdc-properties.yaml
 plans:
   deploy:
     strategy: serial

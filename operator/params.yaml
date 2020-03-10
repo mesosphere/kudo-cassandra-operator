@@ -61,21 +61,27 @@ parameters:
     default: "3"
 
   - name: NODE_TOPOLOGY
-    description: "TODO. DATACENTER_LABEL and RACK_LABEL are required Needs the ENDPOINT_SNITCH parameter set to 'GossipingPropertyFileSnitch' to have an effect."
-    default: []
+    description: "TODO. DATACENTER_LABEL and RACK_LABEL are required. Has precedence over NODE_COUNT. Needs the ENDPOINT_SNITCH parameter set to 'GossipingPropertyFileSnitch' to have an effect."
+    default:
+    - datacenter: dc1
+      rack: rac1
+      nodes: 2
+    - datacenter: dc2
+      rack: rac1
+      nodes: 2
     type: array
 
   - name: DATACENTER_LABEL
     description: "TODO"
-    default: "topology.kubernetes.io/region"
+    default: "datacenter"
 
   - name: RACK_LABEL
     description: "TODO"
-    default: "topology.kubernetes.io/zone"
+    default: "rack"
 
   - name: NODE_ANTI_AFFINITY
     description: "Ensure that every Cassandra node is deployed on separate hosts"
-    default: "false"
+    default: "true"
 
   - name: OVERRIDE_CLUSTER_NAME
     description: "Override the name of the Cassandra cluster set by the operator. This shouldn't be explicit set, unless you know what you're doing."
@@ -618,7 +624,7 @@ parameters:
 
   - name: ENDPOINT_SNITCH
     description: "Set to a class that implements the IEndpointSnitch interface. Cassandra uses the snitch to locate nodes and route requests."
-    default: "SimpleSnitch"
+    default: "GossipingPropertyFileSnitch"
 
   - name: DISK_FAILURE_POLICY
     description: "The policy for how Cassandra responds to disk failure"

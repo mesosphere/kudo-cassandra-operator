@@ -7,7 +7,11 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
+  {{ if $.Params.NODE_TOPOLOGY }}
+  name: {{ $.Name }}-{{ .datacenter }}-{{ .rack}}-node
+  {{ else }}
   name: {{ $.Name }}-node
+  {{ end }}
   namespace: {{ $.Namespace }}
   labels:
     cassandra: {{ $.OperatorName }}
@@ -295,4 +299,16 @@ spec:
         {{ if $.Params.NODE_STORAGE_CLASS }}
         storageClassName: {{ $.Params.NODE_STORAGE_CLASS }}
         {{ end }}
+{{ end }}
+{{ range .Params.NODE_TOPOLOGY }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $.Name }}-{{ .datacenter }}-{{ .rack }}-cassandra-rackdc-properties
+  namespace: {{ $.Namespace }}
+data:
+  cassandra-rackdc.properties: |
+    dc={{ .datacenter }}
+    rack={{ .rack }}
 {{ end }}
