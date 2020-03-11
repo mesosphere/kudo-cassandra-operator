@@ -8,16 +8,15 @@ readonly project_directory="$(readlink -f "${script_directory}")"
 # shellcheck source=metadata.sh
 source "${project_directory}/metadata.sh"
 
+FAILED=0
+
 go get golang.org/x/tools/cmd/goimports
 goimports -d . | awk 'BEGIN{had_data=0}{print;had_data=1}END{exit had_data}'
-
-FAILED_GOIMPORTS=$?
+FAILED=${FAILED-$?}
 
 cd "${project_directory}"
 ./tools/compile_templates.sh --check-only
+FAILED=${FAILED-$?}
 
-FAILED_TEMPLATE_CHECK=$?
+exit ${FAILED}
 
-if [[ "$FAILED_GOIMPORTS" -ne "0" ]] || [[ "$FAILED_TEMPLATE_CHECK" -ne "0" ]]; then
-  exit 1
-fi
