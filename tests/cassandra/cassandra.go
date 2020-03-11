@@ -86,7 +86,20 @@ func OverrideOperatorVersion(
 }
 
 func Nodes(client client.Client, instance kudo.Instance) ([]map[string]string, error) {
-	podName := fmt.Sprintf("%s-%s-%d", instance.Name, "node", 0)
+	var podName string
+
+	if instance.Spec.Parameters["NODE_TOPOLOGY"] != "" {
+		topology, err := TopologyFromYaml(instance.Spec.Parameters["NODE_TOPOLOGY"])
+		if err != nil {
+			return nil, fmt.Errorf("failed to unmarshal topology: %v", err)
+		}
+
+		podName = fmt.Sprintf("%s-%s-%s-%s-%d", instance.Name, topology[0].Datacenter, topology[0].Rack, "node", 0)
+	} else {
+		podName = fmt.Sprintf("%s-%s-%d", instance.Name, "node", 0)
+	}
+
+	log.Infof("Get Node Status from %s", podName)
 
 	var stdout strings.Builder
 
@@ -103,14 +116,30 @@ func Nodes(client client.Client, instance kudo.Instance) ([]map[string]string, e
 	if err != nil {
 		return nil, err
 	}
+	// Example output:
+	//	cassandra@cassandra-instance-us-west-2a-rac1-node-0:/$ nodetool status
+	//	Datacenter: us-west-2a
+	//	======================
+	//	Status=Up/Down
+	//	|/ State=Normal/Leaving/Joining/Moving
+	//	--  Address          Load       Tokens       Owns (effective)  Host ID                               Rack
+	//	UN  192.168.197.82   118.01 KiB  256          54.6%             0d0afae0-77be-44eb-b756-7ed47521592a  rac1
+	//	UN  192.168.217.87   103.7 KiB  256          48.4%             1a546b75-c83b-4482-97e1-3e9621664a23  rac1
+	//	Datacenter: us-west-2b
+	//	======================
+	//	Status=Up/Down
+	//	|/ State=Normal/Leaving/Joining/Moving
+	//	--  Address          Load       Tokens       Owns (effective)  Host ID                               Rack
+	//	UN  192.168.8.141    117.92 KiB  256          48.0%             cf0c4d4f-e41e-43cb-a489-55095b62ca98  rac1
+	//	UN  192.168.211.212  150.87 KiB  256          49.0%             7309951f-4eaa-4f4a-b526-632f975bc8ea  rac1
 
 	// Datacenter: dc1
-	dcRegexp := `^Datacenter:\s+(\w+)$`
+	dcRegexp := `^Datacenter:\s+(.*)$`
 	dcLinePattern := regexp.MustCompile(dcRegexp)
 
 	// --  Address         Load        Tokens  Owns   Host ID                               Rack
 	// UN  192.168.196.13  105.29 KiB  256     68.8%  440b2d75-059c-444a-ab01-9cea29b387d8  rack1
-	nodeRegexp := `^(\w{2})\s+([\w\.]+)\s+([\w\.]+\s\w+)\s+(\d+)\s+([\d\.]+%)\s+([\w-]+)\s+(\w+)$`
+	nodeRegexp := `^(\w{2})\s+([\w\.]+)\s+([\w\.]+\s\w+)\s+(\d+)\s+([\d\.]+%)\s+([\w-]+)\s+(.*)$`
 	nodeLinePattern := regexp.MustCompile(nodeRegexp)
 
 	var nodes []map[string]string

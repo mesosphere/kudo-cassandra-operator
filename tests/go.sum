@@ -257,6 +257,8 @@ github.com/kudobuilder/kudo v0.11.0-rc1 h1:dEIJp2CU8oW/VsszHRXfgC3f6DIkubdj8c6g6
 github.com/kudobuilder/kudo v0.11.0-rc1/go.mod h1:80w8kBqc9OI4hQWs56Ya80NZTEXi4fyryireJWisbP4=
 github.com/kudobuilder/test-tools v0.2.0 h1:pRR0DKEOmjbCF8gfaBxS3NAjDE0Z2xlv7JfQkGGpnnw=
 github.com/kudobuilder/test-tools v0.2.0/go.mod h1:nAcZqNhrg5qzgeXm4buM/LJki1jWqQCkWlB6zHPh1BU=
+github.com/kudobuilder/test-tools v0.2.2 h1:laAEorW3RNU+xkrFNIv+sgw4ct7jXisKA4gj05obrfQ=
+github.com/kudobuilder/test-tools v0.2.2/go.mod h1:nAcZqNhrg5qzgeXm4buM/LJki1jWqQCkWlB6zHPh1BU=
 github.com/liggitt/tabwriter v0.0.0-20181228230101-89fcab3d43de/go.mod h1:zAbeS9B/r2mtpb6U+EI2rYA5OAXxsYw6wTamcNW+zcE=
 github.com/lithammer/dedent v1.1.0/go.mod h1:jrXYCQtgg0nJiN+StA2KgR7w6CiQNv9Fd/Z9BP0jIOc=
 github.com/lunixbochs/vtclean v0.0.0-20180621232353-2d01aacdc34a/go.mod h1:pHhQNgMf3btfWnGBVipUOjRYhoOsdGqdm/+2c2E2WMI=
