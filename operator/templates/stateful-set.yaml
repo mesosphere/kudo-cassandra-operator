@@ -38,8 +38,12 @@ spec:
     spec:
       {{ if $.Params.NODE_TOPOLOGY }}
       nodeSelector:
+      {{ if $.Params.DATACENTER_LABEL }}
         {{ $.Params.DATACENTER_LABEL }}: {{ .datacenter }}
+      {{ end }}
+      {{ if $.Params.RACK_LABEL }}
         {{ $.Params.RACK_LABEL }}: {{ .rack }}
+      {{ end }}
       {{ end }}
       {{ if (eq $.Params.NODE_ANTI_AFFINITY "true") }}
       affinity:

@@ -62,23 +62,24 @@ var _ = Describe("Fault tolerance tests", func() {
 			topology, err := cassandra.NodeTopology{
 				{
 					Datacenter: "dc1",
-					Rack: "rac1",
-					Nodes: 2,
+					Rack:       "rac1",
+					Nodes:      2,
 				},
 				{
 					Datacenter: "dc2",
-					Rack: "rac1",
-					Nodes: 1,
+					Rack:       "rac1",
+					Nodes:      1,
 				},
 			}.ToYAML()
 			Expect(err).NotTo(HaveOccurred())
 
 			parameters = map[string]string{
-				"NODE_COUNT": "1", // NODE_TOPOLOGY should override this value
-				"ENDPOINT_SNITCH": "GossipingPropertyFileSnitch",
-				"NODE_TOPOLOGY": topology,
-				"DATACENTER_LABEL": "",
-				"RACK_LABEL": "",
+				"NODE_COUNT":                  "1", // NODE_TOPOLOGY should override this value
+				"ENDPOINT_SNITCH":             "GossipingPropertyFileSnitch",
+				"NODE_TOPOLOGY":               topology,
+				"DATACENTER_LABEL":            "",
+				"RACK_LABEL":                  "",
+				"PROMETHEUS_EXPORTER_ENABLED": "false",
 			}
 		})
 
