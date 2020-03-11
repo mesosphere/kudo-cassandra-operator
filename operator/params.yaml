@@ -60,29 +60,6 @@ parameters:
     description: "When a pod starts and the probe fails, `failure_threshold` attempts will be made before marking the pod as 'unready'."
     default: "3"
 
-  - name: NODE_TOPOLOGY
-    description: "TODO. DATACENTER_LABEL and RACK_LABEL are required. Has precedence over NODE_COUNT. Needs the ENDPOINT_SNITCH parameter set to 'GossipingPropertyFileSnitch' to have an effect."
-    default:
-    - datacenter: dc1
-      rack: rac1
-      nodes: 2
-    - datacenter: dc2
-      rack: rac1
-      nodes: 2
-    type: array
-
-  - name: DATACENTER_LABEL
-    description: "TODO"
-    default: "datacenter"
-
-  - name: RACK_LABEL
-    description: "TODO"
-    default: "rack"
-
-  - name: NODE_ANTI_AFFINITY
-    description: "Ensure that every Cassandra node is deployed on separate hosts"
-    default: "true"
-
   - name: OVERRIDE_CLUSTER_NAME
     description: "Override the name of the Cassandra cluster set by the operator. This shouldn't be explicit set, unless you know what you're doing."
     default: ""
@@ -106,6 +83,27 @@ parameters:
     displayName: "External advertised rpc port"
     description: "The external port to use for Cassandra rpc protocol."
     default: "9160"
+
+  ################################################################################
+  ######################### Datacenter and Rack awareness ########################
+  ################################################################################
+
+  - name: NODE_TOPOLOGY
+    description: "TODO: DATACENTER_LABEL and RACK_LABEL are required. Has precedence over NODE_COUNT. Needs the ENDPOINT_SNITCH parameter set to 'GossipingPropertyFileSnitch' to have an effect."
+    default:
+    type: array
+
+  - name: DATACENTER_LABEL
+    description: "Defines the nodeSelector label that is set to the datacenter value of the topology map for each node. Ignored if empty"
+    default: ""
+
+  - name: RACK_LABEL
+    description: "Defines the nodeSelector label that is set to the rack value of the topology map for each node. Ignored if empty"
+    default: ""
+
+  - name: NODE_ANTI_AFFINITY
+    description: "Ensure that every Cassandra node is deployed on separate hosts"
+    default: "false"
 
   ################################################################################
   ######################### Prometheus exporter settings #########################
@@ -624,7 +622,7 @@ parameters:
 
   - name: ENDPOINT_SNITCH
     description: "Set to a class that implements the IEndpointSnitch interface. Cassandra uses the snitch to locate nodes and route requests."
-    default: "GossipingPropertyFileSnitch"
+    default: "SimpleSnitch"
 
   - name: DISK_FAILURE_POLICY
     description: "The policy for how Cassandra responds to disk failure"

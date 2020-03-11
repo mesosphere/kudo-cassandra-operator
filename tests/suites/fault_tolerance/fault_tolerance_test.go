@@ -73,7 +73,7 @@ var _ = Describe("Fault tolerance tests", func() {
 				"NODE_TOPOLOGY":                        topologyYaml,
 				"DATACENTER_LABEL":                     datacenterLabel,
 				"RACK_LABEL":                           rackLabel,
-				"PROMETHEUS_EXPORTER_ENABLED":          "false",
+				"NODE_ANTI_AFFINITY":                   "true",
 				"NODE_READINESS_PROBE_INITIAL_DELAY_S": "10",
 			}
 

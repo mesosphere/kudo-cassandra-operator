@@ -1,3 +1,4 @@
+{{ if .Params.NODE_TOPOLOGY }}
 {{ range .Params.NODE_TOPOLOGY }}
 ---
 apiVersion: v1
@@ -9,4 +10,5 @@ data:
   cassandra-rackdc.properties: |
     dc={{ .datacenter }}
     rack={{ .rack }}
+{{ end }}
 {{ end }}

@@ -304,15 +304,3 @@ spec:
         storageClassName: {{ $.Params.NODE_STORAGE_CLASS }}
         {{ end }}
 {{ end }}
-{{ range .Params.NODE_TOPOLOGY }}
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: {{ $.Name }}-{{ .datacenter }}-{{ .rack }}-cassandra-rackdc-properties
-  namespace: {{ $.Namespace }}
-data:
-  cassandra-rackdc.properties: |
-    dc={{ .datacenter }}
-    rack={{ .rack }}
-{{ end }}
