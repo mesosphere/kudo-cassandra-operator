@@ -467,10 +467,23 @@ data:
           # Here we follow the advice from DataStax and make the first 3
           # nodes in a DC the seed nodes.
           # https://docs.datastax.com/en/dse/6.0/dse-admin/datastax_enterprise/production/seedNodesForSingleDC.html
+          {{- if .Params.NODE_TOPOLOGY }}
+            {{- $lastTopo := 0 }}
+          - seeds: "{{- range $.Params.NODE_TOPOLOGY -}}
+                      {{- $topo := . -}}
+                      {{- range $i, $node := until (int (min 3 $topo.nodes)) -}}
+                        {{- if or $i $lastTopo -}}, {{- end -}}
+                        {{ $.Name }}-{{ $topo.datacenter }}-{{ $topo.rack}}-node-{{ $node }}.{{ $.Name }}-svc.{{ $.Namespace }}.svc.cluster.local
+                      {{- end -}}
+                      {{- $lastTopo = $topo -}}
+                    {{- end -}}"
+          {{- else }}
+          # We have a simple setup and use the first 3 nodes as seed
           - seeds: "{{- range $i, $node := until (int (min 3 .Params.NODE_COUNT)) -}}
                       {{- if $i -}}, {{- end -}}
                       {{ $.Name }}-node-{{ $node }}.{{ $.Name }}-svc.{{ $.Namespace }}.svc.cluster.local
                     {{- end -}}"
+          {{- end }}
 
     # For workloads with more data than can fit in memory, Cassandra's
     # bottleneck will be reads that need to fetch data from
