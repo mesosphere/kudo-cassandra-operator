@@ -8,11 +8,6 @@ readonly project_directory="$(readlink -f "${script_directory}")"
 # shellcheck source=metadata.sh
 source "${project_directory}/metadata.sh"
 
-FAILED=0
-
 cd "${project_directory}"
 ./tools/compile_templates.sh --check-only
-FAILED=${FAILED-$?}
-
-exit ${FAILED}
 
