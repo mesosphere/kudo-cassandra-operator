@@ -2,12 +2,14 @@ package suites
 
 import "os"
 
-func IsLocal() bool {
-	return os.Getenv("BUILD_NUMBER") == ""
+func IsLocalCluster() bool {
+	return os.Getenv("LOCAL_CLUSTER") == "true"
 }
 
-func SetLocalOnlyParameters(parameters map[string]string) {
-	if IsLocal() {
+// SetLocalClusterParameters adds a set of common parameters used for local testing in a minikube or other restricted environments
+// This includes limited CPU and memory settings as well as disabling the Prometheus exporter
+func SetLocalClusterParameters(parameters map[string]string) {
+	if IsLocalCluster() {
 		parameters["NODE_MEM_MIB"] = "768"
 		parameters["NODE_MEM_LIMIT_MIB"] = "1024"
 		parameters["NODE_CPU_MC"] = "1000"
