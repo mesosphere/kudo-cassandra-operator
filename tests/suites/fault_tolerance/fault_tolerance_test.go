@@ -2,10 +2,11 @@ package fault_tolerance
 
 import (
 	"fmt"
-	"github.com/thoas/go-funk"
 	"os"
 	"testing"
 	"time"
+
+	"github.com/thoas/go-funk"
 
 	testclient "github.com/kudobuilder/test-tools/pkg/client"
 	"github.com/kudobuilder/test-tools/pkg/kubernetes"
@@ -89,31 +90,14 @@ var _ = Describe("Fault tolerance tests", func() {
 			rackLabel := ""
 
 			By("Installing the operator with a topology")
-			//topology := cassandra.NodeTopology{
-			//	{
-			//		Datacenter: "us-west-2a",
-			//		Rack:       "rac1",
-			//		Nodes:      2,
-			//	},
-			//	{
-			//		Datacenter: "us-west-2b",
-			//		Rack:       "rac1",
-			//		Nodes:      2,
-			//	},
-			//}
 			topology := cassandra.NodeTopology{
 				{
 					Datacenter: "us-west-2a",
 					Rack:       "rac1",
-					Nodes:      3,
-				},
-				{
-					Datacenter: "us-west-2b",
-					Rack:       "rac1",
 					Nodes:      2,
 				},
 				{
-					Datacenter: "us-west-2c",
+					Datacenter: "us-west-2b",
 					Rack:       "rac1",
 					Nodes:      2,
 				},
