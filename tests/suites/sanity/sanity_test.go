@@ -78,7 +78,7 @@ var _ = Describe(TestName, func() {
 			Do(Client)
 		Expect(err).To(BeNil())
 
-		err = Operator.Instance.WaitForPlanInProgress("deploy")
+		err = Operator.Instance.WaitForPlanInProgress("deploy", kudo.WaitTimeout(time.Second*90))
 		Expect(err).To(BeNil())
 
 		err = Operator.Instance.WaitForPlanComplete("deploy")
@@ -116,7 +116,7 @@ var _ = Describe(TestName, func() {
 		})
 		Expect(err).To(BeNil())
 
-		err = Operator.Instance.WaitForPlanInProgress("deploy")
+		err = Operator.Instance.WaitForPlanInProgress("deploy", kudo.WaitTimeout(time.Second*90))
 		Expect(err).To(BeNil())
 
 		err = Operator.Instance.WaitForPlanComplete("deploy")
@@ -149,7 +149,7 @@ var _ = Describe(TestName, func() {
 		})
 		Expect(err).To(BeNil())
 
-		err = Operator.Instance.WaitForPlanInProgress("deploy")
+		err = Operator.Instance.WaitForPlanInProgress("deploy", kudo.WaitTimeout(time.Second*90))
 		Expect(err).To(BeNil())
 
 		err = Operator.Instance.WaitForPlanComplete("deploy")
@@ -178,7 +178,7 @@ var _ = Describe(TestName, func() {
 		})
 		Expect(err).To(BeNil())
 
-		err = Operator.Instance.WaitForPlanInProgress("deploy")
+		err = Operator.Instance.WaitForPlanInProgress("deploy", kudo.WaitTimeout(time.Second*90))
 		Expect(err).To(BeNil())
 
 		err = Operator.Instance.WaitForPlanComplete("deploy")
@@ -208,7 +208,7 @@ var _ = Describe(TestName, func() {
 		})
 		Expect(err).To(BeNil())
 
-		err = Operator.Instance.WaitForPlanInProgress("deploy")
+		err = Operator.Instance.WaitForPlanInProgress("deploy", kudo.WaitTimeout(time.Second*90))
 		Expect(err).To(BeNil())
 
 		err = Operator.Instance.WaitForPlanComplete("deploy")
@@ -231,7 +231,7 @@ var _ = Describe(TestName, func() {
 		}
 		Expect(err).To(BeNil())
 
-		err = Operator.Instance.WaitForPlanInProgress("deploy")
+		err = Operator.Instance.WaitForPlanInProgress("deploy", kudo.WaitTimeout(time.Second*90))
 		Expect(err).To(BeNil())
 
 		err = Operator.Instance.WaitForPlanComplete("deploy")
