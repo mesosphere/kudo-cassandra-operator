@@ -78,6 +78,7 @@ var _ = Describe("external service", func() {
 		Expect(err).To(BeNil())
 		err = Operator.Instance.WaitForPlanComplete("deploy")
 		Expect(err).To(BeNil())
+
 		assertNumberOfCassandraNodes(NodeCount)
 
 		By("Allowing external access to the cassandra cluster")
@@ -90,6 +91,12 @@ var _ = Describe("external service", func() {
 
 		err = Operator.Instance.UpdateParameters(parameters)
 		Expect(err).To(BeNil())
+
+		err = Operator.Instance.WaitForPlanInProgress("deploy", kudo.WaitTimeout(time.Second*90))
+		Expect(err).To(BeNil())
+		err = Operator.Instance.WaitForPlanComplete("deploy")
+		Expect(err).To(BeNil())
+
 		assertNumberOfCassandraNodes(NodeCount)
 
 		log.Infof("Verify that external service is started and has 1 open port")
@@ -109,6 +116,11 @@ var _ = Describe("external service", func() {
 		suites.SetLocalClusterParameters(parameters)
 
 		err = Operator.Instance.UpdateParameters(parameters)
+		Expect(err).To(BeNil())
+
+		err = Operator.Instance.WaitForPlanInProgress("deploy", kudo.WaitTimeout(time.Second*90))
+		Expect(err).To(BeNil())
+		err = Operator.Instance.WaitForPlanComplete("deploy")
 		Expect(err).To(BeNil())
 
 		assertNumberOfCassandraNodes(NodeCount)
