@@ -65,13 +65,13 @@ var _ = Describe("Fault tolerance tests", func() {
 		parameters map[string]string
 	)
 
-	//AfterEach(func() {
-	//	err := operator.Uninstall()
-	//	Expect(err).NotTo(HaveOccurred())
-	//
-	//	err = kubernetes.DeleteNamespace(client, testNamespace)
-	//	Expect(err).NotTo(HaveOccurred())
-	//})
+	AfterEach(func() {
+		err := operator.Uninstall()
+		Expect(err).NotTo(HaveOccurred())
+
+		err = kubernetes.DeleteNamespace(client, testNamespace)
+		Expect(err).NotTo(HaveOccurred())
+	})
 
 	Context("when configured with the 'GossipingPropertyFileSnitch' snitch", func() {
 		It("should set up the datacenter and rack properties", func() {
