@@ -110,11 +110,6 @@ var _ = Describe("external service", func() {
 		})
 		Expect(err).To(BeNil())
 
-		err = Operator.Instance.WaitForPlanInProgress("deploy", kudo.WaitTimeout(time.Second*90))
-		Expect(err).To(BeNil())
-		err = Operator.Instance.WaitForPlanComplete("deploy")
-		Expect(err).To(BeNil())
-
 		assertNumberOfCassandraNodes(NodeCount)
 
 		log.Infof("Verify that external service is started and has 1 open port")
@@ -132,11 +127,6 @@ var _ = Describe("external service", func() {
 			"EXTERNAL_RPC":      "true",
 			"EXTERNAL_RPC_PORT": strconv.Itoa(rpcPort),
 		})
-		Expect(err).To(BeNil())
-
-		err = Operator.Instance.WaitForPlanInProgress("deploy", kudo.WaitTimeout(time.Second*90))
-		Expect(err).To(BeNil())
-		err = Operator.Instance.WaitForPlanComplete("deploy")
 		Expect(err).To(BeNil())
 
 		assertNumberOfCassandraNodes(NodeCount)

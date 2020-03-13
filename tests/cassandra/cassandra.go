@@ -85,18 +85,23 @@ func OverrideOperatorVersion(
 	return operatorVersion, desiredOperatorVersion, nil
 }
 
-func Nodes(client client.Client, instance kudo.Instance) ([]map[string]string, error) {
-	var podName string
-
+func firstPodName(instance kudo.Instance) (string, error) {
 	if instance.Spec.Parameters["NODE_TOPOLOGY"] != "" {
 		topology, err := TopologyFromYaml(instance.Spec.Parameters["NODE_TOPOLOGY"])
 		if err != nil {
-			return nil, fmt.Errorf("failed to unmarshal topology: %v", err)
+			return "", fmt.Errorf("failed to unmarshal topology: %v", err)
 		}
 
-		podName = fmt.Sprintf("%s-%s-%s-%s-%d", instance.Name, topology[0].Datacenter, topology[0].Rack, "node", 0)
+		return fmt.Sprintf("%s-%s-%s-%s-%d", instance.Name, topology[0].Datacenter, topology[0].Rack, "node", 0), nil
 	} else {
-		podName = fmt.Sprintf("%s-%s-%d", instance.Name, "node", 0)
+		return fmt.Sprintf("%s-%s-%d", instance.Name, "node", 0), nil
+	}
+}
+
+func Nodes(client client.Client, instance kudo.Instance) ([]map[string]string, error) {
+	podName, err := firstPodName(instance)
+	if err != nil {
+		return nil, err
 	}
 
 	log.Infof("Get Node Status from %s", podName)
@@ -174,7 +179,12 @@ func Nodes(client client.Client, instance kudo.Instance) ([]map[string]string, e
 
 // Cqlsh Wrapper to run cql commands in the cqlsh cli of cassandra 0th node
 func Cqlsh(client client.Client, instance kudo.Instance, cql string) (string, error) {
-	podName := fmt.Sprintf("%s-%s-%d", instance.Name, "node", 0)
+	podName, err := firstPodName(instance)
+	if err != nil {
+		return "", err
+	}
+
+	log.Infof("Run CqlSh on %s", podName)
 
 	var stdout strings.Builder
 	var stderr strings.Builder

@@ -9,6 +9,7 @@ require (
 	github.com/onsi/ginkgo v1.10.1
 	github.com/onsi/gomega v1.7.1
 	github.com/sirupsen/logrus v1.4.2
+	github.com/thoas/go-funk v0.5.0
 	golang.org/x/time v0.0.0-20190921001708-c4c64cad1fd0 // indirect
 	gopkg.in/yaml.v2 v2.2.7
 	k8s.io/api v0.17.2
