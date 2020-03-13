@@ -32,9 +32,6 @@ fi
 # Give more priority to vendored executables.
 export PATH=${VENDOR_DIRECTORY}:${PATH}
 
-#cd "${project_directory}"
-#./tools/compile_templates.sh --check-only
-
 cd "${project_directory}/tests"
 
 go mod edit -require "github.com/kudobuilder/kudo@${DS_KUDO_VERSION}"
@@ -48,3 +45,4 @@ then
 else
     ${GINKGO_PATH} --slowSpecThreshold=${GINKO_SLOW_TEST_THRESHOLD:-240} --succinct=false -v ./suites/$1/... ${TESTS_FOCUS:+--ginkgo.focus=${TESTS_FOCUS}}
 fi
+
