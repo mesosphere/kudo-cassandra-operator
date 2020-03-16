@@ -64,6 +64,11 @@ parameters:
     description: "Override the name of the Cassandra cluster set by the operator. This shouldn't be explicit set, unless you know what you're doing."
     default: ""
 
+  - name: EXTERNAL_SERVICE
+    displayName: "Main toggle for external access"
+    description: "Needs to be true for either EXTERNAL_NATIVE_TRANSPORT or EXTERNAL_RPC to work"
+    default: "false"
+
   - name: EXTERNAL_NATIVE_TRANSPORT
     displayName: "Enable external native transport"
     description: "This exposes the Cassandra cluster via an external service so it can be accessed from outside the Kubernetes cluster"

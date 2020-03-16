@@ -24,8 +24,13 @@ tasks:
         - node-readiness-probe-sh.yaml
         - generate-tls-artifacts-sh.yaml
         - generate-cqlshrc-sh.yaml
-        - external-service.yaml
         - cassandra-rackdc-properties.yaml
+  - name: ext-service
+    kind: Toggle
+    spec:
+      parameter: EXTERNAL_SERVICE
+      resources:
+        - external-service.yaml
 plans:
   deploy:
     strategy: serial
@@ -36,3 +41,4 @@ plans:
           - name: node
             tasks:
               - node
+              - ext-service
