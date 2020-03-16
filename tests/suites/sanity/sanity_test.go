@@ -69,7 +69,7 @@ var _ = Describe(TestName, func() {
 		parameters := map[string]string{
 			"NODE_COUNT": strconv.Itoa(NodeCount),
 		}
-		suites.SetLocalOnlyParameters(parameters)
+		suites.SetLocalClusterParameters(parameters)
 
 		Operator, err = kudo.InstallOperator(OperatorDirectory).
 			WithNamespace(TestNamespace).
@@ -85,7 +85,7 @@ var _ = Describe(TestName, func() {
 		Expect(err).To(BeNil())
 		assertNumberOfCassandraNodes(NodeCount)
 
-		if !suites.IsLocal() {
+		if !suites.IsLocalCluster() {
 			By("providing metrics to prometheus")
 			prometheusSvc := "prometheus-kubeaddons-prom-prometheus.kubeaddons.svc.cluster.local:9090"
 
