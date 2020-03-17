@@ -22,6 +22,15 @@ data:
     if [ ! -z "$JVM_OPTS" ]; then
       echo "$JVM_OPTS" | sed -n -e 's/-Dcassandra.initial_token=\([-0-9,]*\)[[:space:]].*/\1/p' > /var/lib/cassandra/token_map
     fi
+  init-container-restore.sh: |
+    # Used to restore data in the init container of medusa
+    if [ ! -d /var/lib/cassandra/data ]; then
+      echo "Start Restore for node '{{ .Params.RESTORE_OLD_NAME }}' from backup '{{ .Params.BACKUP_NAME }}' in prefix '{{ .Params.BACKUP_PREFIX }}'";
+      mkdir -p /var/lib/cassandra/data;
+      /usr/local/bin/medusa --fqdn {{ .Params.RESTORE_OLD_NAME }}-node-$POD_ID.{{ .Params.RESTORE_OLD_NAME }}-svc.{{ .Params.RESTORE_OLD_NAMESPACE }}.svc.cluster.local restore-node --backup-name {{ .Params.BACKUP_NAME }}
+    else
+      echo "Skip Restore, the data directory for cassandra already exists."
+    fi
   wait-for-node-zero.sh: |
     # With parallel startup of all nodes, we still need to make sure that the first node is reachable for all others, otherwise
     # we may end up with separate clusters. So every node except node-0 waits for node-0 to be reachable

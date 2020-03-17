@@ -5,6 +5,7 @@ import (
 	"os"
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/kudobuilder/test-tools/pkg/client"
 	"github.com/kudobuilder/test-tools/pkg/kubernetes"
@@ -32,7 +33,7 @@ var (
 	Operator  = kudo.Operator{}
 
 	BackupBucket = "kudo-cassandra-backup-test"
-	BackupPrefix = "localtest"
+	BackupPrefix = "localtest-aneumann"
 	BackupName   = "first"
 )
 
@@ -40,9 +41,12 @@ const createSchema = "CREATE SCHEMA schema1 WITH replication = { 'class' : 'Simp
 const useSchma = "USE schema1;"
 const createTable = "CREATE TABLE users (user_id varchar PRIMARY KEY,first varchar,last varchar,age int);"
 const insertData = "INSERT INTO users (user_id, first, last, age) VALUES ('jsmith', 'John', 'Smith', 42);"
+const insertData2 = "INSERT INTO users (user_id, first, last, age) VALUES ('jdoe', 'Jane', 'Doe', 23);"
 const selectData = "SELECT * FROM users;"
 
 const testCQLScript = createSchema + useSchma + createTable + insertData + selectData
+
+const additionalDataCQLScript = useSchma + insertData2 + selectData
 
 const confirmCQLScript = useSchma + selectData
 
@@ -52,6 +56,14 @@ const testCQLScriptOutput = `
   jsmith |  42 |  John | Smith
 
 (1 rows)`
+
+const testCQLScriptOutput2 = `
+ user_id | age | first | last
+---------+-----+-------+-------
+    jdoe |  23 |  Jane |   Doe
+  jsmith |  42 |  John | Smith
+
+(2 rows)`
 
 var _ = BeforeSuite(func() {
 	buildNumber := os.Getenv("BUILD_NUMBER")
@@ -138,7 +150,7 @@ var _ = Describe("backup and restore", func() {
 			"BACKUP_NAME":                   BackupName,
 			"BACKUP_AWS_S3_BUCKET_NAME":     BackupBucket,
 		}
-		suites.SetLocalOnlyParameters(parameters)
+		suites.SetLocalClusterParameters(parameters)
 
 		By("Installing the operator from current directory")
 		Operator, err = kudo.InstallOperator(OperatorDirectory).
@@ -148,7 +160,7 @@ var _ = Describe("backup and restore", func() {
 			Do(Client)
 		Expect(err).To(BeNil())
 
-		err = Operator.Instance.WaitForPlanInProgress("deploy")
+		err = Operator.Instance.WaitForPlanInProgress("deploy", kudo.WaitTimeout(time.Second*90))
 		Expect(err).To(BeNil())
 
 		By("Waiting for the plan to complete")
@@ -168,7 +180,7 @@ var _ = Describe("backup and restore", func() {
 		})
 		Expect(err).To(BeNil())
 
-		err = Operator.Instance.WaitForPlanInProgress("backup")
+		err = Operator.Instance.WaitForPlanInProgress("backup", kudo.WaitTimeout(time.Second*90))
 		Expect(err).To(BeNil())
 
 		By("Waiting for the plan to complete")
@@ -199,7 +211,7 @@ var _ = Describe("backup and restore", func() {
 			"RESTORE_OLD_NAMESPACE":         TestNamespace,
 			"RESTORE_OLD_NAME":              TestInstance,
 		}
-		suites.SetLocalOnlyParameters(parameters)
+		suites.SetLocalClusterParameters(parameters)
 
 		Operator, err = kudo.InstallOperator(OperatorDirectory).
 			WithNamespace(TestNamespace).
@@ -209,11 +221,11 @@ var _ = Describe("backup and restore", func() {
 
 		Expect(err).To(BeNil())
 
-		err = Operator.Instance.WaitForPlanInProgress("deploy")
+		err = Operator.Instance.WaitForPlanInProgress("deploy", kudo.WaitTimeout(time.Second*90))
 		Expect(err).To(BeNil())
 
 		By("Waiting for the plan to complete")
-		err = Operator.Instance.WaitForPlanComplete("deploy")
+		err = Operator.Instance.WaitForPlanComplete("deploy", kudo.WaitTimeout(time.Minute*10))
 		Expect(err).To(BeNil())
 
 		assertNumberOfCassandraNodes(NodeCount)
@@ -222,6 +234,33 @@ var _ = Describe("backup and restore", func() {
 		output, err = cassandra.Cqlsh(Client, Operator.Instance, confirmCQLScript)
 		Expect(err).To(BeNil())
 		Expect(output).To(ContainSubstring(testCQLScriptOutput))
+
+		By("Writing Additional Data to the cassandra cluster")
+		output, err = cassandra.Cqlsh(Client, Operator.Instance, additionalDataCQLScript)
+		Expect(err).To(BeNil())
+		Expect(output).To(ContainSubstring(testCQLScriptOutput2))
+
+		By("Updating a parameter and trigger a pod restart")
+		parameters = map[string]string{
+			"NODE_READINESS_PROBE_INITIAL_DELAY_S": "10",
+		}
+		suites.SetLocalClusterParameters(parameters)
+
+		err = Operator.Instance.UpdateParameters(parameters)
+
+		Expect(err).To(BeNil())
+
+		err = Operator.Instance.WaitForPlanInProgress("deploy", kudo.WaitTimeout(time.Second*90))
+		Expect(err).To(BeNil())
+
+		By("Waiting for the plan to complete")
+		err = Operator.Instance.WaitForPlanComplete("deploy")
+		Expect(err).To(BeNil())
+
+		By("Reading Data from the cassandra cluster again")
+		output, err = cassandra.Cqlsh(Client, Operator.Instance, confirmCQLScript)
+		Expect(err).To(BeNil())
+		Expect(output).To(ContainSubstring(testCQLScriptOutput2))
 
 	})
 

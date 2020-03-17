@@ -50,6 +50,26 @@ EOF
 
 Replace the values for access-key and secret key with the actual values for your AWS account.
 
+If you are using temporary AWS credentials with a security token, the file should look like this:
+```bash
+cat <<EOF > aws-credentials.yaml
+kind: Secret
+apiVersion: v1
+metadata:
+  name: ${SECRET_NAME}
+  namespace: ${NAMESPACE}
+stringData:
+  access-key: <YOUR AWS ACCESS KEY>
+  secret-key: <YOUR AWS SECRET ACCESS KEY>
+  security-token: <YOUR AWS SECURITY TOKEN>
+EOF
+```
+
+You can find these values by looking at `~/.aws/credentials`:
+```bash
+cat ~/.aws/credentials
+```
+
 Apply the secret to your Kubernets cluster:
 ```bash
 kubectl apply --namespace $NAMESPACE -f aws-credentials.yaml
