@@ -67,6 +67,8 @@ spec:
                     values:
                     - {{ $.Name }}
               topologyKey: "kubernetes.io/hostname"
+      {{ end }}
+      {{ if $.Params.NODE_TOPOLOGY }}
           preferredDuringSchedulingIgnoredDuringExecution:
             - weight: 100
               podAffinityTerm:

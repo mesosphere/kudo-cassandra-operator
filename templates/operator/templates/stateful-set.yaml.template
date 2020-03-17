@@ -2,13 +2,13 @@
 {{ if $.Params.NODE_TOPOLOGY }}
 {{ $topology = $.Params.NODE_TOPOLOGY }}
 {{ end }}
-{{ range $topology }}
+{{ range $datacenter := $topology }}
 ---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   {{ if $.Params.NODE_TOPOLOGY }}
-  name: {{ $.Name }}-{{ .datacenter }}-{{ .rack}}-node
+  name: {{ $.Name }}-{{ $datacenter.datacenter }}-node
   {{ else }}
   name: {{ $.Name }}-node
   {{ end }}
@@ -25,7 +25,7 @@ spec:
       cassandra: {{ $.OperatorName }}
   serviceName: {{ $.Name }}-svc
   {{ if $.Params.NODE_TOPOLOGY }}
-  replicas: {{ .nodes }}
+  replicas: {{ $datacenter.nodes }}
   {{ else }}
   replicas: {{ $.Params.NODE_COUNT }}
   {{ end }}
@@ -34,19 +34,30 @@ spec:
       labels:
         app: {{ $.Name }}
         cassandra: {{ $.OperatorName }}
+        cassandra-dc: {{ $.OperatorName }}-{{ $datacenter.datacenter }}
         kudo.dev/instance: {{ $.Name }}
     spec:
       {{ if $.Params.NODE_TOPOLOGY }}
+      serviceAccountName: {{ $.Params.NODE_RESOLVE_SERVICEACCOUNT }}
       nodeSelector:
-      {{ if $.Params.DATACENTER_LABEL }}
-        {{ $.Params.DATACENTER_LABEL }}: {{ .datacenter }}
+      {{ range $k, $v := $datacenter.datacenterLabels }}
+        {{ $k }}: {{ $v }}
       {{ end }}
-      {{ if $.Params.RACK_LABEL }}
-        {{ $.Params.RACK_LABEL }}: {{ .rack }}
       {{ end }}
+      affinity:
+      {{ if $.Params.NODE_TOPOLOGY }}
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: {{ $datacenter.rackLabelKey }}
+                    operator: In
+                    values:
+                    {{ range $rack := $datacenter.racks }}
+                      - {{ $rack.rackLabelValue }}
+                    {{ end }}
       {{ end }}
       {{ if (eq $.Params.NODE_ANTI_AFFINITY "true") }}
-      affinity:
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             - labelSelector:
@@ -56,6 +67,18 @@ spec:
                     values:
                     - {{ $.Name }}
               topologyKey: "kubernetes.io/hostname"
+      {{ end }}
+      {{ if $.Params.NODE_TOPOLOGY }}
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - {{ $.Name }}
+                topologyKey: "{{ $datacenter.rackLabelKey }}"
       {{ end }}
       securityContext:
         # FIXME(mpereira): are the two settings below necessary?
@@ -150,6 +173,8 @@ spec:
                   fieldPath: metadata.uid
             - name: PROMETHEUS_EXPORTER_ENABLED
               value: "{{ $.Params.PROMETHEUS_EXPORTER_ENABLED }}"
+            - name: CASSANDRA_DATACENTER
+              value: "{{ $datacenter.datacenter }}"
           resources:
             requests:
               memory: "{{ $.Params.NODE_MEM_MIB }}Mi"
@@ -200,11 +225,6 @@ spec:
             - name: generate-tls-artifacts
               mountPath: /etc/tls/bin
           {{ end }}
-          {{ if $.Params.NODE_TOPOLOGY }}
-            - name: cassandra-rackdc-properties
-              mountPath: /etc/cassandra/cassandra-rackdc.properties
-              subPath: cassandra-rackdc.properties
-          {{ end }}
         {{ if eq $.Params.PROMETHEUS_EXPORTER_ENABLED "true" }}
         - name: prometheus-exporter
           image: {{ $.Params.PROMETHEUS_EXPORTER_DOCKER_IMAGE }}
@@ -246,6 +266,38 @@ spec:
               mountPath: /etc/cassandra_exporter/config.yml
               subPath: config.yml
         {{ end }}
+      {{ if $.Params.NODE_TOPOLOGY }}
+      initContainers:
+        - name: node-resolver
+          image: bitnami/kubectl:latest
+          command:
+            - "sh"
+            - "-c"
+            - "/etc/cassandra/generate-rackdc-properties.sh"
+          env:
+            - name: RACKLABEL
+              value: "{{ $datacenter.rackLabelKey }}"
+            - name: CASSANDRA_DATACENTER
+              value: "{{ $datacenter.datacenter }}"
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+          volumeMounts:
+            - name: etc-cassandra
+              mountPath: /etc/cassandra/
+            - name: node-readiness-probe-sh
+              mountPath: /etc/cassandra/generate-rackdc-properties.sh
+              subPath: generate-rackdc-properties.sh
+      {{ end }}
       volumes:
         # Overwriting /etc/cassandra/ available in the Docker image.
         - name: etc-cassandra
@@ -262,6 +314,7 @@ spec:
         - name: node-readiness-probe-sh
           configMap:
             name: {{ $.Name }}-node-readiness-probe-sh
+            defaultMode: 0755
         - name: dot-cassandra
           emptyDir: {}
         - name: generate-cqlshrc-sh
@@ -281,11 +334,6 @@ spec:
           configMap:
             name:  {{ $.Name }}-generate-tls-artifacts-sh
             defaultMode: 0755
-        {{ end }}
-        {{ if $.Params.NODE_TOPOLOGY }}
-        - name: cassandra-rackdc-properties
-          configMap:
-            name: {{ $.Name }}-{{ .datacenter }}-{{ .rack }}-cassandra-rackdc-properties
         {{ end }}
   volumeClaimTemplates:
     - metadata:

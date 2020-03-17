@@ -240,7 +240,7 @@ var _ = Describe("Fault tolerance tests", func() {
 			By("Starting the test")
 
 			By("Installing the operator with a topology")
-			topology := getTopology1DatacenterEach2Rack()
+			topology := getTopology2DatacenterEach1Rack()
 			topologyYaml, err := topology.ToYAML()
 			Expect(err).NotTo(HaveOccurred())
 
