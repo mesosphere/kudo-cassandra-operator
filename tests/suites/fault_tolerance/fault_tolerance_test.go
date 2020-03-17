@@ -126,6 +126,53 @@ func getTopology2DatacenterEach1Rack() cassandra.NodeTopology {
 	}
 }
 
+func getTopology3DatacenterEach1Rack() cassandra.NodeTopology {
+	return cassandra.NodeTopology{
+		{
+			Datacenter: "dc1",
+			DatacenterLabels: map[string]string{
+				nodeSelectorDatacenter: "us-west-2a",
+			},
+			Nodes:        3,
+			RackLabelKey: "beta.kubernetes.io/instance-type",
+			Racks: []cassandra.TopologyRackItem{
+				{
+					Rack:           "rac1",
+					RackLabelValue: "t3.2xlarge",
+				},
+			},
+		},
+		{
+			Datacenter: "dc2",
+			DatacenterLabels: map[string]string{
+				nodeSelectorDatacenter: "us-west-2b",
+			},
+			Nodes:        2,
+			RackLabelKey: "beta.kubernetes.io/instance-type",
+			Racks: []cassandra.TopologyRackItem{
+				{
+					Rack:           "rac1",
+					RackLabelValue: "t3.2xlarge",
+				},
+			},
+		},
+		{
+			Datacenter: "dc3",
+			DatacenterLabels: map[string]string{
+				nodeSelectorDatacenter: "us-west-2c",
+			},
+			Nodes:        3,
+			RackLabelKey: "beta.kubernetes.io/instance-type",
+			Racks: []cassandra.TopologyRackItem{
+				{
+					Rack:           "rac1",
+					RackLabelValue: "t3.2xlarge",
+				},
+			},
+		},
+	}
+}
+
 func deleteRBAC(client testclient.Client) {
 	roleBinding, err := kubernetes.GetClusterRoleBinding(client, nodeResolverRoleBinding)
 	if err == nil {
@@ -212,15 +259,15 @@ var _ = Describe("Fault tolerance tests", func() {
 		parameters map[string]string
 	)
 
-	//AfterEach(func() {
-	//	err := operator.Uninstall()
-	//	Expect(err).NotTo(HaveOccurred())
-	//
-	//  deleteRBAC(client)
-	//
-	//	err = kubernetes.DeleteNamespace(client, testNamespace)
-	//	Expect(err).NotTo(HaveOccurred())
-	//})
+	AfterEach(func() {
+		err := operator.Uninstall()
+		Expect(err).NotTo(HaveOccurred())
+
+		deleteRBAC(client)
+
+		err = kubernetes.DeleteNamespace(client, testNamespace)
+		Expect(err).NotTo(HaveOccurred())
+	})
 
 	Context("when configured with the 'GossipingPropertyFileSnitch' snitch", func() {
 		It("should set up the datacenter and rack properties", func() {
@@ -283,68 +330,51 @@ var _ = Describe("Fault tolerance tests", func() {
 			Expect(output).To(ContainSubstring(testCQLScriptOutput))
 
 			By("Checking that node status reports correct data center")
-			//dcCounts := collectDataCenterCounts(nodes)
-			//for _, dc := range topology {
-			//	Expect(dcCounts[dc.Datacenter]).To(Equal(dc.Nodes))
-			//}
+			dcCounts := collectDataCenterCounts(nodes)
+			for _, dc := range topology {
+				Expect(dcCounts[dc.Datacenter]).To(Equal(dc.Nodes))
+			}
 
-			//	By("Updating the topology")
-			//	topology = cassandra.NodeTopology{
-			//		{
-			//			Datacenter: "us-west-2a",
-			//			Rack:       "rac1",
-			//			Nodes:      3,
-			//		},
-			//		{
-			//			Datacenter: "us-west-2b",
-			//			Rack:       "rac1",
-			//			Nodes:      2,
-			//		},
-			//		{
-			//			Datacenter: "us-west-2c",
-			//			Rack:       "rac1",
-			//			Nodes:      3,
-			//		},
-			//	}
-			//	topologyYaml, err = topology.ToYAML()
-			//	parameters = map[string]string{
-			//		"NODE_TOPOLOGY": topologyYaml,
-			//	}
-			//	err = operator.Instance.UpdateParameters(parameters)
-			//	Expect(err).NotTo(HaveOccurred())
-			//
-			//	err = operator.Instance.WaitForPlanInProgress("deploy", kudo.WaitTimeout(time.Minute*2))
-			//	Expect(err).NotTo(HaveOccurred())
-			//
-			//	err = operator.Instance.WaitForPlanComplete("deploy", kudo.WaitTimeout(time.Minute*10))
-			//	Expect(err).NotTo(HaveOccurred())
-			//
-			//	By("Ensuring that all nodes are up")
-			//
-			//	nodes, err = cassandra.Nodes(client, operator.Instance)
-			//	Expect(err).NotTo(HaveOccurred())
-			//
-			//	dcCounts = collectDataCenterCounts(nodes)
-			//	for _, dc := range topology {
-			//		Expect(dcCounts[dc.Datacenter]).To(Equal(dc.Nodes))
-			//	}
-			//
-			//	By("Reading data from the cluster")
-			//	output, err = cassandra.Cqlsh(client, operator.Instance, testCQLOutputScript)
-			//	Expect(err).To(BeNil())
-			//	Expect(output).To(ContainSubstring(testCQLScriptOutput))
-			//
-			//	By("Checking that nodes are deployed on different ndoes")
-			//	podList, err := kubernetes.ListPods(client, testNamespace)
-			//	Expect(err).To(BeNil())
-			//
-			//	usedIPs := map[string]bool{}
-			//	for _, pod := range podList {
-			//		ip := pod.Status.HostIP
-			//		_, ok := usedIPs[ip]
-			//		Expect(ok).To(BeFalse(), "HostIP has been reused, anti-affinity should prevent that")
-			//	}
-			//
+			By("Updating the topology")
+			topology = getTopology3DatacenterEach1Rack()
+			topologyYaml, err = topology.ToYAML()
+			parameters = map[string]string{
+				"NODE_TOPOLOGY": topologyYaml,
+			}
+			err = operator.Instance.UpdateParameters(parameters)
+			Expect(err).NotTo(HaveOccurred())
+
+			err = operator.Instance.WaitForPlanInProgress("deploy", kudo.WaitTimeout(time.Minute*2))
+			Expect(err).NotTo(HaveOccurred())
+
+			err = operator.Instance.WaitForPlanComplete("deploy", kudo.WaitTimeout(time.Minute*10))
+			Expect(err).NotTo(HaveOccurred())
+
+			By("Ensuring that all nodes are up")
+
+			nodes, err = cassandra.Nodes(client, operator.Instance)
+			Expect(err).NotTo(HaveOccurred())
+
+			dcCounts = collectDataCenterCounts(nodes)
+			for _, dc := range topology {
+				Expect(dcCounts[dc.Datacenter]).To(Equal(dc.Nodes))
+			}
+
+			By("Reading data from the cluster")
+			output, err = cassandra.Cqlsh(client, operator.Instance, testCQLOutputScript)
+			Expect(err).To(BeNil())
+			Expect(output).To(ContainSubstring(testCQLScriptOutput))
+
+			By("Checking that nodes are deployed on different ndoes")
+			podList, err := kubernetes.ListPods(client, testNamespace)
+			Expect(err).To(BeNil())
+
+			usedIPs := map[string]bool{}
+			for _, pod := range podList {
+				ip := pod.Status.HostIP
+				_, ok := usedIPs[ip]
+				Expect(ok).To(BeFalse(), "HostIP has been reused, anti-affinity should prevent that")
+			}
 		})
 
 		// TODO: test node selection
