@@ -110,6 +110,10 @@ parameters:
     description: "Ensure that every Cassandra node is deployed on separate hosts"
     default: "false"
 
+  - name: NODE_RESOLVE_SERVICEACCOUNT
+    description: "A service account that can list nodes in the cluster to read rack names for deployed pods"
+    default: "node-resolver"
+
   ################################################################################
   ######################### Prometheus exporter settings #########################
   ################################################################################

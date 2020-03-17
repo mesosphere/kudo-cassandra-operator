@@ -92,7 +92,7 @@ func firstPodName(instance kudo.Instance) (string, error) {
 			return "", fmt.Errorf("failed to unmarshal topology: %v", err)
 		}
 
-		return fmt.Sprintf("%s-%s-%s-%s-%d", instance.Name, topology[0].Datacenter, topology[0].Rack, "node", 0), nil
+		return fmt.Sprintf("%s-%s-%s-%d", instance.Name, topology[0].Datacenter, "node", 0), nil
 	} else {
 		return fmt.Sprintf("%s-%s-%d", instance.Name, "node", 0), nil
 	}

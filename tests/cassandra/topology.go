@@ -4,13 +4,32 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-type NodeTopologyItem struct {
+type TopologyDatacenterItem struct {
+	// The name of the datacenter as known to cassandra
 	Datacenter string `yaml:"datacenter"`
-	Rack       string `yaml:"rack"`
-	Nodes      int    `yaml:"nodes"`
+
+	// Node selector labels
+	DatacenterLabels map[string]string `yaml:"datacenterLabels"`
+
+	// They label key on nodes that distinguishes different racks
+	RackLabelKey string `yaml:"rackLabelKey"`
+
+	// The different racks in this datacenter
+	Racks []TopologyRackItem `yaml:"racks"`
+
+	// The total number of nodes in the datacenter, will get distributed over all racks
+	Nodes int `yaml:"nodes"`
 }
 
-type NodeTopology []NodeTopologyItem
+type TopologyRackItem struct {
+	// The name of the rack, as known to cassandra
+	Rack string `yaml:"rack"`
+
+	// The values of `rackLabelKey` that make up this rack
+	RackLabelValue string `yaml:"rackLabelValue"`
+}
+
+type NodeTopology []TopologyDatacenterItem
 
 func (n NodeTopology) ToYAML() (string, error) {
 	outputBytes, err := yaml.Marshal(n)

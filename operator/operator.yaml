@@ -24,7 +24,7 @@ tasks:
         - node-readiness-probe-sh.yaml
         - generate-tls-artifacts-sh.yaml
         - generate-cqlshrc-sh.yaml
-        - cassandra-rackdc-properties.yaml
+        - pdb.yaml
   - name: ext-service
     kind: Toggle
     spec:

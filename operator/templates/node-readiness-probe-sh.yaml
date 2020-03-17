@@ -6,3 +6,10 @@ metadata:
 data:
   node-readiness-probe.sh: |
     nodetool status -p {{ .Params.JMX_PORT }} | grep -q "UN  ${POD_IP}"
+  generate-rackdc-properties.sh: |
+    # Generate the rackdc-properties
+    RACK=`kubectl get node -L$RACKLABEL | grep ${NODE_NAME} | awk '{print $6}'`
+    cat <<EOF > /etc/cassandra/cassandra-rackdc.properties
+    dc=$CASSANDRA_DATACENTER
+    rack=$RACK
+    EOF
