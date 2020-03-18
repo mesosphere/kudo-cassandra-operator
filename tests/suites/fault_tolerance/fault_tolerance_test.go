@@ -2,13 +2,14 @@ package fault_tolerance
 
 import (
 	"fmt"
+	"os"
+	"testing"
+	"time"
+
 	v1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"os"
-	"testing"
-	"time"
 
 	"github.com/thoas/go-funk"
 
