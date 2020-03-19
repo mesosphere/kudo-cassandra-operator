@@ -1,9 +1,13 @@
 {{ $topology := list 1 }}
+{{ $nodeCount := $.Params.NODE_COUNT}}
 {{ if $.Params.NODE_TOPOLOGY }}
 {{ $topology = $.Params.NODE_TOPOLOGY }}
 {{ end }}
 {{ range $datacenter := $topology }}
-{{ $minAvailable := sub $datacenter.nodes 1}}
+{{ if $.Params.NODE_TOPOLOGY }}
+  {{ $nodeCount := $datacenter.nodes }}
+{{ end }}
+{{ $minAvailable := sub $nodeCount 1}}
 ---
 apiVersion: policy/v1beta1
 kind: PodDisruptionBudget
@@ -19,7 +23,9 @@ spec:
     matchLabels:
       app: {{ $.Name }}
       cassandra: {{ $.OperatorName }}
+      {{ if $.Params.NODE_TOPOLOGY }}
       cassandra-dc: {{ $.OperatorName }}-{{ $datacenter.datacenter }}
+      {{ end }}
       kudo.dev/instance: {{ $.Name }}
   minAvailable: {{ $minAvailable }}
 {{ end }}

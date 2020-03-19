@@ -175,8 +175,6 @@ spec:
                   fieldPath: metadata.uid
             - name: PROMETHEUS_EXPORTER_ENABLED
               value: "{{ $.Params.PROMETHEUS_EXPORTER_ENABLED }}"
-            - name: CASSANDRA_DATACENTER
-              value: "{{ $datacenter.datacenter }}"
           resources:
             requests:
               memory: "{{ $.Params.NODE_MEM_MIB }}Mi"
