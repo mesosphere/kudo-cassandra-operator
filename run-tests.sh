@@ -9,6 +9,11 @@ readonly project_directory="$(readlink -f "${script_directory}")"
 # shellcheck source=metadata.sh
 source "${project_directory}/metadata.sh"
 
+if [[ -n ${IMAGE_DISAMBIGUATION_SUFFIX:-} ]]; then
+  # Refresh templated files to pick up the suffix, if explicitly set.
+  ${project_directory}/tools/compile_templates.sh
+fi
+
 readonly kubeconfig="${KUBECONFIG:-${HOME}/.kube/config}"
 
 readonly container_kubeconfig="/root/.kube/config"
