@@ -5,7 +5,6 @@ import (
 	"os"
 	"strconv"
 	"testing"
-	"time"
 
 	"github.com/kudobuilder/test-tools/pkg/client"
 	"github.com/kudobuilder/test-tools/pkg/kubernetes"
@@ -74,8 +73,6 @@ var _ = Describe("external service", func() {
 			Do(Client)
 		Expect(err).To(BeNil())
 
-		err = Operator.Instance.WaitForPlanInProgress("deploy", kudo.WaitTimeout(time.Second*90))
-		Expect(err).To(BeNil())
 		err = Operator.Instance.WaitForPlanComplete("deploy")
 		Expect(err).To(BeNil())
 
@@ -93,8 +90,6 @@ var _ = Describe("external service", func() {
 		err = Operator.Instance.UpdateParameters(parameters)
 		Expect(err).To(BeNil())
 
-		err = Operator.Instance.WaitForPlanInProgress("deploy", kudo.WaitTimeout(time.Second*90))
-		Expect(err).To(BeNil())
 		err = Operator.Instance.WaitForPlanComplete("deploy")
 		Expect(err).To(BeNil())
 
@@ -119,8 +114,8 @@ var _ = Describe("external service", func() {
 		err = Operator.Instance.UpdateParameters(parameters)
 		Expect(err).To(BeNil())
 
-		err = Operator.Instance.WaitForPlanInProgress("deploy", kudo.WaitTimeout(time.Second*90))
-		Expect(err).To(BeNil())
+		//err = Operator.Instance.WaitForPlanInProgress("deploy", kudo.WaitTimeout(time.Second*90))
+		//Expect(err).To(BeNil())
 		err = Operator.Instance.WaitForPlanComplete("deploy")
 		Expect(err).To(BeNil())
 
@@ -145,8 +140,8 @@ var _ = Describe("external service", func() {
 		err = Operator.Instance.UpdateParameters(parameters)
 		Expect(err).To(BeNil())
 
-		err = Operator.Instance.WaitForPlanInProgress("deploy", kudo.WaitTimeout(time.Second*90))
-		Expect(err).To(BeNil())
+		//err = Operator.Instance.WaitForPlanInProgress("deploy", kudo.WaitTimeout(time.Second*90))
+		//Expect(err).To(BeNil())
 		err = Operator.Instance.WaitForPlanComplete("deploy")
 		Expect(err).To(BeNil())
 
