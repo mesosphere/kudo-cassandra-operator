@@ -37,6 +37,12 @@ var (
 	// This label on the nodes is used to distinguish racks (Not used on AWS)
 	//nodeSelectorRack  	   = "failure-domain.beta.kubernetes.io/region"
 
+	// We need some node label/value pair to select racks. As we don't have any specific
+	// rack labels on the TC cluster, we use the region. This is not perfect, but
+	// should work for now.
+	rackLabelKey   = "failure-domain.beta.kubernetes.io/region"
+	rackLabelValue = "us-west-2"
+
 	// RBAC names for Role, RoleBinding and service account
 	nodeResolverServiceAccount = "node-resolver"
 	nodeResolverRole           = "node-resolver-role"
@@ -102,11 +108,11 @@ func getTopology2DatacenterEach1Rack() cassandra.NodeTopology {
 				nodeSelectorDatacenter: "us-west-2a",
 			},
 			Nodes:        2,
-			RackLabelKey: "beta.kubernetes.io/instance-type",
+			RackLabelKey: rackLabelKey,
 			Racks: []cassandra.TopologyRackItem{
 				{
 					Rack:           "rac1",
-					RackLabelValue: "t3.2xlarge",
+					RackLabelValue: rackLabelValue,
 				},
 			},
 		},
@@ -116,11 +122,11 @@ func getTopology2DatacenterEach1Rack() cassandra.NodeTopology {
 				nodeSelectorDatacenter: "us-west-2b",
 			},
 			Nodes:        2,
-			RackLabelKey: "beta.kubernetes.io/instance-type",
+			RackLabelKey: rackLabelKey,
 			Racks: []cassandra.TopologyRackItem{
 				{
 					Rack:           "rac1",
-					RackLabelValue: "t3.2xlarge",
+					RackLabelValue: rackLabelValue,
 				},
 			},
 		},
@@ -135,11 +141,11 @@ func getTopology3DatacenterEach1Rack() cassandra.NodeTopology {
 				nodeSelectorDatacenter: "us-west-2a",
 			},
 			Nodes:        3,
-			RackLabelKey: "beta.kubernetes.io/instance-type",
+			RackLabelKey: rackLabelKey,
 			Racks: []cassandra.TopologyRackItem{
 				{
 					Rack:           "rac1",
-					RackLabelValue: "t3.2xlarge",
+					RackLabelValue: rackLabelValue,
 				},
 			},
 		},
@@ -149,11 +155,11 @@ func getTopology3DatacenterEach1Rack() cassandra.NodeTopology {
 				nodeSelectorDatacenter: "us-west-2b",
 			},
 			Nodes:        2,
-			RackLabelKey: "beta.kubernetes.io/instance-type",
+			RackLabelKey: rackLabelKey,
 			Racks: []cassandra.TopologyRackItem{
 				{
 					Rack:           "rac1",
-					RackLabelValue: "t3.2xlarge",
+					RackLabelValue: rackLabelValue,
 				},
 			},
 		},
@@ -163,11 +169,11 @@ func getTopology3DatacenterEach1Rack() cassandra.NodeTopology {
 				nodeSelectorDatacenter: "us-west-2c",
 			},
 			Nodes:        3,
-			RackLabelKey: "beta.kubernetes.io/instance-type",
+			RackLabelKey: rackLabelKey,
 			Racks: []cassandra.TopologyRackItem{
 				{
 					Rack:           "rac1",
-					RackLabelValue: "t3.2xlarge",
+					RackLabelValue: rackLabelValue,
 				},
 			},
 		},
