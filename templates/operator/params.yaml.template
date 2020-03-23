@@ -119,7 +119,7 @@ parameters:
 
   - name: PROMETHEUS_EXPORTER_CPU_MC
     description: "CPU request (in millicores) for the Prometheus exporter containers."
-    default: "1000"
+    default: "500"
 
   - name: PROMETHEUS_EXPORTER_CPU_LIMIT_MC
     description: "CPU limit (in millicores) for the Prometheus exporter containers."

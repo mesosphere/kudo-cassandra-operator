@@ -297,6 +297,13 @@ spec:
             - name: node-readiness-probe-sh
               mountPath: /etc/cassandra/generate-rackdc-properties.sh
               subPath: generate-rackdc-properties.sh
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "200m"
       {{ end }}
       volumes:
         # Overwriting /etc/cassandra/ available in the Docker image.
