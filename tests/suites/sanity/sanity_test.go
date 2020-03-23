@@ -78,9 +78,6 @@ var _ = Describe(TestName, func() {
 			Do(Client)
 		Expect(err).To(BeNil())
 
-		err = Operator.Instance.WaitForPlanInProgress("deploy", kudo.WaitTimeout(time.Second*90))
-		Expect(err).To(BeNil())
-
 		err = Operator.Instance.WaitForPlanComplete("deploy")
 		Expect(err).To(BeNil())
 		assertNumberOfCassandraNodes(NodeCount)
@@ -116,9 +113,6 @@ var _ = Describe(TestName, func() {
 		})
 		Expect(err).To(BeNil())
 
-		err = Operator.Instance.WaitForPlanInProgress("deploy", kudo.WaitTimeout(time.Second*90))
-		Expect(err).To(BeNil())
-
 		err = Operator.Instance.WaitForPlanComplete("deploy")
 		Expect(err).To(BeNil())
 
@@ -149,9 +143,6 @@ var _ = Describe(TestName, func() {
 		})
 		Expect(err).To(BeNil())
 
-		err = Operator.Instance.WaitForPlanInProgress("deploy", kudo.WaitTimeout(time.Second*90))
-		Expect(err).To(BeNil())
-
 		err = Operator.Instance.WaitForPlanComplete("deploy")
 		Expect(err).To(BeNil())
 
@@ -176,9 +167,6 @@ var _ = Describe(TestName, func() {
 		err = Operator.Instance.UpdateParameters(map[string]string{
 			"CUSTOM_CASSANDRA_YAML_BASE64": desiredEncodedProperties,
 		})
-		Expect(err).To(BeNil())
-
-		err = Operator.Instance.WaitForPlanInProgress("deploy", kudo.WaitTimeout(time.Second*90))
 		Expect(err).To(BeNil())
 
 		err = Operator.Instance.WaitForPlanComplete("deploy")
@@ -208,9 +196,6 @@ var _ = Describe(TestName, func() {
 		})
 		Expect(err).To(BeNil())
 
-		err = Operator.Instance.WaitForPlanInProgress("deploy", kudo.WaitTimeout(time.Second*90))
-		Expect(err).To(BeNil())
-
 		err = Operator.Instance.WaitForPlanComplete("deploy")
 		Expect(err).To(BeNil())
 
@@ -229,9 +214,6 @@ var _ = Describe(TestName, func() {
 		if err != nil {
 			Fail("Failing the full suite: failed to scale the number of nodes")
 		}
-		Expect(err).To(BeNil())
-
-		err = Operator.Instance.WaitForPlanInProgress("deploy", kudo.WaitTimeout(time.Second*90))
 		Expect(err).To(BeNil())
 
 		err = Operator.Instance.WaitForPlanComplete("deploy")

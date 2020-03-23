@@ -2,11 +2,6 @@ package tls
 
 import (
 	"fmt"
-	"os"
-	"strconv"
-	"testing"
-	"time"
-
 	"github.com/kudobuilder/test-tools/pkg/client"
 	"github.com/kudobuilder/test-tools/pkg/kubernetes"
 	"github.com/kudobuilder/test-tools/pkg/kudo"
@@ -14,6 +9,9 @@ import (
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/reporters"
 	. "github.com/onsi/gomega"
+	"os"
+	"strconv"
+	"testing"
 
 	"github.com/mesosphere/kudo-cassandra-operator/tests/cassandra"
 	"github.com/mesosphere/kudo-cassandra-operator/tests/suites"
@@ -92,9 +90,6 @@ var _ = Describe(TestName, func() {
 				Do(Client)
 			Expect(err).To(BeNil())
 
-			err = Operator.Instance.WaitForPlanInProgress("deploy", kudo.WaitTimeout(time.Second*90))
-			Expect(err).To(BeNil())
-
 			err = Operator.Instance.WaitForPlanComplete("deploy")
 			Expect(err).To(BeNil())
 
@@ -141,9 +136,6 @@ var _ = Describe(TestName, func() {
 				Do(Client)
 			Expect(err).To(BeNil())
 
-			err = Operator.Instance.WaitForPlanInProgress("deploy", kudo.WaitTimeout(time.Second*90))
-			Expect(err).To(BeNil())
-
 			err = Operator.Instance.WaitForPlanComplete("deploy")
 			Expect(err).To(BeNil())
 
@@ -188,9 +180,6 @@ var _ = Describe(TestName, func() {
 				WithInstance(TestInstance).
 				WithParameters(parameters).
 				Do(Client)
-			Expect(err).To(BeNil())
-
-			err = Operator.Instance.WaitForPlanInProgress("deploy", kudo.WaitTimeout(time.Second*90))
 			Expect(err).To(BeNil())
 
 			err = Operator.Instance.WaitForPlanComplete("deploy")
