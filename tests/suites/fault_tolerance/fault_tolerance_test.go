@@ -351,9 +351,6 @@ var _ = Describe("Fault tolerance tests", func() {
 			err = operator.Instance.UpdateParameters(parameters)
 			Expect(err).NotTo(HaveOccurred())
 
-			err = operator.Instance.WaitForPlanInProgress("deploy", kudo.WaitTimeout(time.Minute*2))
-			Expect(err).NotTo(HaveOccurred())
-
 			err = operator.Instance.WaitForPlanComplete("deploy", kudo.WaitTimeout(time.Minute*15))
 			Expect(err).NotTo(HaveOccurred())
 
