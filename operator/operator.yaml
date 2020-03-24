@@ -31,7 +31,6 @@ tasks:
       parameter: EXTERNAL_SERVICE
       resources:
         - external-service.yaml
-
 plans:
   deploy:
     strategy: serial
