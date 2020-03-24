@@ -10,33 +10,51 @@ import (
 	"testing"
 	"time"
 
+	"github.com/onsi/ginkgo/reporters"
+
 	"github.com/kudobuilder/test-tools/pkg/client"
 	"github.com/kudobuilder/test-tools/pkg/kubernetes"
 	"github.com/kudobuilder/test-tools/pkg/kudo"
 	. "github.com/onsi/ginkgo"
-	"github.com/onsi/ginkgo/reporters"
 	. "github.com/onsi/gomega"
 
 	"github.com/mesosphere/kudo-cassandra-operator/tests/cassandra"
 	"github.com/mesosphere/kudo-cassandra-operator/tests/curl"
 	"github.com/mesosphere/kudo-cassandra-operator/tests/prometheus"
+	"github.com/mesosphere/kudo-cassandra-operator/tests/suites"
 )
 
 var (
-	TestName            = "sanity-test"
-	TestOperatorVersion = "99.99.99-testing"
-	OperatorVersion     string
-	OperatorName        = os.Getenv("OPERATOR_NAME")
-	TestNamespace       = fmt.Sprintf("%s-namespace", TestName)
-	TestInstance        = fmt.Sprintf("%s-instance", OperatorName)
-	KubeConfigPath      = os.Getenv("KUBECONFIG")
-	OperatorDirectory   = os.Getenv("OPERATOR_DIRECTORY")
+	TestName          = "sanity-test"
+	OperatorName      = os.Getenv("OPERATOR_NAME")
+	TestNamespace     = fmt.Sprintf("%s-namespace", TestName)
+	TestInstance      = fmt.Sprintf("%s-instance", OperatorName)
+	KubeConfigPath    = os.Getenv("KUBECONFIG")
+	OperatorDirectory = os.Getenv("OPERATOR_DIRECTORY")
 
 	// Node Count of 1 for Sanity test to have the tests a little bit faster
 	NodeCount = 1
 	Client    = client.Client{}
 	Operator  = kudo.Operator{}
 )
+
+var _ = BeforeSuite(func() {
+	Client, _ = client.NewForConfig(KubeConfigPath)
+	_ = kubernetes.CreateNamespace(Client, TestNamespace)
+})
+
+var _ = AfterSuite(func() {
+	_ = Operator.Uninstall()
+	_ = kubernetes.DeleteNamespace(Client, TestNamespace)
+})
+
+func TestService(t *testing.T) {
+	RegisterFailHandler(Fail)
+	junitReporter := reporters.NewJUnitReporter(fmt.Sprintf(
+		"%s-junit.xml", TestName,
+	))
+	RunSpecsWithDefaultAndCustomReporters(t, TestName, []Reporter{junitReporter})
+}
 
 func assertNumberOfCassandraNodes(nodeCount int) {
 	nodes, err := cassandra.Nodes(Client, Operator.Instance)
@@ -45,16 +63,18 @@ func assertNumberOfCassandraNodes(nodeCount int) {
 }
 
 var _ = Describe(TestName, func() {
-	It("Installs the latest operator from the package registry", func() {
+	It("Installs the current operator", func() {
 		var err error
 
-		// TODO(mpereira) Assert that it isn't running.
-		Operator, err = kudo.InstallOperator(OperatorName).
+		parameters := map[string]string{
+			"NODE_COUNT": strconv.Itoa(NodeCount),
+		}
+		suites.SetLocalClusterParameters(parameters)
+
+		Operator, err = kudo.InstallOperator(OperatorDirectory).
 			WithNamespace(TestNamespace).
 			WithInstance(TestInstance).
-			WithParameters(map[string]string{
-				"NODE_COUNT": strconv.Itoa(NodeCount),
-			}).
+			WithParameters(parameters).
 			Do(Client)
 		Expect(err).To(BeNil())
 
@@ -63,104 +83,23 @@ var _ = Describe(TestName, func() {
 
 		err = Operator.Instance.WaitForPlanComplete("deploy")
 		Expect(err).To(BeNil())
-
 		assertNumberOfCassandraNodes(NodeCount)
-	})
 
-	It("Upgrades the running operator instance from a directory", func() {
-		before, _, err := cassandra.OverrideOperatorVersion(TestOperatorVersion)
-		if err != nil {
-			fmt.Printf(
-				"Error overriding operatorVersion from '%s' to '%s': %v",
-				OperatorVersion, TestOperatorVersion, err,
-			)
+		if !suites.IsLocalCluster() {
+			By("providing metrics to prometheus")
+			prometheusSvc := "prometheus-kubeaddons-prom-prometheus.kubeaddons.svc.cluster.local:9090"
+
+			curlRunner := curl.New(Client, TestNamespace)
+
+			Eventually(func() bool {
+				promResult, err := prometheus.QueryForStats(curlRunner, prometheusSvc, "cassandra_stats")
+				Expect(err).To(BeNil())
+
+				return len(promResult.Data.Result) > 0
+			}, 5*time.Minute, 30*time.Second).Should(BeTrue())
 		}
-		OperatorVersion = before
-		Expect(err).To(BeNil())
 
-		err = kudo.UpgradeOperator().WithOperator(OperatorDirectory).WithParameters(
-			map[string]string{
-				"JMX_LOCAL_ONLY": "true",
-			}).Do(&Operator)
-		if err != nil {
-			Fail(
-				"Failing the full suite: failed to upgrade operator instance that the " +
-					"following tests depend on",
-			)
-		}
-		Expect(err).To(BeNil())
-
-		err = Operator.Instance.WaitForPlanInProgress("deploy")
-		Expect(err).To(BeNil())
-
-		err = Operator.Instance.WaitForPlanComplete("deploy")
-		Expect(err).To(BeNil())
-
-		assertNumberOfCassandraNodes(NodeCount)
-	})
-
-	It("provides metrics to prometheus", func() {
-		prometheusSvc := "prometheus-kubeaddons-prom-prometheus.kubeaddons.svc.cluster.local:9090"
-
-		curlRunner := curl.New(Client, TestNamespace)
-
-		Eventually(func() bool {
-			promResult, err := prometheus.QueryForStats(curlRunner, prometheusSvc, "cassandra_stats")
-			Expect(err).To(BeNil())
-
-			return len(promResult.Data.Result) > 0
-		}, 5*time.Minute, 30*time.Second).Should(BeTrue())
-	})
-
-	It("prevents JMX access from within the cluster", func() {
-		node0 := fmt.Sprintf("%s-node-0.%s-svc.%s.svc.cluster.local", TestInstance, TestInstance, TestNamespace)
-
-		nodeTool := cassandra.NewNodeTool(Client, TestNamespace)
-
-		fmt.Printf("Run nodetool against %s\n", node0)
-
-		Eventually(func() bool {
-			stdOut, stdErr, err := nodeTool.Run("-h", node0, "info")
-
-			fmt.Printf("Ran NodeTool: StdOut: %s, StdErr: %s", stdOut, stdErr)
-
-			Expect(err).To(Not(BeNil()))
-
-			return true
-		}, 5*time.Minute, 30*time.Second).Should(BeTrue())
-	})
-
-	It("allows JMX access from within the cluster with JMX_LOCAL_ONLY=false", func() {
-		fmt.Printf("Updating deployment with new parameter\n")
-		err := Operator.Instance.UpdateParameters(map[string]string{
-			"JMX_LOCAL_ONLY": "false",
-		})
-		Expect(err).To(BeNil())
-
-		err = Operator.Instance.WaitForPlanInProgress("deploy")
-		Expect(err).To(BeNil())
-
-		err = Operator.Instance.WaitForPlanComplete("deploy")
-		Expect(err).To(BeNil())
-
-		node0 := fmt.Sprintf("%s-node-0.%s-svc.%s.svc.cluster.local", TestInstance, TestInstance, TestNamespace)
-
-		nodeTool := cassandra.NewNodeTool(Client, TestNamespace)
-
-		fmt.Printf("Run nodetool against %s\n", node0)
-
-		Eventually(func() bool {
-			stdOut, stdErr, err := nodeTool.Run("-h", node0, "info")
-
-			fmt.Printf("Ran NodeTool: StdOut: %s, StdErr: %s", stdOut, stdErr)
-
-			Expect(err).To(BeNil())
-
-			return true
-		}, 5*time.Minute, 30*time.Second).Should(BeTrue())
-	})
-
-	It("Updates the instance's cpu and memory", func() {
+		By("Updating the instances cpu and memory")
 		newMemMiB := 3192
 		newMemLimitMiB := 3192
 		newMemBytes := newMemMiB * 1024 * 1024
@@ -169,7 +108,7 @@ var _ = Describe(TestName, func() {
 		newCpu := 800
 		newCpuLimit := 1100
 
-		err := Operator.Instance.UpdateParameters(map[string]string{
+		err = Operator.Instance.UpdateParameters(map[string]string{
 			"NODE_MEM_MIB":       strconv.Itoa(newMemMiB),
 			"NODE_MEM_LIMIT_MIB": strconv.Itoa(newMemLimitMiB),
 			"NODE_CPU_MC":        strconv.Itoa(newCpu),
@@ -195,9 +134,8 @@ var _ = Describe(TestName, func() {
 		Expect(pod.Spec.Containers[0].Resources.Limits.Memory().AsDec().UnscaledBig()).To(Equal(big.NewInt(int64(newMemLimitBytes))))
 
 		assertNumberOfCassandraNodes(NodeCount)
-	})
 
-	It("Updates the instance's parameters", func() {
+		By("Updating the instances parameters")
 		parameter := "disk_failure_policy"
 		initialValue := "stop"
 		desiredValue := "ignore"
@@ -222,17 +160,16 @@ var _ = Describe(TestName, func() {
 		Expect(configuration[parameter]).To(Equal(desiredValue))
 
 		assertNumberOfCassandraNodes(NodeCount)
-	})
 
-	It("Configures Cassandra properties through custom properties", func() {
-		parameter := "otc_backlog_expiration_interval_ms"
-		initialValue := "200"
-		desiredValue := "300"
+		By("Configuring Cassandras properties through custom properties")
+		parameter = "otc_backlog_expiration_interval_ms"
+		initialValue = "200"
+		desiredValue = "300"
 		desiredEncodedProperties := base64.StdEncoding.EncodeToString(
 			[]byte(parameter + ": " + desiredValue),
 		)
 
-		configuration, err := cassandra.ClusterConfiguration(Client, Operator.Instance)
+		configuration, err = cassandra.ClusterConfiguration(Client, Operator.Instance)
 		Expect(err).To(BeNil())
 		Expect(configuration[parameter]).To(Equal(initialValue))
 
@@ -252,17 +189,16 @@ var _ = Describe(TestName, func() {
 		Expect(configuration[parameter]).To(Equal(desiredValue))
 
 		assertNumberOfCassandraNodes(NodeCount)
-	})
 
-	It("Configures Cassandra JVM options through custom options", func() {
-		parameter := "-XX:CMSWaitDuration"
-		initialValue := "10000"
-		desiredValue := "11000"
-		desiredEncodedProperties := base64.StdEncoding.EncodeToString(
+		By("Configuring Cassandra JVM options through custom options")
+		parameter = "-XX:CMSWaitDuration"
+		initialValue = "10000"
+		desiredValue = "11000"
+		desiredEncodedProperties = base64.StdEncoding.EncodeToString(
 			[]byte(parameter + "=" + desiredValue),
 		)
 
-		configuration, err := cassandra.NodeJVMOptions(Client, Operator.Instance)
+		configuration, err = cassandra.NodeJVMOptions(Client, Operator.Instance)
 
 		Expect(err).To(BeNil())
 		Expect(configuration[parameter]).To(Equal(initialValue))
@@ -283,13 +219,11 @@ var _ = Describe(TestName, func() {
 		Expect(configuration[parameter]).To(Equal(desiredValue))
 
 		assertNumberOfCassandraNodes(NodeCount)
-	})
 
-	It("Scales the instance's number of nodes", func() {
-
+		By("Scaling the instances number of nodes")
 		// Make sure we create an actual cluster of three nodes
 		NodeCount = NodeCount + 2
-		err := Operator.Instance.UpdateParameters(map[string]string{
+		err = Operator.Instance.UpdateParameters(map[string]string{
 			"NODE_COUNT": strconv.Itoa(NodeCount)},
 		)
 		if err != nil {
@@ -312,21 +246,3 @@ var _ = Describe(TestName, func() {
 		// TODO(mpereira) Assert that it isn't running.
 	})
 })
-
-var _ = BeforeSuite(func() {
-	Client, _ = client.NewForConfig(KubeConfigPath)
-	_ = kubernetes.CreateNamespace(Client, TestNamespace)
-})
-
-var _ = AfterSuite(func() {
-	_ = Operator.Uninstall()
-	_ = kubernetes.DeleteNamespace(Client, TestNamespace)
-})
-
-func TestService(t *testing.T) {
-	RegisterFailHandler(Fail)
-	junitReporter := reporters.NewJUnitReporter(fmt.Sprintf(
-		"%s-junit.xml", TestName,
-	))
-	RunSpecsWithDefaultAndCustomReporters(t, TestName, []Reporter{junitReporter})
-}

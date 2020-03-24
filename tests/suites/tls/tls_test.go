@@ -6,16 +6,16 @@ import (
 	"strconv"
 	"testing"
 
-	. "github.com/onsi/ginkgo"
-	"github.com/onsi/ginkgo/reporters"
-	. "github.com/onsi/gomega"
-
 	"github.com/kudobuilder/test-tools/pkg/client"
 	"github.com/kudobuilder/test-tools/pkg/kubernetes"
 	"github.com/kudobuilder/test-tools/pkg/kudo"
 	"github.com/kudobuilder/test-tools/pkg/tls"
+	. "github.com/onsi/ginkgo"
+	"github.com/onsi/ginkgo/reporters"
+	. "github.com/onsi/gomega"
 
 	"github.com/mesosphere/kudo-cassandra-operator/tests/cassandra"
+	"github.com/mesosphere/kudo-cassandra-operator/tests/suites"
 )
 
 var (
@@ -44,151 +44,6 @@ const testCQLScriptOutput = `
 
 (1 rows)`
 
-func assertNumberOfCassandraNodes(nodeCount int) {
-	nodes, err := cassandra.Nodes(Client, Operator.Instance)
-	Expect(err).To(BeNil())
-	Expect(len(nodes)).To(Equal(nodeCount))
-}
-
-var _ = Describe(TestName, func() {
-	Context("Installs the operator with node-to-node encryption enabled", func() {
-		It("Installs the operator from a directory", func() {
-			var err error
-
-			Operator, err = kudo.InstallOperator(OperatorDirectory).
-				WithNamespace(TestNamespace).
-				WithInstance(TestInstance).
-				WithParameters(map[string]string{
-					"NODE_COUNT":                   strconv.Itoa(NodeCount),
-					"TLS_SECRET_NAME":              "cassandra-tls",
-					"TRANSPORT_ENCRYPTION_ENABLED": "true",
-				}).
-				Do(Client)
-			Expect(err).To(BeNil())
-
-			err = Operator.Instance.WaitForPlanInProgress("deploy")
-			Expect(err).To(BeNil())
-
-			err = Operator.Instance.WaitForPlanComplete("deploy")
-			Expect(err).To(BeNil())
-
-			assertNumberOfCassandraNodes(NodeCount)
-		})
-		It("Checks for the container logs", func() {
-			podName := fmt.Sprintf("%s-%s-%d", TestInstance, "node", 0)
-
-			pod, err := kubernetes.GetPod(Client, podName, TestNamespace)
-			Expect(err).To(BeNil())
-
-			output, err := pod.ContainerLogs("cassandra")
-			Expect(err).To(BeNil())
-			Expect(string(output)).To(ContainSubstring("Starting Encrypted Messaging Service on SSL port"))
-		})
-		It("Tests data read & write using CQLSH", func() {
-			output, err := cassandra.Cqlsh(Client, Operator.Instance, testCQLScript)
-			Expect(err).To(BeNil())
-			Expect(output).To(ContainSubstring(testCQLScriptOutput))
-		})
-		It("Uninstalls the operator", func() {
-			err := cassandra.Uninstall(Client, Operator)
-			Expect(err).To(BeNil())
-			// TODO(mpereira) Assert that it isn't running.
-		})
-	})
-
-	Context("Installs the operator with client-to-node encryption enabled", func() {
-		It("Installs the operator from a directory", func() {
-			var err error
-
-			Operator, err = kudo.InstallOperator(OperatorDirectory).
-				WithNamespace(TestNamespace).
-				WithInstance(TestInstance).
-				WithParameters(map[string]string{
-					"NODE_COUNT":                          strconv.Itoa(NodeCount),
-					"TLS_SECRET_NAME":                     "cassandra-tls",
-					"TRANSPORT_ENCRYPTION_CLIENT_ENABLED": "true",
-				}).
-				Do(Client)
-			Expect(err).To(BeNil())
-
-			err = Operator.Instance.WaitForPlanInProgress("deploy")
-			Expect(err).To(BeNil())
-
-			err = Operator.Instance.WaitForPlanComplete("deploy")
-			Expect(err).To(BeNil())
-
-			assertNumberOfCassandraNodes(NodeCount)
-		})
-		It("Checks for the container logs", func() {
-			podName := fmt.Sprintf("%s-%s-%d", TestInstance, "node", 0)
-
-			pod, err := kubernetes.GetPod(Client, podName, TestNamespace)
-			Expect(err).To(BeNil())
-
-			output, err := pod.ContainerLogs("cassandra")
-			Expect(err).To(BeNil())
-			Expect(string(output)).To(ContainSubstring("Enabling encrypted CQL connections between client and server"))
-		})
-		It("Tests data read & write using CQLSH", func() {
-			output, err := cassandra.Cqlsh(Client, Operator.Instance, testCQLScript)
-			Expect(err).To(BeNil())
-			Expect(output).To(ContainSubstring(testCQLScriptOutput))
-		})
-		It("Uninstalls the operator", func() {
-			err := cassandra.Uninstall(Client, Operator)
-			Expect(err).To(BeNil())
-			// TODO(mpereira) Assert that it isn't running.
-		})
-	})
-
-	Context("Installs the operator with node-to-node and client-to-node encryption enabled", func() {
-		It("Installs the operator from a directory", func() {
-			var err error
-
-			Operator, err = kudo.InstallOperator(OperatorDirectory).
-				WithNamespace(TestNamespace).
-				WithInstance(TestInstance).
-				WithParameters(map[string]string{
-					"NODE_COUNT":                          strconv.Itoa(NodeCount),
-					"TLS_SECRET_NAME":                     "cassandra-tls",
-					"TRANSPORT_ENCRYPTION_ENABLED":        "true",
-					"TRANSPORT_ENCRYPTION_CLIENT_ENABLED": "true",
-				}).
-				Do(Client)
-			Expect(err).To(BeNil())
-
-			err = Operator.Instance.WaitForPlanInProgress("deploy")
-			Expect(err).To(BeNil())
-
-			err = Operator.Instance.WaitForPlanComplete("deploy")
-			Expect(err).To(BeNil())
-
-			assertNumberOfCassandraNodes(NodeCount)
-		})
-		It("Checks for the container logs", func() {
-			podName := fmt.Sprintf("%s-%s-%d", TestInstance, "node", 0)
-
-			pod, err := kubernetes.GetPod(Client, podName, TestNamespace)
-			Expect(err).To(BeNil())
-
-			output, err := pod.ContainerLogs("cassandra")
-			Expect(err).To(BeNil())
-			Expect(string(output)).To(ContainSubstring("Starting Encrypted Messaging Service on SSL port"))
-			Expect(string(output)).To(ContainSubstring("Enabling encrypted CQL connections between client and server"))
-		})
-		It("Tests data read & write using CQLSH", func() {
-			output, err := cassandra.Cqlsh(Client, Operator.Instance, testCQLScript)
-			Expect(err).To(BeNil())
-			Expect(output).To(ContainSubstring(testCQLScriptOutput))
-		})
-		It("Uninstalls the operator", func() {
-			err := cassandra.Uninstall(Client, Operator)
-			Expect(err).To(BeNil())
-			// TODO(mpereira) Assert that it isn't running.
-		})
-	})
-})
-
 var _ = BeforeSuite(func() {
 	Client, _ = client.NewForConfig(KubeConfigPath)
 	_ = kubernetes.CreateNamespace(Client, TestNamespace)
@@ -210,3 +65,158 @@ func TestService(t *testing.T) {
 	))
 	RunSpecsWithDefaultAndCustomReporters(t, TestName, []Reporter{junitReporter})
 }
+
+func assertNumberOfCassandraNodes(nodeCount int) {
+	nodes, err := cassandra.Nodes(Client, Operator.Instance)
+	Expect(err).To(BeNil())
+	Expect(len(nodes)).To(Equal(nodeCount))
+}
+
+var _ = Describe(TestName, func() {
+	Context("Installs the operator with node-to-node encryption enabled", func() {
+		It("Installs the operator from a directory", func() {
+			var err error
+
+			parameters := map[string]string{
+				"NODE_COUNT":                   strconv.Itoa(NodeCount),
+				"TLS_SECRET_NAME":              "cassandra-tls",
+				"TRANSPORT_ENCRYPTION_ENABLED": "true",
+			}
+			suites.SetLocalClusterParameters(parameters)
+
+			Operator, err = kudo.InstallOperator(OperatorDirectory).
+				WithNamespace(TestNamespace).
+				WithInstance(TestInstance).
+				WithParameters(parameters).
+				Do(Client)
+			Expect(err).To(BeNil())
+
+			err = Operator.Instance.WaitForPlanInProgress("deploy")
+			Expect(err).To(BeNil())
+
+			err = Operator.Instance.WaitForPlanComplete("deploy")
+			Expect(err).To(BeNil())
+
+			assertNumberOfCassandraNodes(NodeCount)
+
+			By("Checking the container logs")
+			podName := fmt.Sprintf("%s-%s-%d", TestInstance, "node", 0)
+
+			pod, err := kubernetes.GetPod(Client, podName, TestNamespace)
+			Expect(err).To(BeNil())
+
+			outputBytes, err := pod.ContainerLogs("cassandra")
+			Expect(err).To(BeNil())
+			Expect(string(outputBytes)).To(ContainSubstring("Starting Encrypted Messaging Service on SSL port"))
+
+			By("Testing data read & write using CQLSH")
+			output, err := cassandra.Cqlsh(Client, Operator.Instance, testCQLScript)
+			Expect(err).To(BeNil())
+			Expect(output).To(ContainSubstring(testCQLScriptOutput))
+		})
+
+		It("Uninstalls the operator", func() {
+			err := cassandra.Uninstall(Client, Operator)
+			Expect(err).To(BeNil())
+			// TODO(mpereira) Assert that it isn't running.
+		})
+	})
+
+	Context("Installs the operator with client-to-node encryption enabled", func() {
+		It("Installs the operator from a directory", func() {
+			var err error
+
+			parameters := map[string]string{
+				"NODE_COUNT":                          strconv.Itoa(NodeCount),
+				"TLS_SECRET_NAME":                     "cassandra-tls",
+				"TRANSPORT_ENCRYPTION_CLIENT_ENABLED": "true",
+			}
+			suites.SetLocalClusterParameters(parameters)
+
+			Operator, err = kudo.InstallOperator(OperatorDirectory).
+				WithNamespace(TestNamespace).
+				WithInstance(TestInstance).
+				WithParameters(parameters).
+				Do(Client)
+			Expect(err).To(BeNil())
+
+			err = Operator.Instance.WaitForPlanInProgress("deploy")
+			Expect(err).To(BeNil())
+
+			err = Operator.Instance.WaitForPlanComplete("deploy")
+			Expect(err).To(BeNil())
+
+			assertNumberOfCassandraNodes(NodeCount)
+
+			By("Checking the container logs")
+			podName := fmt.Sprintf("%s-%s-%d", TestInstance, "node", 0)
+
+			pod, err := kubernetes.GetPod(Client, podName, TestNamespace)
+			Expect(err).To(BeNil())
+
+			outputBytes, err := pod.ContainerLogs("cassandra")
+			Expect(err).To(BeNil())
+			Expect(string(outputBytes)).To(ContainSubstring("Enabling encrypted CQL connections between client and server"))
+
+			By("Testing data read & write using CQLSH")
+			output, err := cassandra.Cqlsh(Client, Operator.Instance, testCQLScript)
+			Expect(err).To(BeNil())
+			Expect(output).To(ContainSubstring(testCQLScriptOutput))
+		})
+		It("Uninstalls the operator", func() {
+			err := cassandra.Uninstall(Client, Operator)
+			Expect(err).To(BeNil())
+			// TODO(mpereira) Assert that it isn't running.
+		})
+	})
+
+	Context("Installs the operator with node-to-node and client-to-node encryption enabled", func() {
+		It("Installs the operator from a directory", func() {
+			var err error
+
+			parameters := map[string]string{
+				"NODE_COUNT":                          strconv.Itoa(NodeCount),
+				"TLS_SECRET_NAME":                     "cassandra-tls",
+				"TRANSPORT_ENCRYPTION_ENABLED":        "true",
+				"TRANSPORT_ENCRYPTION_CLIENT_ENABLED": "true",
+			}
+			suites.SetLocalClusterParameters(parameters)
+
+			Operator, err = kudo.InstallOperator(OperatorDirectory).
+				WithNamespace(TestNamespace).
+				WithInstance(TestInstance).
+				WithParameters(parameters).
+				Do(Client)
+			Expect(err).To(BeNil())
+
+			err = Operator.Instance.WaitForPlanInProgress("deploy")
+			Expect(err).To(BeNil())
+
+			err = Operator.Instance.WaitForPlanComplete("deploy")
+			Expect(err).To(BeNil())
+
+			assertNumberOfCassandraNodes(NodeCount)
+
+			By("Checking the container logs")
+			podName := fmt.Sprintf("%s-%s-%d", TestInstance, "node", 0)
+
+			pod, err := kubernetes.GetPod(Client, podName, TestNamespace)
+			Expect(err).To(BeNil())
+
+			outputBytes, err := pod.ContainerLogs("cassandra")
+			Expect(err).To(BeNil())
+			Expect(string(outputBytes)).To(ContainSubstring("Starting Encrypted Messaging Service on SSL port"))
+			Expect(string(outputBytes)).To(ContainSubstring("Enabling encrypted CQL connections between client and server"))
+
+			By("Testing data read & write using CQLSH")
+			output, err := cassandra.Cqlsh(Client, Operator.Instance, testCQLScript)
+			Expect(err).To(BeNil())
+			Expect(output).To(ContainSubstring(testCQLScriptOutput))
+		})
+		It("Uninstalls the operator", func() {
+			err := cassandra.Uninstall(Client, Operator)
+			Expect(err).To(BeNil())
+			// TODO(mpereira) Assert that it isn't running.
+		})
+	})
+})
