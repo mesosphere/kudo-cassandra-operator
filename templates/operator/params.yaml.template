@@ -165,6 +165,10 @@ parameters:
     description: "The JMX port that will be used to interface with the Cassandra application."
     default: "7199"
 
+  - name: JMX_LOCAL_ONLY
+    description: "If true, the JMX port will only be opened on localhost and not be available to the cluster"
+    default: "true"
+
   - name: TRANSPORT_ENCRYPTION_ENABLED
     description: "Enable node-to-node encryption."
     default: "false"
