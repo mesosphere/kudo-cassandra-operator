@@ -64,6 +64,11 @@ parameters:
     description: "Override the name of the Cassandra cluster set by the operator. This shouldn't be explicit set, unless you know what you're doing."
     default: ""
 
+  - name: EXTERNAL_SERVICE
+    displayName: "Main toggle for external access"
+    description: "Needs to be true for either EXTERNAL_NATIVE_TRANSPORT or EXTERNAL_RPC to work"
+    default: "false"
+
   - name: EXTERNAL_NATIVE_TRANSPORT
     displayName: "Enable external native transport"
     description: "This exposes the Cassandra cluster via an external service so it can be accessed from outside the Kubernetes cluster"
@@ -85,6 +90,23 @@ parameters:
     default: "9160"
 
   ################################################################################
+  ######################### Datacenter and Rack awareness ########################
+  ################################################################################
+
+  - name: NODE_TOPOLOGY
+    description: "This describes a multi-datacenter setup. When set it has precedence over NODE_COUNT. See docs/multidatacenter.md for more details."
+    default:
+    type: array
+
+  - name: NODE_ANTI_AFFINITY
+    description: "Ensure that every Cassandra node is deployed on separate hosts"
+    default: "false"
+
+  - name: NODE_RESOLVE_SERVICEACCOUNT
+    description: "A service account that can list nodes in the cluster to read rack names for deployed pods"
+    default: "node-resolver"
+
+  ################################################################################
   ######################### Prometheus exporter settings #########################
   ################################################################################
 
@@ -97,7 +119,7 @@ parameters:
 
   - name: PROMETHEUS_EXPORTER_CPU_MC
     description: "CPU request (in millicores) for the Prometheus exporter containers."
-    default: "1000"
+    default: "500"
 
   - name: PROMETHEUS_EXPORTER_CPU_LIMIT_MC
     description: "CPU limit (in millicores) for the Prometheus exporter containers."

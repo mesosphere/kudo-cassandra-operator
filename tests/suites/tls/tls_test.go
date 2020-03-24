@@ -91,9 +91,6 @@ var _ = Describe(TestName, func() {
 				Do(Client)
 			Expect(err).To(BeNil())
 
-			err = Operator.Instance.WaitForPlanInProgress("deploy")
-			Expect(err).To(BeNil())
-
 			err = Operator.Instance.WaitForPlanComplete("deploy")
 			Expect(err).To(BeNil())
 
@@ -140,9 +137,6 @@ var _ = Describe(TestName, func() {
 				Do(Client)
 			Expect(err).To(BeNil())
 
-			err = Operator.Instance.WaitForPlanInProgress("deploy")
-			Expect(err).To(BeNil())
-
 			err = Operator.Instance.WaitForPlanComplete("deploy")
 			Expect(err).To(BeNil())
 
@@ -187,9 +181,6 @@ var _ = Describe(TestName, func() {
 				WithInstance(TestInstance).
 				WithParameters(parameters).
 				Do(Client)
-			Expect(err).To(BeNil())
-
-			err = Operator.Instance.WaitForPlanInProgress("deploy")
 			Expect(err).To(BeNil())
 
 			err = Operator.Instance.WaitForPlanComplete("deploy")
