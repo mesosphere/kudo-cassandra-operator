@@ -140,7 +140,7 @@ func getTopology3DatacenterEach1Rack() cassandra.NodeTopology {
 			DatacenterLabels: map[string]string{
 				nodeSelectorDatacenter: "us-west-2a",
 			},
-			Nodes:        3,
+			Nodes:        2,
 			RackLabelKey: rackLabelKey,
 			Racks: []cassandra.TopologyRackItem{
 				{
@@ -168,7 +168,7 @@ func getTopology3DatacenterEach1Rack() cassandra.NodeTopology {
 			DatacenterLabels: map[string]string{
 				nodeSelectorDatacenter: "us-west-2c",
 			},
-			Nodes:        3,
+			Nodes:        2,
 			RackLabelKey: rackLabelKey,
 			Racks: []cassandra.TopologyRackItem{
 				{
