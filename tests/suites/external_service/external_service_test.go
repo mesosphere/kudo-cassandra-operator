@@ -73,16 +73,15 @@ var _ = Describe("external service", func() {
 			Do(Client)
 		Expect(err).To(BeNil())
 
-		err = Operator.Instance.WaitForPlanInProgress("deploy")
-		Expect(err).To(BeNil())
-
 		err = Operator.Instance.WaitForPlanComplete("deploy")
 		Expect(err).To(BeNil())
+
 		assertNumberOfCassandraNodes(NodeCount)
 
 		By("Allowing external access to the cassandra cluster")
 		nativeTransportPort := 9043
 		parameters = map[string]string{
+			"EXTERNAL_SERVICE":               "true",
 			"EXTERNAL_NATIVE_TRANSPORT":      "true",
 			"EXTERNAL_NATIVE_TRANSPORT_PORT": strconv.Itoa(nativeTransportPort),
 		}
@@ -90,6 +89,10 @@ var _ = Describe("external service", func() {
 
 		err = Operator.Instance.UpdateParameters(parameters)
 		Expect(err).To(BeNil())
+
+		err = Operator.Instance.WaitForPlanComplete("deploy")
+		Expect(err).To(BeNil())
+
 		assertNumberOfCassandraNodes(NodeCount)
 
 		log.Infof("Verify that external service is started and has 1 open port")
@@ -111,6 +114,11 @@ var _ = Describe("external service", func() {
 		err = Operator.Instance.UpdateParameters(parameters)
 		Expect(err).To(BeNil())
 
+		//err = Operator.Instance.WaitForPlanInProgress("deploy", kudo.WaitTimeout(time.Second*90))
+		//Expect(err).To(BeNil())
+		err = Operator.Instance.WaitForPlanComplete("deploy")
+		Expect(err).To(BeNil())
+
 		assertNumberOfCassandraNodes(NodeCount)
 
 		log.Infof("Verify that external service is started and has 2 open ports")
@@ -119,6 +127,32 @@ var _ = Describe("external service", func() {
 		Expect(len(svc.Spec.Ports)).To(Equal(2))
 		Expect(svc.Spec.Ports[1].Name).To(Equal("rpc"))
 		Expect(svc.Spec.Ports[1].Port).To(Equal(int32(rpcPort)))
+
+		By("Disabling the external service again")
+		parameters = map[string]string{
+			"START_RPC":                 "false",
+			"EXTERNAL_SERVICE":          "false",
+			"EXTERNAL_RPC":              "false",
+			"EXTERNAL_NATIVE_TRANSPORT": "false",
+		}
+		suites.SetLocalClusterParameters(parameters)
+
+		err = Operator.Instance.UpdateParameters(parameters)
+		Expect(err).To(BeNil())
+
+		//err = Operator.Instance.WaitForPlanInProgress("deploy", kudo.WaitTimeout(time.Second*90))
+		//Expect(err).To(BeNil())
+		err = Operator.Instance.WaitForPlanComplete("deploy")
+		Expect(err).To(BeNil())
+
+		assertNumberOfCassandraNodes(NodeCount)
+
+		svc, err = kubernetes.GetService(Client, fmt.Sprintf("%s-svc-external", TestInstance), TestNamespace)
+
+		log.Infof("Get External Service %v, %v", svc, err)
+
+		Expect(err).To(Not(BeNil()))
+
 	})
 
 	It("Uninstalls the operator", func() {
