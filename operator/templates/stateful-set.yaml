@@ -151,6 +151,15 @@ spec:
               /etc/tls/bin/generate-tls-artifacts.sh;
               {{ end }}
               /etc/cassandra/generate-cqlshrc.sh;
+              cp /etc/cassandra/jvm.options.source /etc/cassandra/jvm.options;
+              if [ -s /var/lib/cassandra/replace.ip ]; then
+                set -x;
+                ip=$(cat /var/lib/cassandra/replace.ip);
+                echo "File replace.ip found with IP:${ip}";
+                sed -i -e '$a\' /etc/cassandra/jvm.options;
+                echo "-Dcassandra.replace_address=${ip}" >> /etc/cassandra/jvm.options;
+                set +x;
+              fi;
               cassandra -f
           # Comment the `command` above and uncomment the one below if pods are
           # crash-looping and you would like to investigate their state. This is
