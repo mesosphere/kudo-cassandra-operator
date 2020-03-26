@@ -1,0 +1,33 @@
+OVERRIDE_CLUSTER_NAME: "VZ1"
+ENDPOINT_SNITCH: "GossipingPropertyFileSnitch"
+NODE_ANTI_AFFINITY: "false"
+NODE_READINESS_PROBE_INITIAL_DELAY_S: 10
+JMX_LOCAL_ONLY: false
+NODE_DISK_SIZE_GIB: 20
+NODE_TOPOLOGY:
+  - datacenter: ring1
+    datacenterLabels:
+      custom/datacenter: dc1
+    nodes: 10
+    rackLabelKey: failure-domain.beta.kubernetes.io/zone
+    racks:
+      - rack: rack1
+        rackLabelValue: us-west-2a
+      - rack: rack2
+        rackLabelValue: us-west-2b
+  - datacenter: ring2
+    datacenterLabels:
+      custom/datacenter: dc1
+    nodes: 10
+    rackLabelKey: failure-domain.beta.kubernetes.io/zone
+    racks:
+      - rack: rack3
+        rackLabelValue: us-west-2a
+      - rack: rack4
+        rackLabelValue: us-west-2b
+NODE_MEM_MIB: "2048"
+NODE_MEM_LIMIT_MIB: "3192"
+NODE_CPU_MC: "1000"
+NODE_CPU_LIMIT_MC: "1500"
+PROMETHEUS_EXPORTER_CPU_MC: "250"
+PROMETHEUS_EXPORTER_CPU_LIMIT_MC: "500"

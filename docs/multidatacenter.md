@@ -48,15 +48,56 @@ topology.kubernetes.io/zone=us-east-1c
 
 The label key is again defined on datacenter level and therefore they key needs to be the same for all nodes used in the same datacenter.
 
-### Service Account
+### Service Account and RBAC
 
 As there is currently no easy way to read node labels from inside a pod, the KUDO Cassandra operator uses an initContainer to read the rack of the deployed pod. This requires
 a service account with valid RBAC permissions. Please refer to the [Kubernetes documentation](https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/) on how to 
 create service accounts.
 
-The service account requires the permissions to `read` and `list` the `nodes` resource.
+The service account requires the permissions to `get` and `list` the `nodes` resource.
 
-TODO: Add detailed steps to create service account, role and rolebinding with the correct values.
+#### Create Cluster Role
+```bash
+kubectl apply -f - <<EOF
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: node-resolver-role
+rules:
+- apiGroups: [""]
+  resources: ["nodes"]
+  verbs: ["get", "watch", "list"]
+EOF
+```
+
+#### Create Service Account
+```bash
+kubectl apply -f - <<EOF
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: node-resolver
+  namespace: ${kudo_cassandra_instance_namespace}
+EOF
+```
+
+#### Create ClusterRoleBinding
+```bash
+kubectl apply -f - <<EOF
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: node-resolver-binding
+subjects:
+- kind: ServiceAccount
+  name: node-resolver
+  namespace: ${kudo_cassandra_instance_namespace}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: node-resolver-role
+EOF
+```
 
 The service account then needs to be set in the `NODE_RESOLVE_SERVICEACCOUNT` parameter.
 

@@ -1,0 +1,49 @@
+OVERRIDE_CLUSTER_NAME: "VZ1"
+ENDPOINT_SNITCH: "GossipingPropertyFileSnitch"
+NODE_ANTI_AFFINITY: "false"
+NODE_READINESS_PROBE_INITIAL_DELAY_S: 10
+JMX_LOCAL_ONLY: false
+NODE_DISK_SIZE_GIB: 20
+NODE_TOPOLOGY:
+  - datacenter: ring1
+    datacenterLabels:
+      custom/datacenter: dc1
+      failure-domain.beta.kubernetes.io/zone: us-west-2a
+    nodes: 6
+    rackLabelKey: failure-domain.beta.kubernetes.io/zone
+    racks:
+      - rack: rack1
+        rackLabelValue: us-west-2a
+  - datacenter: ring2
+    datacenterLabels:
+      custom/datacenter: dc1
+      failure-domain.beta.kubernetes.io/zone: us-west-2b
+    nodes: 6
+    rackLabelKey: failure-domain.beta.kubernetes.io/zone
+    racks:
+      - rack: rack5
+        rackLabelValue: us-west-2b
+  - datacenter: ring3
+    datacenterLabels:
+      custom/datacenter: dc2
+      failure-domain.beta.kubernetes.io/zone: us-west-2a
+    nodes: 6
+    rackLabelKey: failure-domain.beta.kubernetes.io/zone
+    racks:
+      - rack: rack3
+        rackLabelValue: us-west-2a
+  - datacenter: ring4
+    datacenterLabels:
+      custom/datacenter: dc2
+      failure-domain.beta.kubernetes.io/zone: us-west-2b
+    nodes: 6
+    rackLabelKey: failure-domain.beta.kubernetes.io/zone
+    racks:
+      - rack: rack4
+        rackLabelValue: us-west-2b
+NODE_MEM_MIB: "1024"
+NODE_MEM_LIMIT_MIB: "1536"
+NODE_CPU_MC: "1000"
+NODE_CPU_LIMIT_MC: "1500"
+PROMETHEUS_EXPORTER_CPU_MC: "250"
+PROMETHEUS_EXPORTER_CPU_LIMIT_MC: "500"

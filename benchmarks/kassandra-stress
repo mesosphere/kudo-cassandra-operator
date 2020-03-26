@@ -117,6 +117,26 @@ def main():
         help="Maximum number of per-thread operations per second",
     )
 
+    parser.add_argument(
+        "--keyspace-replication-string",
+        type=str,
+        help="Keyspace replication string, defaults to Simple with a factor"
+    )
+
+    parser.add_argument(
+        "--output-file",
+        type=str,
+        default="kassandra_stress.yaml",
+        help="The file to which the generated resource is written"
+    )
+
+    parser.add_argument(
+        "--template-file",
+        type=str,
+        default="kassandra_stress.yaml.template",
+        help="The template file used to generate the resource"
+    )
+
     args = parser.parse_args()
     workload_name = args.workload_name
     kubernetes_namespace = args.kubernetes_namespace
@@ -131,9 +151,23 @@ def main():
     duration = args.duration
     threads_per_client = args.threads_per_client
     threads_throttle = args.threads_throttle
+    keyspace_replication_string = args.keyspace_replication_string
+
+    output_file = args.output_file
+    template_file = args.template_file
 
     total_number_of_keyspaces = (
         1 if one_keyspace_per_client else number_of_clients
+    )
+    threads_per_client = (
+        threads_per_client if threads_per_client else 1
+    )
+
+    keyspace_name = (
+        "$POD_NAME" if one_keyspace_per_client else keyspace_name
+    )
+    keyspace_replication_string = (
+        keyspace_replication_string if keyspace_replication_string else "factor=" + keyspace_replication_factor
     )
 
     total_number_of_rows = total_number_of_keyspaces * rows_per_client
@@ -147,7 +181,7 @@ def main():
     log.info("  one_keyspace_per_client:     %s", one_keyspace_per_client)
     # log.info("  keyspaces_per_client:        %s", keyspaces_per_client)
     log.info("  rows_per_client:             %s", rows_per_client)
-    log.info("  keyspace_replication_factor: %s", keyspace_replication_factor)
+    log.info("  keyspace_replication_string: %s", keyspace_replication_string)
     log.info("  consistency_level:           %s", consistency_level)
     log.info("  duration:                    %s", duration)
     log.info("  threads_per_client:          %s", threads_per_client)
@@ -157,11 +191,9 @@ def main():
     log.info("  total_number_of_keyspaces:   %s", total_number_of_keyspaces)
     log.info("  total_number_of_rows:        %s", total_number_of_rows)
 
-    deployment_file = "kassandra_stress_deployment.yaml"
-    deployment_template = f"{deployment_file}.template"
     graph_file = f"/tmp/{workload_name}.html"
 
-    with open(path.join(__directory__, deployment_template), "r") as f:
+    with open(path.join(__directory__, template_file), "r") as f:
         try:
             template = Template(f.read())
         except Exception:
@@ -175,18 +207,18 @@ def main():
             hosts=hosts,
             consistency_level=consistency_level,
             keyspace_name=keyspace_name,
-            keyspace_replication_factor=keyspace_replication_factor,
+            keyspace_replication_string=keyspace_replication_string,
             threads_per_client=threads_per_client,
             threads_throttle=threads_throttle,
             graph_file=graph_file,
         )
 
-        deployment_file_path = path.join(__directory__, deployment_file)
+        output_file_path = path.join(__directory__, output_file)
 
-        with open(deployment_file_path, "w") as f:
+        with open(output_file_path, "w") as f:
             f.write(compiled_template)
 
-        log.info(f"Created Kubernetes Deployment file: {deployment_file_path}")
+        log.info("Created Kubernetes Deployment file: " + output_file_path)
 
 
 if __name__ == "__main__":
