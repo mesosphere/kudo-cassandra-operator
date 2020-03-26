@@ -54,5 +54,9 @@ spec:
             echo "Population String $$POP_STRING";
             export KEYSPACE=`echo $keyspace_name | tr -cd '[:alnum:]_' | cut -c 1-32`;
             echo "Using Keyspace $$KEYSPACE";
+            if [[ $$POD_ID != "1" ]]; then
+              echo "Not the first instance, sleep for 30 seconds to allow schema creation to settle through cluster";
+              sleep 30;
+            fi;
             cassandra-stress write duration=$duration cl=$consistency_level -pop seq=$$POP_STRING -node $hosts -schema keyspace="$$KEYSPACE" "replication($keyspace_replication_string)" -rate 'threads=$threads_per_client' -graph file=$graph_file title=$workload_name -errors ignore;
             sleep infinity
