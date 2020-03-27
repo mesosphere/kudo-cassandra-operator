@@ -147,7 +147,7 @@ func (c *CassandraService) CreateFile() error {
 }
 func (c *CassandraService) WaitforReplacement(duration time.Duration) error {
 	timeout := time.After(duration)
-	tick := time.Tick(5 * time.Second)
+	tick := time.Tick(10 * time.Second)
 	for {
 		select {
 		case <-timeout:
@@ -200,7 +200,8 @@ func (c *CassandraService) UpdateCM() (bool, error) {
 func (c *CassandraService) Wait() {
 	// monitor if the new node joined as UJ or UN with new ip address
 	// and update the ip address in the configmap
-	err := c.WaitforReplacement(4 * time.Minute)
+	err := c.WaitforReplacement(600 * time.Minute)
+	// re-joining can take really long time depending on the data
 	if err != nil {
 		log.Errorf("error joining the cluster with replace ip: %v\n", err)
 		os.Exit(1)
