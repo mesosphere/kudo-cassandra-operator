@@ -40,6 +40,7 @@ spec:
         {{ end }}
         kudo.dev/instance: {{ $.Name }}
     spec:
+      serviceAccountName: {{ $.Name }}-sa
       {{ if $.Params.NODE_TOPOLOGY }}
       serviceAccountName: {{ $.Params.NODE_RESOLVE_SERVICEACCOUNT }}
       nodeSelector:
@@ -151,15 +152,9 @@ spec:
               /etc/tls/bin/generate-tls-artifacts.sh;
               {{ end }}
               /etc/cassandra/generate-cqlshrc.sh;
+              /etc/cassandra-bootstrap/cassandra-bootstrap &
+              sleep 5;
               cp /etc/cassandra/jvm.options.source /etc/cassandra/jvm.options;
-              if [ -s /var/lib/cassandra/replace.ip ]; then
-                set -x;
-                ip=$(cat /var/lib/cassandra/replace.ip);
-                echo "File replace.ip found with IP:${ip}";
-                sed -i -e '$a\' /etc/cassandra/jvm.options;
-                echo "-Dcassandra.replace_address=${ip}" >> /etc/cassandra/jvm.options;
-                set +x;
-              fi;
               cassandra -f
           # Comment the `command` above and uncomment the one below if pods are
           # crash-looping and you would like to investigate their state. This is
@@ -195,6 +190,8 @@ spec:
                   fieldPath: metadata.uid
             - name: PROMETHEUS_EXPORTER_ENABLED
               value: "{{ $.Params.PROMETHEUS_EXPORTER_ENABLED }}"
+            - name: CASSANDRA_TOPOLOGY_CM
+              value: "{{ $.Name }}-topology-lock"
           resources:
             requests:
               memory: "{{ $.Params.NODE_MEM_MIB }}Mi"
@@ -223,8 +220,8 @@ spec:
             - name: etc-cassandra
               mountPath: /etc/cassandra/
             - name: cassandra-yaml
-              mountPath: /etc/cassandra/cassandra.yaml
-              subPath: cassandra.yaml
+              mountPath: /etc/cassandra/cassandra.yaml.source
+              subPath: cassandra.yaml.source
             - name: cassandra-env-sh
               mountPath: /etc/cassandra/cassandra-env.sh
               subPath: cassandra-env.sh
