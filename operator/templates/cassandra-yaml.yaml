@@ -4,7 +4,7 @@ metadata:
   name: {{ .Name }}-cassandra-yaml
   namespace: {{ .Namespace }}
 data:
-  cassandra.yaml: |
+  cassandra.yaml.source: |
     # Cassandra storage config YAML
 
     # NOTE:

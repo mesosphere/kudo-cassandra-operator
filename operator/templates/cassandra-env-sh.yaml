@@ -310,3 +310,10 @@ data:
     JVM_OPTS="$JVM_OPTS $MX4J_ADDRESS"
     JVM_OPTS="$JVM_OPTS $MX4J_PORT"
     JVM_OPTS="$JVM_OPTS $JVM_EXTRA_OPTS"
+    if [ -s /var/lib/cassandra/replace.ip ]; then
+      replace_ip=$(cat /var/lib/cassandra/replace.ip);
+      echo "File replace.ip found with IP:${replace_ip}";
+      JVM_OPTS="$JVM_OPTS -Dcassandra.replace_address=${replace_ip}"
+      JVM_OPTS="$JVM_OPTS -Dcassandra.consistent.rangemovement=false"
+    fi;
+    cp /etc/cassandra/cassandra.yaml.source /etc/cassandra/cassandra.yaml;
