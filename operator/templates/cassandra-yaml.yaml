@@ -477,7 +477,7 @@ data:
                     {{- end -}}"
           {{- else }}
           # We have a simple setup and use the first 3 nodes as seed
-          - seeds: "{{- range $i, $node := until (int (min 3 .Params.NODE_COUNT)) -}}
+          - seeds: "{{- range $i, $node := until (int (min 2 .Params.NODE_COUNT)) -}}
                       {{- if $i -}}, {{- end -}}
                       {{ $.Name }}-node-{{ $node }}.{{ $.Name }}-svc.{{ $.Namespace }}.svc.cluster.local
                     {{- end -}}"
