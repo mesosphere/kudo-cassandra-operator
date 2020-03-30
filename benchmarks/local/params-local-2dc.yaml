@@ -8,7 +8,7 @@ NODE_TOPOLOGY:
   - datacenter: ring1
     datacenterLabels:
       custom/datacenter: dc1
-    nodes: 10
+    nodes: 4
     rackLabelKey: failure-domain.beta.kubernetes.io/zone
     racks:
       - rack: rack1
@@ -18,7 +18,7 @@ NODE_TOPOLOGY:
   - datacenter: ring2
     datacenterLabels:
       custom/datacenter: dc1
-    nodes: 10
+    nodes: 4
     rackLabelKey: failure-domain.beta.kubernetes.io/zone
     racks:
       - rack: rack3
