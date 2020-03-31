@@ -140,7 +140,7 @@ spec:
               /etc/tls/bin/generate-tls-artifacts.sh;
               {{ end }}
               /etc/cassandra/generate-cqlshrc.sh;
-              cassandra -f
+              exit 1;
           # Comment the `command` above and uncomment the one below if pods are
           # crash-looping and you would like to investigate their state. This is
           # analogous to a `pod pause` in SDK-land.
