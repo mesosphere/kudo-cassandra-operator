@@ -4,10 +4,11 @@ go 1.13
 
 require (
 	github.com/imdario/mergo v0.3.8 // indirect
-	github.com/kudobuilder/test-tools v0.2.6
+	github.com/kudobuilder/test-tools v0.2.7-0.20200331095638-cfb21adbda23
 	github.com/onsi/ginkgo v1.11.0
 	github.com/onsi/gomega v1.8.1
 	github.com/sirupsen/logrus v1.4.2
+	github.com/spf13/afero v1.2.2
 	github.com/thoas/go-funk v0.5.0
 	golang.org/x/time v0.0.0-20190921001708-c4c64cad1fd0 // indirect
 	gopkg.in/yaml.v2 v2.2.8
