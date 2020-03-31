@@ -6,7 +6,10 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/spf13/afero"
+
 	"github.com/kudobuilder/test-tools/pkg/client"
+	"github.com/kudobuilder/test-tools/pkg/debug"
 	"github.com/kudobuilder/test-tools/pkg/kubernetes"
 	"github.com/kudobuilder/test-tools/pkg/kudo"
 	"github.com/onsi/ginkgo/reporters"
@@ -25,6 +28,7 @@ var (
 	TestNamespace     = fmt.Sprintf("%s-namespace", TestName)
 	TestInstance      = fmt.Sprintf("%s-instance", OperatorName)
 	KubeConfigPath    = os.Getenv("KUBECONFIG")
+	KubectlPath       = os.Getenv("KUBECTL_PATH")
 	OperatorDirectory = os.Getenv("OPERATOR_DIRECTORY")
 
 	NodeCount = 1
@@ -35,6 +39,12 @@ var (
 var _ = BeforeSuite(func() {
 	Client, _ = client.NewForConfig(KubeConfigPath)
 	_ = kubernetes.CreateNamespace(Client, TestNamespace)
+})
+
+var _ = AfterEach(func() {
+	if CurrentGinkgoTestDescription().Failed {
+		debug.CollectArtifacts(afero.NewOsFs(), GinkgoWriter, TestNamespace, KubeConfigPath, KubectlPath)
+	}
 })
 
 var _ = AfterSuite(func() {

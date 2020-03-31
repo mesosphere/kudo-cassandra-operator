@@ -10,9 +10,12 @@ import (
 	"testing"
 	"time"
 
+	"github.com/spf13/afero"
+
 	"github.com/onsi/ginkgo/reporters"
 
 	"github.com/kudobuilder/test-tools/pkg/client"
+	"github.com/kudobuilder/test-tools/pkg/debug"
 	"github.com/kudobuilder/test-tools/pkg/kubernetes"
 	"github.com/kudobuilder/test-tools/pkg/kudo"
 	. "github.com/onsi/ginkgo"
@@ -30,17 +33,25 @@ var (
 	TestNamespace     = fmt.Sprintf("%s-namespace", TestName)
 	TestInstance      = fmt.Sprintf("%s-instance", OperatorName)
 	KubeConfigPath    = os.Getenv("KUBECONFIG")
+	KubectlPath       = os.Getenv("KUBECTL_PATH")
 	OperatorDirectory = os.Getenv("OPERATOR_DIRECTORY")
 
 	// Node Count of 1 for Sanity test to have the tests a little bit faster
 	NodeCount = 1
 	Client    = client.Client{}
 	Operator  = kudo.Operator{}
+	Fs        = afero.NewOsFs()
 )
 
 var _ = BeforeSuite(func() {
 	Client, _ = client.NewForConfig(KubeConfigPath)
 	_ = kubernetes.CreateNamespace(Client, TestNamespace)
+})
+
+var _ = AfterEach(func() {
+	if CurrentGinkgoTestDescription().Failed {
+		debug.CollectArtifacts(afero.NewOsFs(), GinkgoWriter, TestNamespace, KubeConfigPath, KubectlPath)
+	}
 })
 
 var _ = AfterSuite(func() {
