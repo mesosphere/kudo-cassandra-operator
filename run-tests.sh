@@ -36,4 +36,4 @@ docker run \
        -v "${VENDOR_DIRECTORY}:${container_vendor_directory}" \
        -w "${container_project_directory}" \
        "${INTEGRATION_TESTS_DOCKER_IMAGE}" \
-       bash -c "${container_project_directory}/tests/run.sh"
+       bash -c "${container_project_directory}/tests/run.sh tls"
