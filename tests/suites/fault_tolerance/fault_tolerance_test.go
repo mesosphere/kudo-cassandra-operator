@@ -6,6 +6,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/kudobuilder/test-tools/pkg/debug"
+	"github.com/spf13/afero"
+
 	v1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -25,6 +28,7 @@ import (
 
 var (
 	kubeConfigPath    = os.Getenv("KUBECONFIG")
+	kubectlPath       = os.Getenv("KUBECTL_PATH")
 	operatorName      = os.Getenv("OPERATOR_NAME")
 	operatorDirectory = os.Getenv("OPERATOR_DIRECTORY")
 
@@ -257,6 +261,12 @@ func setupRBAC(client testclient.Client) {
 	}
 
 }
+
+var _ = AfterEach(func() {
+	if CurrentGinkgoTestDescription().Failed {
+		debug.CollectArtifacts(afero.NewOsFs(), GinkgoWriter, testNamespace, kubeConfigPath, kubectlPath)
+	}
+})
 
 var _ = Describe("Fault tolerance tests", func() {
 
