@@ -29,6 +29,7 @@ spec:
   {{ else }}
   replicas: {{ $.Params.NODE_COUNT }}
   {{ end }}
+  podManagementPolicy: {{ $.Params.POD_MANAGEMENT_POLICY }}
   template:
     metadata:
       labels:
