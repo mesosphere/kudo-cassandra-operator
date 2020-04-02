@@ -864,3 +864,7 @@ parameters:
   - name: CUSTOM_JVM_OPTIONS_BASE64
     description: "Base64-encoded JVM options appended to jvm.options."
     default: ""
+
+  - name: POD_MANAGEMENT_POLICY
+    description: "podManagementPolicy of the Cassandra Statefulset"
+    default: "OrderedReady"
