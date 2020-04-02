@@ -1,18 +1,18 @@
-OVERRIDE_CLUSTER_NAME: "VZ3Big"
+OVERRIDE_CLUSTER_NAME: "Cassandra-1DC-Small"
 ENDPOINT_SNITCH: "GossipingPropertyFileSnitch"
 NODE_ANTI_AFFINITY: "true"
 NODE_READINESS_PROBE_INITIAL_DELAY_S: 30
 JMX_LOCAL_ONLY: false
-NODE_DISK_SIZE_GIB: 50
+NODE_DISK_SIZE_GIB: 20
 NODE_TOPOLOGY:
   - datacenter: ring1
     datacenterLabels:
-      failure-domain.beta.kubernetes.io/zone: us-west-2a
-    nodes: 99
-    rackLabelKey: failure-domain.beta.kubernetes.io/zone
+      datacenter: dc4
+    nodes: 33
+    rackLabelKey: failure-domain.beta.kubernetes.io/region
     racks:
       - rack: rack1
-        rackLabelValue: us-west-2a
+        rackLabelValue: us-west-2
 NODE_CPU_MC: "2000"
 NODE_CPU_LIMIT_MC: "3000"
 NODE_MEM_MIB: "4096"

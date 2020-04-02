@@ -1,14 +1,15 @@
-OVERRIDE_CLUSTER_NAME: "VZDryRun"
+OVERRIDE_CLUSTER_NAME: "Cassandra-1DC-Small-Par"
 ENDPOINT_SNITCH: "GossipingPropertyFileSnitch"
 NODE_ANTI_AFFINITY: "true"
 NODE_READINESS_PROBE_INITIAL_DELAY_S: 30
 JMX_LOCAL_ONLY: false
+POD_MANAGEMENT_POLICY: Parallel
 NODE_DISK_SIZE_GIB: 20
 NODE_TOPOLOGY:
   - datacenter: ring1
     datacenterLabels:
-      failure-domain.beta.kubernetes.io/region: us-west-2
-    nodes: 3
+      datacenter: dc4
+    nodes: 33
     rackLabelKey: failure-domain.beta.kubernetes.io/region
     racks:
       - rack: rack1

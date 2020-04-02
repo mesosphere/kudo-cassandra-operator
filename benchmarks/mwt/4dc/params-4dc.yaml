@@ -3,7 +3,7 @@ ENDPOINT_SNITCH: "GossipingPropertyFileSnitch"
 NODE_ANTI_AFFINITY: "true"
 NODE_READINESS_PROBE_INITIAL_DELAY_S: 30
 JMX_LOCAL_ONLY: false
-NODE_DISK_SIZE_GIB: 50
+NODE_DISK_SIZE_GIB: 20
 NODE_TOPOLOGY:
   - datacenter: ring1
     datacenterLabels:
@@ -13,30 +13,46 @@ NODE_TOPOLOGY:
     racks:
       - rack: rack1
         rackLabelValue: us-west-2a
+      - rack: rack2
+        rackLabelValue: us-west-2b
+      - rack: rack3
+        rackLabelValue: us-west-2c
   - datacenter: ring2
     datacenterLabels:
       datacenter: dc2
     nodes: 33
     rackLabelKey: failure-domain.beta.kubernetes.io/zone
     racks:
-      - rack: rack2
+      - rack: rack4
         rackLabelValue: us-west-2a
+      - rack: rack5
+        rackLabelValue: us-west-2b
+      - rack: rack6
+        rackLabelValue: us-west-2c
   - datacenter: ring3
     datacenterLabels:
       datacenter: dc3
     nodes: 33
     rackLabelKey: failure-domain.beta.kubernetes.io/zone
     racks:
-      - rack: rack3
+      - rack: rack7
         rackLabelValue: us-west-2a
+      - rack: rack8
+        rackLabelValue: us-west-2b
+      - rack: rack9
+        rackLabelValue: us-west-2c
   - datacenter: ring4
     datacenterLabels:
       datacenter: dc4
     nodes: 33
     rackLabelKey: failure-domain.beta.kubernetes.io/zone
     racks:
-      - rack: rack4
+      - rack: rack10
         rackLabelValue: us-west-2a
+      - rack: rack11
+        rackLabelValue: us-west-2b
+      - rack: rack12
+        rackLabelValue: us-west-2c
 NODE_CPU_MC: "2500"
 NODE_CPU_LIMIT_MC: "3000"
 NODE_MEM_MIB: "6144"
