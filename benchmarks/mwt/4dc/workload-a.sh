@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
 
 kudo_cassandra_instance_name="cassandra"
-kudo_cassandra_instance_namespace="mwt"
+kudo_cassandra_instance_namespace="cass-4dc"
 
 svc_endpoint="${kudo_cassandra_instance_name}-svc.${kudo_cassandra_instance_namespace}.svc.cluster.local"
 
-workload_name="workload-a"
-num_clients=50
-keyspace_name="workload-a"
-duration=10m
+workload_name="workload-4dc-a"
+num_clients=300
+keyspace_name="workload-4dc-a"
+duration=20m
 replication_string="strategy=SimpleStrategy, replication_factor=0"
-threads=500
+threads=250
 consistency="LOCAL_ONE"
 
-workload_resource_file=workload-a.yaml
+workload_resource_file=workload-4dc-a.yaml
