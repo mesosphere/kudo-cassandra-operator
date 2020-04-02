@@ -7,8 +7,8 @@ NODE_DISK_SIZE_GIB: 50
 NODE_TOPOLOGY:
   - datacenter: ring1
     datacenterLabels:
-      custom/datacenter: dc1
-    nodes: 66
+      failure-domain.beta.kubernetes.io/zone: us-west-2a
+    nodes: 99
     rackLabelKey: failure-domain.beta.kubernetes.io/zone
     racks:
       - rack: rack1

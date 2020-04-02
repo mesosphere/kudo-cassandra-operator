@@ -1,4 +1,4 @@
-OVERRIDE_CLUSTER_NAME: "VZ2B"
+OVERRIDE_CLUSTER_NAME: "Cassandra-2DC-Par"
 ENDPOINT_SNITCH: "GossipingPropertyFileSnitch"
 NODE_ANTI_AFFINITY: "true"
 NODE_READINESS_PROBE_INITIAL_DELAY_S: 30
@@ -7,7 +7,7 @@ NODE_DISK_SIZE_GIB: 50
 NODE_TOPOLOGY:
   - datacenter: ring1
     datacenterLabels:
-      custom/datacenter: dc1
+      datacenter: dc1
     nodes: 33
     rackLabelKey: failure-domain.beta.kubernetes.io/zone
     racks:
@@ -15,7 +15,7 @@ NODE_TOPOLOGY:
         rackLabelValue: us-west-2a
   - datacenter: ring2
     datacenterLabels:
-      custom/datacenter: dc2
+      datacenter: dc2
     nodes: 33
     rackLabelKey: failure-domain.beta.kubernetes.io/zone
     racks:

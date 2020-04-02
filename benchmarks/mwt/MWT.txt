@@ -1,0 +1,8 @@
+            DC1         DC2         DC3         DC4
+4DC          33          33          33          33
+3DC          33          33          33
+2DC                                  33          33
+2DC-Par      33          33
+1DCL         33          33          33
+1DCS                                             33
+1DCS-Par                                         33
