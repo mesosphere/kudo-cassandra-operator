@@ -151,7 +151,7 @@ spec:
               /etc/tls/bin/generate-tls-artifacts.sh;
               {{ end }}
               {{ if and (ne $.Params.JMX_LOCAL_ONLY "true") (eq $.Params.TRANSPORT_ENCRYPTION_ENABLED "true") }}
-              cp /nodetool-ssl-properties/nodetool-ssl.properties /home/cassandra/.cassandra/nodetool-ssl.properties
+              cp /nodetool-ssl-properties/nodetool-ssl.properties /home/cassandra/.cassandra/nodetool-ssl.properties;
               {{ end }}
               /etc/cassandra/generate-cqlshrc.sh;
               cassandra -f
@@ -253,7 +253,6 @@ spec:
           command:
             - bash
             - -c
-            - -x
           args:
             - {{ if and (ne $.Params.JMX_LOCAL_ONLY "true") (eq $.Params.TRANSPORT_ENCRYPTION_ENABLED "true") }}
               while IFS= read -r flag; do
