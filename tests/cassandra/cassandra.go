@@ -108,17 +108,29 @@ func Nodes(client client.Client, instance kudo.Instance) ([]map[string]string, e
 	log.Infof("Get Node Status from %s", podName)
 
 	var stdout strings.Builder
+	var command cmd.Builder
 
-	cmd := cmd.New("nodetool").
-		WithArguments("status").
-		WithStdout(&stdout)
+	log.Infof("Parameters: %v", instance.Spec.Parameters)
+
+	jmxLocal, jmxLocalSet := instance.Spec.Parameters["JMX_LOCAL_ONLY"]
+	tls, tlsSet := instance.Spec.Parameters["TRANSPORT_ENCRYPTION_ENABLED"]
+
+	if jmxLocalSet && tlsSet && tls == "true" && jmxLocal != "true" {
+		command = cmd.New("nodetool").
+			WithArguments("--ssl", "status").
+			WithStdout(&stdout)
+	} else {
+		command = cmd.New("nodetool").
+			WithArguments("status").
+			WithStdout(&stdout)
+	}
 
 	pod, err := kubernetes.GetPod(client, podName, instance.Namespace)
 	if err != nil {
 		return nil, err
 	}
 
-	err = pod.ContainerExec("cassandra", cmd)
+	err = pod.ContainerExec("cassandra", command)
 	if err != nil {
 		return nil, err
 	}

@@ -22,6 +22,8 @@ spec:
     {{ if eq .Params.JMX_LOCAL_ONLY "false" }}
     - port: {{ .Params.JMX_PORT }}
       name: jmx
+    - port: {{ .Params.RMI_PORT }}
+      name: rmi
     {{ end }}
     {{ if eq .Params.PROMETHEUS_EXPORTER_ENABLED "true" }}
     - port: {{ .Params.PROMETHEUS_EXPORTER_PORT }}

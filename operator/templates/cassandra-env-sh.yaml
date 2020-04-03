@@ -247,34 +247,32 @@ data:
     # JMX connections.
     # For security reasons, you should not expose this port to the internet.  Firewall it if needed.
     JMX_PORT="{{ .Params.JMX_PORT }}"
+    RMI_PORT="{{ .Params.RMI_PORT }}"
 
-    {{ if eq .Params.JMX_LOCAL_ONLY "true" }}
-      JVM_OPTS="$JVM_OPTS -Dcassandra.jmx.local.port=$JMX_PORT"
-      JVM_OPTS="$JVM_OPTS -Dcom.sun.management.jmxremote.authenticate=false"
-    {{ else }}
+    {{ if and (ne $.Params.JMX_LOCAL_ONLY "true") (eq $.Params.TRANSPORT_ENCRYPTION_ENABLED "true") }}
+      JVM_OPTS="$JVM_OPTS -Dcom.sun.management.jmxremote.local.only=false"
+      JVM_OPTS="$JVM_OPTS -Djava.rmi.server.hostname=$POD_NAME.{{ .Name }}-svc.$POD_NAMESPACE.svc.cluster.local"
+      
       JVM_OPTS="$JVM_OPTS -Dcassandra.jmx.remote.port=$JMX_PORT"
       # if ssl is enabled the same port cannot be used for both jmx and rmi so either
       # pick another value for this property or comment out to use a random port (though see CASSANDRA-7087 for origins)
-      JVM_OPTS="$JVM_OPTS -Dcom.sun.management.jmxremote.rmi.port=$JMX_PORT"
+      JVM_OPTS="$JVM_OPTS -Dcom.sun.management.jmxremote.rmi.port=$RMI_PORT"
 
       # turn on JMX authentication. See below for further options
       JVM_OPTS="$JVM_OPTS -Dcom.sun.management.jmxremote.authenticate=false"
 
-      JVM_OPTS="$JVM_OPTS -Dcom.sun.management.jmxremote.ssl=false"
-      JVM_OPTS="$JVM_OPTS -Dcom.sun.management.jmxremote.local.only=false"
-      JVM_OPTS="$JVM_OPTS -Dcom.sun.management.jmxremote.port=$JMX_PORT"
-      JVM_OPTS="$JVM_OPTS -Dcom.sun.management.jmxremote.rmi.port=$JMX_PORT"
-      JVM_OPTS="$JVM_OPTS -Djava.rmi.server.hostname=$POD_NAME.{{ .Name }}-svc.$POD_NAMESPACE.svc.cluster.local"
-
       # jmx ssl options
-      #JVM_OPTS="$JVM_OPTS -Dcom.sun.management.jmxremote.ssl=true"
-      #JVM_OPTS="$JVM_OPTS -Dcom.sun.management.jmxremote.ssl.need.client.auth=true"
-      #JVM_OPTS="$JVM_OPTS -Dcom.sun.management.jmxremote.ssl.enabled.protocols=<enabled-protocols>"
-      #JVM_OPTS="$JVM_OPTS -Dcom.sun.management.jmxremote.ssl.enabled.cipher.suites=<enabled-cipher-suites>"
-      #JVM_OPTS="$JVM_OPTS -Djavax.net.ssl.keyStore=/path/to/keystore"
-      #JVM_OPTS="$JVM_OPTS -Djavax.net.ssl.keyStorePassword=<keystore-password>"
-      #JVM_OPTS="$JVM_OPTS -Djavax.net.ssl.trustStore=/path/to/truststore"
-      #JVM_OPTS="$JVM_OPTS -Djavax.net.ssl.trustStorePassword=<truststore-password>"
+      JVM_OPTS="$JVM_OPTS -Dcom.sun.management.jmxremote.ssl=true"
+      JVM_OPTS="$JVM_OPTS -Dcom.sun.management.jmxremote.ssl.need.client.auth=true"
+      JVM_OPTS="$JVM_OPTS -Dcom.sun.management.jmxremote.ssl.enabled.protocols=TLSv1.2"
+      JVM_OPTS="$JVM_OPTS -Dcom.sun.management.jmxremote.ssl.enabled.cipher.suites={{ .Params.TRANSPORT_ENCRYPTION_CIPHERS }}"
+      JVM_OPTS="$JVM_OPTS -Djavax.net.ssl.keyStore=/etc/cassandra/tls/cassandra.server.keystore.jks"
+      JVM_OPTS="$JVM_OPTS -Djavax.net.ssl.keyStorePassword={{ .Params.TLS_KEYSTORE_PASSWORD }}"
+      JVM_OPTS="$JVM_OPTS -Djavax.net.ssl.trustStore=/etc/cassandra/tls/cassandra.server.truststore.jks"
+      JVM_OPTS="$JVM_OPTS -Djavax.net.ssl.trustStorePassword={{ .Params.TLS_TRUSTSTORE_PASSWORD }}"
+    {{ else }}
+      JVM_OPTS="$JVM_OPTS -Dcassandra.jmx.local.port=$JMX_PORT"
+      JVM_OPTS="$JVM_OPTS -Dcom.sun.management.jmxremote.authenticate=false"
     {{ end }}
 
     # jmx authentication and authorization options. By default, auth is only

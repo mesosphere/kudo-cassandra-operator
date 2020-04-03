@@ -150,6 +150,9 @@ spec:
             - {{ if or (eq $.Params.TRANSPORT_ENCRYPTION_ENABLED "true") (eq $.Params.TRANSPORT_ENCRYPTION_CLIENT_ENABLED "true") }}
               /etc/tls/bin/generate-tls-artifacts.sh;
               {{ end }}
+              {{ if and (ne $.Params.JMX_LOCAL_ONLY "true") (eq $.Params.TRANSPORT_ENCRYPTION_ENABLED "true") }}
+              cp /nodetool-ssl-properties/nodetool-ssl.properties /home/cassandra/.cassandra/nodetool-ssl.properties
+              {{ end }}
               /etc/cassandra/generate-cqlshrc.sh;
               cassandra -f
           # Comment the `command` above and uncomment the one below if pods are
@@ -239,10 +242,25 @@ spec:
             - name: generate-tls-artifacts
               mountPath: /etc/tls/bin
           {{ end }}
+          {{ if and (ne $.Params.JMX_LOCAL_ONLY "true") (eq $.Params.TRANSPORT_ENCRYPTION_ENABLED "true") }}
+            - name: nodetool-ssl-properties
+              mountPath: /nodetool-ssl-properties
+          {{ end }}
         {{ if eq $.Params.PROMETHEUS_EXPORTER_ENABLED "true" }}
         - name: prometheus-exporter
           image: {{ $.Params.PROMETHEUS_EXPORTER_DOCKER_IMAGE }}
           imagePullPolicy: {{ $.Params.PROMETHEUS_EXPORTER_DOCKER_IMAGE_PULL_POLICY }}
+          command:
+            - bash
+            - -c
+            - -x
+          args:
+            - {{ if and (ne $.Params.JMX_LOCAL_ONLY "true") (eq $.Params.TRANSPORT_ENCRYPTION_ENABLED "true") }}
+              while IFS= read -r flag; do
+                JVM_OPTS="${JVM_OPTS} $flag";
+              done < /nodetool-ssl-properties/nodetool-ssl.properties;
+              {{ end }}
+              JVM_OPTS="${JVM_OPTS}" /sbin/dumb-init /bin/bash /run.sh;
           env:
             - name: NODE_NAME
               valueFrom:
@@ -279,6 +297,12 @@ spec:
             - name: cassandra-exporter-config-yml
               mountPath: /etc/cassandra_exporter/config.yml
               subPath: config.yml
+          {{ if and (ne $.Params.JMX_LOCAL_ONLY "true") (eq $.Params.TRANSPORT_ENCRYPTION_ENABLED "true") }}
+            - name: etc-cassandra
+              mountPath: /etc/cassandra/
+            - name: nodetool-ssl-properties
+              mountPath: /nodetool-ssl-properties
+          {{ end }}
         {{ end }}
       {{ if $.Params.NODE_TOPOLOGY }}
       initContainers:
@@ -355,6 +379,11 @@ spec:
           configMap:
             name:  {{ $.Name }}-generate-tls-artifacts-sh
             defaultMode: 0755
+        {{ end }}
+        {{ if and (ne $.Params.JMX_LOCAL_ONLY "true") (eq $.Params.TRANSPORT_ENCRYPTION_ENABLED "true") }}
+        - name: nodetool-ssl-properties
+          configMap:
+            name: {{ $.Name }}-nodetool-ssl-properties
         {{ end }}
   volumeClaimTemplates:
     - metadata:
