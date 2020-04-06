@@ -6,12 +6,8 @@ import (
 	"testing"
 	"time"
 
-	v1 "k8s.io/api/core/v1"
-	rbacv1 "k8s.io/api/rbac/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
 	"github.com/thoas/go-funk"
+	"k8s.io/apimachinery/pkg/api/errors"
 
 	testclient "github.com/kudobuilder/test-tools/pkg/client"
 	"github.com/kudobuilder/test-tools/pkg/kubernetes"
@@ -206,58 +202,6 @@ func deleteRBAC(client testclient.Client) {
 	}
 }
 
-func setupRBAC(client testclient.Client) {
-	serviceAccount := v1.ServiceAccount{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      nodeResolverServiceAccount,
-			Namespace: testNamespace,
-		},
-	}
-	_, err := kubernetes.NewServiceAccount(client, serviceAccount)
-	if !errors.IsAlreadyExists(err) {
-		Expect(err).NotTo(HaveOccurred())
-	}
-
-	role := rbacv1.ClusterRole{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: nodeResolverRole,
-		},
-		Rules: []rbacv1.PolicyRule{
-			{
-				APIGroups: []string{""},
-				Resources: []string{"nodes"},
-				Verbs:     []string{"get", "list"},
-			},
-		},
-		AggregationRule: nil,
-	}
-	_, err = kubernetes.NewClusterRole(client, role)
-	if !errors.IsAlreadyExists(err) {
-		Expect(err).NotTo(HaveOccurred())
-	}
-
-	roleBinding := rbacv1.ClusterRoleBinding{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: nodeResolverRoleBinding,
-		},
-		RoleRef: rbacv1.RoleRef{
-			APIGroup: "rbac.authorization.k8s.io",
-			Kind:     "ClusterRole",
-			Name:     nodeResolverRole,
-		},
-		Subjects: []rbacv1.Subject{{
-			Kind:      "ServiceAccount",
-			Name:      nodeResolverServiceAccount,
-			Namespace: testNamespace,
-		}},
-	}
-	_, err = kubernetes.NewClusterRoleBinding(client, roleBinding)
-	if !errors.IsAlreadyExists(err) {
-		Expect(err).NotTo(HaveOccurred())
-	}
-
-}
-
 var _ = Describe("Fault tolerance tests", func() {
 
 	var (
@@ -289,7 +233,6 @@ var _ = Describe("Fault tolerance tests", func() {
 				Expect(err).NotTo(HaveOccurred())
 			}
 			deleteRBAC(client)
-			setupRBAC(client)
 
 			By("Starting the test")
 
@@ -304,6 +247,7 @@ var _ = Describe("Fault tolerance tests", func() {
 				"NODE_TOPOLOGY":                        topologyYaml,
 				"NODE_ANTI_AFFINITY":                   "true",
 				"NODE_READINESS_PROBE_INITIAL_DELAY_S": "10",
+				"SERVICE_ACCOUNT_INSTALL":              "true",
 			}
 
 			By("Waiting for the operator to deploy")
