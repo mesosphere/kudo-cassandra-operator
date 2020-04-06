@@ -209,7 +209,7 @@ func Cqlsh(client client.Client, instance kudo.Instance, cql string) (string, er
 }
 
 func Uninstall(client client.Client, operator kudo.Operator) error {
-	if err := operator.UninstallWaitForInstance(); err != nil {
+	if err := operator.UninstallWaitForDeletion(); err != nil {
 		return err
 	}
 
