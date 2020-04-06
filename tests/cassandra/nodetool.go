@@ -172,5 +172,7 @@ func (c *Executor) Run(arguments ...string) (string, string, error) {
 		err = fmt.Errorf("failed to exec in container: %v", err)
 	}
 
+	fmt.Printf("%v\n\n%v\n\n%v", stdOut.String(), stdErr.String(), err)
+
 	return stdOut.String(), stdErr.String(), err
 }

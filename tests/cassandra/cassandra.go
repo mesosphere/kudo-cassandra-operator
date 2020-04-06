@@ -110,8 +110,6 @@ func Nodes(client client.Client, instance kudo.Instance) ([]map[string]string, e
 	var stdout strings.Builder
 	var command cmd.Builder
 
-	log.Infof("Parameters: %v", instance.Spec.Parameters)
-
 	jmxLocal, jmxLocalSet := instance.Spec.Parameters["JMX_LOCAL_ONLY"]
 	tls, tlsSet := instance.Spec.Parameters["TRANSPORT_ENCRYPTION_ENABLED"]
 
