@@ -29,11 +29,11 @@ mkdir -p ${workload_name}
 for pod in ${pods}; do
   echo "Download artifacts from $pod"
   kubectl logs "$pod" -n "${kudo_cassandra_instance_namespace}" > ${workload_name}/stdout_$pod.txt
-  kubectl cp "${kudo_cassandra_instance_namespace}"/$pod:/tmp/${workload_name}.html ${workload_name}/workload_$pod.html
+#  kubectl cp "${kudo_cassandra_instance_namespace}"/$pod:/tmp/${workload_name}.html ${workload_name}/workload_$pod.html
 done
 
 echo "Packaging artifacts..."
-tar cvfz workload-a.tar.gz ${workload_name}
+tar cvfz ${workload_name}.tar.gz ${workload_name}
 
 rm -r ${workload_name}
 

@@ -6,3 +6,52 @@
 1DCL         33          33          33
 1DCS                                             33
 1DCS-Par                                         33
+
+- 4DC: 1h 55m until 132/132 nodes running
+- 3DC: 1h 45m until 99/99 nodes running
+- 2DC: ~1h until 66/66 nodes running
+- 2DCPar: 46m until 66/66 nodes running
+- 1DCBig: Aborted after 2h, 78/99 Nodes were up
+- 1DCSmall: 42m until 33/33 nodes running
+- 1DCSmallPar: 29m until 33/33 nodes running
+
+4DC:
+- 34 Minutes: 62/132 Nodes running
+- 46 Minutes: 77/132 Nodes running
+- 58 Minutes: 88/132 Nodes running
+- 1h 13m: 104/132 Nodes running
+- 1h 55m: Running
+
+3DC:
+- 35 Minutes: 49/99 Nodes running
+- 42 Minutes: 63/99 Nodes running
+- 58 Minutes: 74/99 Nodes running
+- 1h 12m: 85/99 Nodes running
+- 1h 22m: 91/99 Nodes running
+- 1h 45m: Running
+
+2DC:
+- 35 Minutes: 43/66 Nodes running
+- 44 Minutes: 52/66 Nodes running
+- 57 Minutes: 64/66 Nodes running
+- After ~1 Hour: Running
+
+2DC-Par:
+- After 17 Minutes ~21 Nodes in CrashLoop, rest running
+- After 20 Minutes ~15 Nodes in CrashLoop, rest running
+- After 27 Minutes 9 Nodes in CrashLoop, rest running
+- After 46 Minutes: Running
+
+1DCLarge:
+- 35 Minutes: 28/99 Nodes running
+- 43 Minutes: 33/99 Nodes running
+- 1h 13m: 52/99 Nodes running
+- 2h: 78/99 Nodes running
+
+1DCSmall:
+- 35 Minutes: 29/33 Nodes running
+- 42 Minutes: All Running
+
+1DCSmallPar:
+- 24 Minutes: 1 Node in CrashLoop, rest running
+- 29 Minutes: All Running

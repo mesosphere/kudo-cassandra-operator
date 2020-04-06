@@ -15,8 +15,8 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 1,
-  "id": 39,
-  "iteration": 1585570907465,
+  "id": 41,
+  "iteration": 1585842248166,
   "links": [],
   "panels": [
     {
@@ -293,7 +293,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "max by (pod)(rate(container_cpu_usage_seconds_total{container=\"cassandra\"}[1m]))",
+          "expr": "max by (pod)(rate(container_cpu_usage_seconds_total{container=\"cassandra\", namespace=\"$namespace\"}[1m]))",
           "format": "time_series",
           "hide": false,
           "intervalFactor": 1,
@@ -301,7 +301,7 @@
           "refId": "A"
         },
         {
-          "expr": "avg (rate(container_cpu_usage_seconds_total{container=\"cassandra\"}[1m]))",
+          "expr": "avg (rate(container_cpu_usage_seconds_total{container=\"cassandra\", namespace=\"$namespace\"}[1m]))",
           "format": "time_series",
           "hide": false,
           "intervalFactor": 1,
@@ -734,7 +734,13 @@
       "pointradius": 5,
       "points": false,
       "renderer": "flot",
-      "seriesOverrides": [],
+      "seriesOverrides": [
+        {
+          "alias": "Avg",
+          "color": "#C4162A",
+          "linewidth": 2
+        }
+      ],
       "spaceLength": 10,
       "stack": false,
       "steppedLine": false,
@@ -747,6 +753,15 @@
           "intervalFactor": 1,
           "legendFormat": "{{ pod }}",
           "refId": "A"
+        },
+        {
+          "expr": "avg(rate (container_network_receive_bytes_total{namespace=\"$namespace\", pod=~\"$pod_prefix.*\", interface=\"eth0\"}[1m]))",
+          "format": "time_series",
+          "hide": false,
+          "instant": false,
+          "intervalFactor": 1,
+          "legendFormat": "Avg",
+          "refId": "B"
         }
       ],
       "thresholds": [],
@@ -830,7 +845,13 @@
       "pointradius": 5,
       "points": false,
       "renderer": "flot",
-      "seriesOverrides": [],
+      "seriesOverrides": [
+        {
+          "alias": "Avg",
+          "color": "#C4162A",
+          "linewidth": 2
+        }
+      ],
       "spaceLength": 10,
       "stack": false,
       "steppedLine": false,
@@ -843,6 +864,15 @@
           "intervalFactor": 1,
           "legendFormat": "{{ pod }}",
           "refId": "A"
+        },
+        {
+          "expr": "avg(rate (container_network_transmit_bytes_total{namespace=\"$namespace\", pod=~\"$pod_prefix.*\", interface=\"eth0\"}[1m]))",
+          "format": "time_series",
+          "hide": false,
+          "instant": false,
+          "intervalFactor": 1,
+          "legendFormat": "Avg",
+          "refId": "B"
         }
       ],
       "thresholds": [],
@@ -887,7 +917,7 @@
       }
     },
     {
-      "collapsed": true,
+      "collapsed": false,
       "datasource": null,
       "gridPos": {
         "h": 1,
@@ -896,230 +926,229 @@
         "y": 36
       },
       "id": 47,
-      "panels": [
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": "Prometheus",
-          "fill": 1,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 0,
-            "y": 37
-          },
-          "id": 49,
-          "legend": {
-            "alignAsTable": true,
-            "avg": false,
-            "current": true,
-            "max": false,
-            "min": false,
-            "rightSide": true,
-            "show": true,
-            "sort": "current",
-            "sortDesc": true,
-            "total": false,
-            "values": true
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "options": {
-            "dataLinks": []
-          },
-          "percentage": false,
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "sum(cassandra_stats{cluster=\"$cluster\", table=~\"$table\", name=~\"org:apache:cassandra:metrics:table:$keyspace:$table:livediskspaceused:count\"}) by (datacenter)",
-              "format": "time_series",
-              "intervalFactor": 1,
-              "legendFormat": "Live {{ datacenter }}",
-              "refId": "A"
-            },
-            {
-              "expr": "sum(cassandra_stats{cluster=\"$cluster\", table=~\"$table\", name=~\"org:apache:cassandra:metrics:table:$keyspace:$table:totaldiskspaceused:count\"}) by (datacenter)",
-              "format": "time_series",
-              "intervalFactor": 1,
-              "legendFormat": "Total {{ datacenter }}",
-              "refId": "B"
-            },
-            {
-              "expr": "cassandra_stats{cluster=\"$cluster\", table=~\"$table\", name=~\"org:apache:cassandra:metrics:table:$keyspace:$table:livediskspaceused:count\"}",
-              "format": "time_series",
-              "hide": true,
-              "intervalFactor": 1,
-              "legendFormat": "{{ pod }} Live {{ datacenter }}",
-              "refId": "C"
-            },
-            {
-              "expr": "cassandra_stats{cluster=\"$cluster\", table=~\"$table\", name=~\"org:apache:cassandra:metrics:table:$keyspace:$table:totaldiskspaceused:count\"}",
-              "format": "time_series",
-              "hide": true,
-              "intervalFactor": 1,
-              "legendFormat": "{{ pod }} Total {{ datacenter }}",
-              "refId": "D"
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeRegions": [],
-          "timeShift": null,
-          "title": "Disk Space Used",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "buckets": null,
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "bytes",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            },
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false,
-            "alignLevel": null
-          }
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": "Prometheus",
-          "fill": 1,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 12,
-            "y": 37
-          },
-          "id": 50,
-          "legend": {
-            "alignAsTable": true,
-            "avg": false,
-            "current": true,
-            "max": false,
-            "min": false,
-            "rightSide": true,
-            "show": true,
-            "sort": "current",
-            "sortDesc": true,
-            "total": false,
-            "values": true
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "options": {
-            "dataLinks": []
-          },
-          "percentage": false,
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": true,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "sum(cassandra_stats{cluster=\"$cluster\", table=~\"$table\", name=~\"org:apache:cassandra:metrics:table:$keyspace:$table:livesstablecount:value\"}) by (datacenter)",
-              "format": "time_series",
-              "intervalFactor": 1,
-              "legendFormat": "{{ datacenter }}",
-              "refId": "A"
-            },
-            {
-              "expr": "cassandra_stats{cluster=\"$cluster\", table=~\"$table\", name=~\"org:apache:cassandra:metrics:table:$keyspace:$table:livesstablecount:value\"}",
-              "format": "time_series",
-              "hide": true,
-              "intervalFactor": 1,
-              "legendFormat": "{{ pod }}: {{ datacenter }}",
-              "refId": "B"
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeRegions": [],
-          "timeShift": null,
-          "title": "Nb Live SSTables",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "buckets": null,
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            },
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false,
-            "alignLevel": null
-          }
-        }
-      ],
+      "panels": [],
       "title": "DISK",
       "type": "row"
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "Prometheus",
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 37
+      },
+      "id": 49,
+      "legend": {
+        "alignAsTable": true,
+        "avg": false,
+        "current": true,
+        "max": false,
+        "min": false,
+        "rightSide": true,
+        "show": true,
+        "sort": "current",
+        "sortDesc": true,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 1,
+      "links": [],
+      "nullPointMode": "null",
+      "options": {
+        "dataLinks": []
+      },
+      "percentage": false,
+      "pointradius": 5,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "sum(cassandra_stats{cluster=\"$cluster\", table=~\"$table\", name=~\"org:apache:cassandra:metrics:table:$keyspace:$table:livediskspaceused:count\"}) by (datacenter)",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "legendFormat": "Live {{ datacenter }}",
+          "refId": "A"
+        },
+        {
+          "expr": "sum(cassandra_stats{cluster=\"$cluster\", table=~\"$table\", name=~\"org:apache:cassandra:metrics:table:$keyspace:$table:totaldiskspaceused:count\"}) by (datacenter)",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "legendFormat": "Total {{ datacenter }}",
+          "refId": "B"
+        },
+        {
+          "expr": "cassandra_stats{cluster=\"$cluster\", table=~\"$table\", name=~\"org:apache:cassandra:metrics:table:$keyspace:$table:livediskspaceused:count\"}",
+          "format": "time_series",
+          "hide": true,
+          "intervalFactor": 1,
+          "legendFormat": "{{ pod }} Live {{ datacenter }}",
+          "refId": "C"
+        },
+        {
+          "expr": "cassandra_stats{cluster=\"$cluster\", table=~\"$table\", name=~\"org:apache:cassandra:metrics:table:$keyspace:$table:totaldiskspaceused:count\"}",
+          "format": "time_series",
+          "hide": true,
+          "intervalFactor": 1,
+          "legendFormat": "{{ pod }} Total {{ datacenter }}",
+          "refId": "D"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Disk Space Used",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "bytes",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": "0",
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "Prometheus",
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 37
+      },
+      "id": 50,
+      "legend": {
+        "alignAsTable": true,
+        "avg": false,
+        "current": true,
+        "max": false,
+        "min": false,
+        "rightSide": true,
+        "show": true,
+        "sort": "current",
+        "sortDesc": true,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 1,
+      "links": [],
+      "nullPointMode": "null",
+      "options": {
+        "dataLinks": []
+      },
+      "percentage": false,
+      "pointradius": 5,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": true,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "sum(cassandra_stats{cluster=\"$cluster\", table=~\"$table\", name=~\"org:apache:cassandra:metrics:table:$keyspace:$table:livesstablecount:value\"}) by (datacenter)",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "legendFormat": "{{ datacenter }}",
+          "refId": "A"
+        },
+        {
+          "expr": "cassandra_stats{cluster=\"$cluster\", table=~\"$table\", name=~\"org:apache:cassandra:metrics:table:$keyspace:$table:livesstablecount:value\"}",
+          "format": "time_series",
+          "hide": true,
+          "intervalFactor": 1,
+          "legendFormat": "{{ pod }}: {{ datacenter }}",
+          "refId": "B"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Nb Live SSTables",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": "0",
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     }
   ],
-  "refresh": false,
+  "refresh": "1m",
   "schemaVersion": 20,
   "style": "dark",
   "tags": [],
@@ -1128,8 +1157,9 @@
       {
         "allValue": null,
         "current": {
-          "text": "VZ1",
-          "value": "VZ1"
+          "selected": false,
+          "text": "Cassandra-2DC",
+          "value": "Cassandra-2DC"
         },
         "datasource": "Prometheus",
         "definition": "label_values(cassandra_stats{name=\"java:lang:memory:heapmemoryusage:used\"}, cluster)",
@@ -1153,8 +1183,10 @@
       {
         "allValue": null,
         "current": {
-          "text": "workloadlocal",
-          "value": "workloadlocal"
+          "selected": true,
+          "tags": [],
+          "text": "workload2dcb",
+          "value": "workload2dcb"
         },
         "datasource": "Prometheus",
         "definition": "label_values(cassandra_stats{cluster=\"$cluster\"}, keyspace)",
@@ -1178,7 +1210,6 @@
       {
         "allValue": ".*",
         "current": {
-          "tags": [],
           "text": "All",
           "value": [
             "$__all"
@@ -1244,8 +1275,9 @@
       {
         "allValue": null,
         "current": {
-          "text": "mwt",
-          "value": "mwt"
+          "selected": false,
+          "text": "cass-2dc",
+          "value": "cass-2dc"
         },
         "datasource": "Prometheus",
         "definition": "label_values(cassandra_stats{name=\"java:lang:memory:heapmemoryusage:used\"}, namespace)",
@@ -1254,15 +1286,9 @@
         "label": null,
         "multi": false,
         "name": "namespace",
-        "options": [
-          {
-            "selected": true,
-            "text": "mwt",
-            "value": "mwt"
-          }
-        ],
+        "options": [],
         "query": "label_values(cassandra_stats{name=\"java:lang:memory:heapmemoryusage:used\"}, namespace)",
-        "refresh": 0,
+        "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
         "sort": 0,
@@ -1274,6 +1300,7 @@
       },
       {
         "current": {
+          "selected": true,
           "text": "cassandra-",
           "value": "cassandra-"
         },
@@ -1282,6 +1309,7 @@
         "name": "pod_prefix",
         "options": [
           {
+            "selected": true,
             "text": "cassandra-",
             "value": "cassandra-"
           }
@@ -1324,5 +1352,5 @@
   "timezone": "",
   "title": "Cassandra-MWT",
   "uid": "uHHAhU9Zz",
-  "version": 1
+  "version": 3
 }
