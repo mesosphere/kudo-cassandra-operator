@@ -160,10 +160,8 @@ func (c *Executor) Run(arguments ...string) (string, string, error) {
 		}
 	}
 
+	fmt.Printf("Waiting 10 secs for pod %s to initialize", pod.Name)
 	time.Sleep(10 * time.Second)
-
-	l, e := pod.ContainerLogs("nodetool")
-	fmt.Printf("%s %v", string(l), e)
 
 	var stdOut strings.Builder
 	var stdErr strings.Builder
@@ -177,8 +175,6 @@ func (c *Executor) Run(arguments ...string) (string, string, error) {
 	if err != nil {
 		err = fmt.Errorf("failed to exec in container: %v", err)
 	}
-
-	fmt.Printf("%v\n\n%v\n\n%v", stdOut.String(), stdErr.String(), err)
 
 	return stdOut.String(), stdErr.String(), err
 }
