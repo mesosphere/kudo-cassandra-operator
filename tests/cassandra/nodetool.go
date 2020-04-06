@@ -159,6 +159,9 @@ func (c *Executor) Run(arguments ...string) (string, string, error) {
 		}
 	}
 
+	l, e := pod.ContainerLogs("nodetool")
+	fmt.Printf("%s %v", string(l), e)
+
 	var stdOut strings.Builder
 	var stdErr strings.Builder
 
