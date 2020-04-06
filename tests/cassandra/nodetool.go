@@ -3,6 +3,7 @@ package cassandra
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/kudobuilder/test-tools/pkg/client"
 	"github.com/kudobuilder/test-tools/pkg/cmd"
@@ -158,6 +159,8 @@ func (c *Executor) Run(arguments ...string) (string, string, error) {
 			}
 		}
 	}
+
+	time.Sleep(10 * time.Second)
 
 	l, e := pod.ContainerLogs("nodetool")
 	fmt.Printf("%s %v", string(l), e)
