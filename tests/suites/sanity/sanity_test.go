@@ -220,6 +220,22 @@ var _ = Describe(TestName, func() {
 		Expect(err).To(BeNil())
 
 		assertNumberOfCassandraNodes(NodeCount)
+
+		By("Triggering a Cassandra node repair")
+		podName, err := cassandra.FirstPodName(Operator.Instance)
+		Expect(err).To(BeNil())
+
+		err = Operator.Instance.UpdateParameters(map[string]string{
+			"REPAIR_POD": podName,
+		})
+		Expect(err).To(BeNil())
+
+		err = Operator.Instance.WaitForPlanComplete("repair-pod")
+		Expect(err).To(BeNil())
+
+		repair, err := cassandra.NodeWasRepaired(Client, Operator.Instance)
+		Expect(err).To(BeNil())
+		Expect(repair).To(BeTrue())
 	})
 
 	It("Uninstalls the operator", func() {

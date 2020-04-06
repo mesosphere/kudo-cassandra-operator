@@ -85,7 +85,7 @@ func OverrideOperatorVersion(
 	return operatorVersion, desiredOperatorVersion, nil
 }
 
-func firstPodName(instance kudo.Instance) (string, error) {
+func FirstPodName(instance kudo.Instance) (string, error) {
 	if instance.Spec.Parameters["NODE_TOPOLOGY"] != "" {
 		topology, err := TopologyFromYaml(instance.Spec.Parameters["NODE_TOPOLOGY"])
 		if err != nil {
@@ -99,7 +99,7 @@ func firstPodName(instance kudo.Instance) (string, error) {
 }
 
 func Nodes(client client.Client, instance kudo.Instance) ([]map[string]string, error) {
-	podName, err := firstPodName(instance)
+	podName, err := FirstPodName(instance)
 	if err != nil {
 		return nil, err
 	}
@@ -179,7 +179,7 @@ func Nodes(client client.Client, instance kudo.Instance) ([]map[string]string, e
 
 // Cqlsh Wrapper to run cql commands in the cqlsh cli of cassandra 0th node
 func Cqlsh(client client.Client, instance kudo.Instance, cql string) (string, error) {
-	podName, err := firstPodName(instance)
+	podName, err := FirstPodName(instance)
 	if err != nil {
 		return "", err
 	}
@@ -244,11 +244,15 @@ func NodeJVMOptions(client client.Client, instance kudo.Instance) (map[string]st
 		",")
 }
 
-func configurationFromNodeLogs(
-	client client.Client,
-	instance kudo.Instance,
-	regex string,
-	separator string) (map[string]string, error) {
+func NodeWasRepaired(client client.Client, instance kudo.Instance) (bool, error) {
+	return nodeLogsContain(
+		client,
+		instance,
+		"o.a.cassandra.repair.RepairRunnable - Starting repair command",
+	)
+}
+
+func nodeLogs(client client.Client, instance kudo.Instance) ([]byte, error) {
 	podName := fmt.Sprintf("%s-%s-%d", instance.Name, "node", 0)
 
 	pod, err := kubernetes.GetPod(client, podName, instance.Namespace)
@@ -256,7 +260,15 @@ func configurationFromNodeLogs(
 		return nil, err
 	}
 
-	logs, err := pod.ContainerLogs("cassandra")
+	return pod.ContainerLogs("cassandra")
+}
+
+func configurationFromNodeLogs(
+	client client.Client,
+	instance kudo.Instance,
+	regex string,
+	separator string) (map[string]string, error) {
+	logs, err := nodeLogs(client, instance)
 	if err != nil {
 		return nil, err
 	}
@@ -282,4 +294,23 @@ func configurationFromNodeLogs(
 	}
 
 	return configuration, nil
+}
+
+func nodeLogsContain(client client.Client, instance kudo.Instance, expected string) (bool, error) {
+	logs, err := nodeLogs(client, instance)
+	if err != nil {
+		return false, err
+	}
+
+	scanner := bufio.NewScanner(bytes.NewReader(logs))
+
+	var inLogs bool
+	for scanner.Scan() {
+		inLogs = strings.Contains(scanner.Text(), expected)
+		if inLogs {
+			break
+		}
+	}
+
+	return inLogs, nil
 }
