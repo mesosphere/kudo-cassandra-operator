@@ -19,7 +19,7 @@ metadata:
   name: {{ $.Params.NODE_RESOLVE_SERVICEACCOUNT }}-{{ .Namespace }}-binding
 subjects:
   - kind: ServiceAccount
-    name: node-resolver
+    name: {{ $.Params.NODE_RESOLVE_SERVICEACCOUNT }}
     namespace: {{ .Namespace }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
