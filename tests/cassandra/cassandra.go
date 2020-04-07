@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/kudobuilder/test-tools/pkg/client"
 	"github.com/kudobuilder/test-tools/pkg/cmd"
@@ -209,7 +210,10 @@ func Cqlsh(client client.Client, instance kudo.Instance, cql string) (string, er
 }
 
 func Uninstall(client client.Client, operator kudo.Operator) error {
-	if err := operator.Uninstall(); err != nil {
+	// This wait is necessary to avoid tickling an issue in stateful set controller,
+	// which gets stuck with a pod but no PVC when KUDO is quick to process the instance delete
+	// (and create by subsequent test).
+	if err := operator.UninstallWaitForDeletion(5 * time.Minute); err != nil {
 		return err
 	}
 
