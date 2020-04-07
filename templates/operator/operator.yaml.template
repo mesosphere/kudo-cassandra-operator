@@ -31,10 +31,22 @@ tasks:
       parameter: EXTERNAL_SERVICE
       resources:
         - external-service.yaml
+  - name: node-resolver-rbac
+    kind: Toggle
+    spec:
+      parameter: SERVICE_ACCOUNT_INSTALL
+      resources:
+        - node-resolver-rbac.yaml
 plans:
   deploy:
     strategy: serial
     phases:
+      - name: rbac
+        strategy: parallel
+        steps:
+          - name: node-resolver
+            tasks:
+              - node-resolver-rbac
       - name: nodes
         strategy: parallel
         steps:
