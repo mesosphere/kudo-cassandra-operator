@@ -9,17 +9,18 @@ import (
 	"regexp"
 	"strings"
 
+	log "github.com/sirupsen/logrus"
+
 	"github.com/kudobuilder/test-tools/pkg/client"
 	"github.com/kudobuilder/test-tools/pkg/cmd"
 	"github.com/kudobuilder/test-tools/pkg/kubernetes"
 	"github.com/kudobuilder/test-tools/pkg/kudo"
-	log "github.com/sirupsen/logrus"
 )
 
 const (
 	operatorYamlFilePath = "../../../operator/operator.yaml"
 	// https://regex101.com/r/Ly7O1x/3/
-	semVerRegexp = `(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)(?:-(?P<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+(?P<buildmetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?`
+	semVerRegexp = `(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)(?:-(?P<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+(?P<buildmetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?` //nolint
 )
 
 // OverrideOperatorVersion rewrites `operatorVersion` in operator.yaml. This is
@@ -93,9 +94,8 @@ func firstPodName(instance kudo.Instance) (string, error) {
 		}
 
 		return fmt.Sprintf("%s-%s-%s-%d", instance.Name, topology[0].Datacenter, "node", 0), nil
-	} else {
-		return fmt.Sprintf("%s-%s-%d", instance.Name, "node", 0), nil
 	}
+	return fmt.Sprintf("%s-%s-%d", instance.Name, "node", 0), nil
 }
 
 func Nodes(client client.Client, instance kudo.Instance) ([]map[string]string, error) {
