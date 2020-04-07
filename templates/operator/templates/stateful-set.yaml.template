@@ -134,8 +134,10 @@ spec:
             successThreshold: {{ $.Params.NODE_READINESS_PROBE_SUCCESS_THRESHOLD }}
             failureThreshold: {{ $.Params.NODE_READINESS_PROBE_FAILURE_THRESHOLD }}
           livenessProbe:
-            tcpSocket:
-              port: {{ $.Params.JMX_PORT }}
+            exec:
+              command:
+                - /bin/bash
+                - /etc/cassandra/node-liveness-probe.sh
             initialDelaySeconds: {{ $.Params.NODE_LIVENESS_PROBE_INITIAL_DELAY_S }}
             periodSeconds: {{ $.Params.NODE_LIVENESS_PROBE_PERIOD_S }}
             timeoutSeconds: {{ $.Params.NODE_LIVENESS_PROBE_TIMEOUT_S }}
@@ -223,6 +225,9 @@ spec:
             - name: node-scripts
               mountPath: /etc/cassandra/node-readiness-probe.sh
               subPath: node-readiness-probe.sh
+            - name: node-scripts
+              mountPath: /etc/cassandra/node-liveness-probe.sh
+              subPath: node-liveness-probe.sh
             - name: dot-cassandra
               mountPath: /home/cassandra/.cassandra/
             - name: generate-cqlshrc-sh
