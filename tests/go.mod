@@ -4,7 +4,7 @@ go 1.13
 
 require (
 	github.com/imdario/mergo v0.3.8 // indirect
-	github.com/kudobuilder/test-tools v0.2.7-0.20200406115617-258284a50ca7
+	github.com/kudobuilder/test-tools v0.2.7-0.20200407093241-676db7ec62e1
 	github.com/onsi/ginkgo v1.11.0
 	github.com/onsi/gomega v1.8.1
 	github.com/sirupsen/logrus v1.4.2

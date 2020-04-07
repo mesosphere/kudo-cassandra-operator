@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/kudobuilder/test-tools/pkg/client"
 	"github.com/kudobuilder/test-tools/pkg/cmd"
@@ -209,7 +210,7 @@ func Cqlsh(client client.Client, instance kudo.Instance, cql string) (string, er
 }
 
 func Uninstall(client client.Client, operator kudo.Operator) error {
-	if err := operator.UninstallWaitForDeletion(); err != nil {
+	if err := operator.UninstallWaitForDeletion(5*time.Minute); err != nil {
 		return err
 	}
 
