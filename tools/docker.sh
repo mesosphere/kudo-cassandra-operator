@@ -8,8 +8,8 @@ if [[ $# -eq 0 ]] ; then
     exit 0
 fi
 
-cd $TOOL_DIR
+cd "$TOOL_DIR" || exit
 docker build . -t cass-tools
 
-cd $TOOL_DIR/..
-docker run  -v $PWD:/opt/kudo-cassandra-operator cass-tools $1
+cd "$TOOL_DIR/.." || exit
+docker run  -v "$PWD:/opt/kudo-cassandra-operator" cass-tools "$1"
