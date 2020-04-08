@@ -106,6 +106,10 @@ parameters:
     description: "A service account that can list nodes in the cluster to read rack names for deployed pods"
     default: "node-resolver"
 
+  - name: SERVICE_ACCOUNT_INSTALL
+    description: "This flag can be set to true to automatic installation of a cluster role, service account and role binding"
+    default: "false"
+
   ################################################################################
   ######################### Prometheus exporter settings #########################
   ################################################################################
@@ -864,3 +868,7 @@ parameters:
   - name: CUSTOM_JVM_OPTIONS_BASE64
     description: "Base64-encoded JVM options appended to jvm.options."
     default: ""
+
+  - name: POD_MANAGEMENT_POLICY
+    description: "podManagementPolicy of the Cassandra Statefulset"
+    default: "OrderedReady"
