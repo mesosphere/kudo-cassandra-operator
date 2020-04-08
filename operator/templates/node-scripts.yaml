@@ -11,7 +11,11 @@ data:
     nodetool status -p {{ .Params.JMX_PORT }} | grep -q "UN  ${POD_IP}"
     {{ end }}
   node-liveness-probe.sh: |
+    {{ if and (ne $.Params.JMX_LOCAL_ONLY "true") (eq $.Params.TRANSPORT_ENCRYPTION_ENABLED "true") }}
+    nodetool --ssl info
+    {{ else }}
     nodetool info
+    {{ end }}
   generate-rackdc-properties.sh: |
     # Generate the rackdc-properties
     RACK=`kubectl get node -L$RACKLABEL | grep ${NODE_NAME} | awk '{print $6}'`
