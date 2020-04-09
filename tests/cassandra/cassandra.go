@@ -213,7 +213,8 @@ func Uninstall(client client.Client, operator kudo.Operator) error {
 	// This wait is necessary to avoid tickling an issue in stateful set controller,
 	// which gets stuck with a pod but no PVC when KUDO is quick to process the instance delete
 	// (and create by subsequent test).
-	if err := operator.UninstallWaitForDeletion(5 * time.Minute); err != nil {
+	timeout := 5 * time.Minute
+	if err := operator.UninstallWaitForDeletion(timeout); err != nil {
 		return err
 	}
 
