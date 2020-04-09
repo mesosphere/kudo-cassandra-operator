@@ -220,8 +220,8 @@ spec:
               mountPath: /etc/cassandra/cassandra-env.sh
               subPath: cassandra-env.sh
             - name: jvm-options
-              mountPath: /etc/cassandra/jvm.options
-              subPath: jvm.options
+              mountPath: /etc/cassandra/jvm.options.source
+              subPath: jvm.options.source
             - name: node-scripts
               mountPath: /etc/cassandra/node-readiness-probe.sh
               subPath: node-readiness-probe.sh
