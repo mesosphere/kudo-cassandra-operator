@@ -53,11 +53,31 @@ parameters:
     default: "60"
 
   - name: NODE_READINESS_PROBE_SUCCESS_THRESHOLD
-    description: "Minimum consecutive successes for the probe to be considered successful after having failed."
+    description: "Minimum consecutive successes for the readiness probe to be considered successful after having failed."
     default: "1"
 
   - name: NODE_READINESS_PROBE_FAILURE_THRESHOLD
-    description: "When a pod starts and the probe fails, `failure_threshold` attempts will be made before marking the pod as 'unready'."
+    description: "When a pod starts and the readiness probe fails, `failure_threshold` attempts will be made before marking the pod as 'unready'."
+    default: "3"
+
+  - name: NODE_LIVENESS_PROBE_INITIAL_DELAY_S
+    description: "Number of seconds after the container has started before the liveness probe is initiated."
+    default: "15"
+
+  - name: NODE_LIVENESS_PROBE_PERIOD_S
+    description: "How often (in seconds) to perform the liveness probe."
+    default: "20"
+
+  - name: NODE_LIVENESS_PROBE_TIMEOUT_S
+    description: "How long (in seconds) to wait for a liveness probe to succeed."
+    default: "60"
+
+  - name: NODE_LIVENESS_PROBE_SUCCESS_THRESHOLD
+    description: "Minimum consecutive successes for the liveness probe to be considered successful after having failed."
+    default: "1"
+
+  - name: NODE_LIVENESS_PROBE_FAILURE_THRESHOLD
+    description: "When a pod starts and the liveness probe fails, `failure_threshold` attempts will be made before restarting the pod."
     default: "3"
 
   - name: OVERRIDE_CLUSTER_NAME
