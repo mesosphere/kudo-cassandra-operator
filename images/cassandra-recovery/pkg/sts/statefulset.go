@@ -2,15 +2,16 @@ package sts
 
 import (
 	"github.com/mesosphere/kudo-cassandra-operator/images/cassandra-recovery/pkg/client"
-
-
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+	"os"
 
 	"log"
 )
+
+var evictionLabel = os.Getenv("EVICTION_LABEL")
 
 func Process(item interface{}) {
 	if item == nil {
@@ -18,28 +19,57 @@ func Process(item interface{}) {
 	} else if pod, ok := detectRecoveryConditions(item); ok {
 		log.Printf("the pod %s/%s meets the recovery conditions.\n", pod.Namespace, pod.Name)
 		cleanStartPod(pod)
+	} else if pod, ok := detectEvictionCondition(item); ok {
+		log.Printf("the pod %s/%s meets the eviction conditions.\n", pod.Namespace, pod.Name)
+		cleanStartPod(pod)
 	}
+}
+
+func detectEvictionCondition(item interface{}) (*v1.Pod, bool) {
+	if pod, ok := item.(*v1.Pod); ok {
+
+		if val, ok := pod.Labels[evictionLabel]; ok {
+			if val == "true" {
+				log.Printf("Pod %s has eviction label set", pod.Name)
+				return pod, true
+			}
+		}
+	}
+
+	return nil, false
 }
 
 func detectRecoveryConditions(item interface{}) (*v1.Pod, bool) {
 	config, _ := client.GetKubernetesClient()
 	clientSet, _ := kubernetes.NewForConfig(config)
-	if event, ok := item.(*v1.Event); ok {
-		if event.InvolvedObject.Kind == "Pod" && event.Reason == "FailedScheduling" {
-			log.Printf("FailedScheduling detected: %s for %s/%s.\n", event.Name, event.InvolvedObject.Namespace, event.InvolvedObject.Name)
-			pod, _ := clientSet.CoreV1().Pods(event.InvolvedObject.Namespace).Get(event.InvolvedObject.Name, meta_v1.GetOptions{})
-			nodeDown, _ := detectNodeDown(clientSet, pod)
-			if nodeDown {
-				log.Printf("Node is down for %s/%s.\n", event.InvolvedObject.Namespace, event.InvolvedObject.Name)
-				return pod, true
-			}
-			pvcDown, _ := detectPVCDown(clientSet, pod)
-			if pvcDown {
-				log.Printf("PVC isn't still created for %s/%s.\n", event.InvolvedObject.Namespace, event.InvolvedObject.Name)
-				return pod, true
-			}
+
+	pod, ok := item.(*v1.Pod)
+	if !ok {
+		return nil, false
+	}
+
+	isUnschedulable := false
+	for _, condition := range pod.Status.Conditions {
+		if condition.Type == "PodScheduled" && condition.Reason == "Unschedulable" {
+			isUnschedulable = true
+			break
 		}
 	}
+
+	if isUnschedulable {
+		log.Printf("FailedScheduling detected for %s/%s.\n", pod.Namespace, pod.Name)
+		nodeDown, _ := detectNodeDown(clientSet, pod)
+		if nodeDown {
+			log.Printf("Node is down for %s/%s.\n", pod.Namespace, pod.Name)
+			return pod, true
+		}
+		pvcDown, _ := detectPVCDown(clientSet, pod)
+		if pvcDown {
+			log.Printf("PVC isn't still created for %s/%s.\n", pod.Namespace, pod.Name)
+			return pod, true
+		}
+	}
+
 	return nil, false
 }
 
@@ -70,11 +100,11 @@ func detectNodeDown(clientSet *kubernetes.Clientset, pod *v1.Pod) (bool, error) 
 				return false, err
 			}
 			pv, err := clientSet.CoreV1().PersistentVolumes().Get(pvc.Spec.VolumeName, meta_v1.GetOptions{})
-			if err != nil{
+			if err != nil {
 				return false, err
 			}
-			for _,node  := range pv.Spec.NodeAffinity.Required.NodeSelectorTerms{
-				for _,expr := range node.MatchExpressions{
+			for _, node := range pv.Spec.NodeAffinity.Required.NodeSelectorTerms {
+				for _, expr := range node.MatchExpressions {
 					if expr.Key == "kubernetes.io/hostname" {
 						log.Printf("found match expression: %+v", expr)
 						// TODO improve if there are more nodes
@@ -103,9 +133,15 @@ func cleanStartPod(pod *v1.Pod) {
 	clientSet, _ := kubernetes.NewForConfig(config)
 	pvcs := getPVCs(pod)
 	for _, pvc := range pvcs {
-		clientSet.CoreV1().PersistentVolumeClaims(pod.Namespace).Delete(pvc.ClaimName, &meta_v1.DeleteOptions{})
+		err := clientSet.CoreV1().PersistentVolumeClaims(pod.Namespace).Delete(pvc.ClaimName, &meta_v1.DeleteOptions{})
+		if err != nil {
+			log.Printf("Failed to delete PVC %s: %s", pvc.ClaimName, err)
+		}
 	}
-	clientSet.CoreV1().Pods(pod.Namespace).Delete(pod.Name, &meta_v1.DeleteOptions{})
+	err := clientSet.CoreV1().Pods(pod.Namespace).Delete(pod.Name, &meta_v1.DeleteOptions{})
+	if err != nil {
+		log.Printf("Failed to delete pod %s/%s for restart: %s", pod.Namespace, pod.Name, err)
+	}
 }
 
 func getPVCs(pod *v1.Pod) []*v1.PersistentVolumeClaimVolumeSource {
@@ -122,13 +158,25 @@ func getPVCs(pod *v1.Pod) []*v1.PersistentVolumeClaimVolumeSource {
 func deattachPV(source *v1.PersistentVolumeClaimVolumeSource, namespace string) {
 	config, _ := client.GetKubernetesClient()
 	clientSet, _ := kubernetes.NewForConfig(config)
-	pvc, _ := clientSet.CoreV1().PersistentVolumeClaims(namespace).Get(source.ClaimName, meta_v1.GetOptions{})
+	pvc, err := clientSet.CoreV1().PersistentVolumeClaims(namespace).Get(source.ClaimName, meta_v1.GetOptions{})
+	if err != nil {
+		log.Printf("Failed to get PVC for claim %s: %s", source.ClaimName, err)
+		return
+	}
 
-	pv, _ := clientSet.CoreV1().PersistentVolumes().Get(pvc.Spec.VolumeName, meta_v1.GetOptions{})
+	pv, err := clientSet.CoreV1().PersistentVolumes().Get(pvc.Spec.VolumeName, meta_v1.GetOptions{})
+	if err != nil {
+		log.Printf("Failed to get PV %s:%s", pvc.Spec.VolumeName, err)
+		return
+	}
+
+	log.Printf("Deattach PVC %s/%s for claim %s from PV %s/%s: ", pvc.Namespace, pvc.Name, source.ClaimName, pv.Namespace, pv.Name)
 
 	pv.Spec.ClaimRef = nil
-	_, err := clientSet.CoreV1().PersistentVolumes().Update(pv)
+	_, err = clientSet.CoreV1().PersistentVolumes().Update(pv)
 	if err != nil {
-		log.Printf("PV claimRef cleared for PV:%s/%s", pv.Namespace, pv.Name)
+		log.Printf("Failed to clear claimRef for PV %s/%s: %s", pv.Namespace, pv.Name, err)
+		return
 	}
+	log.Printf("PV claimRef cleared for PV:%s/%s", pv.Namespace, pv.Name)
 }

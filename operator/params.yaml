@@ -109,6 +109,11 @@ parameters:
     description: "The external port to use for Cassandra rpc protocol."
     default: "9160"
 
+  - name: RECOVERY_CONTROLLER
+    displayName: "Enables or disables the recovery controller"
+    description: "Needs to be true for automatic failure recovery and node eviction"
+    default: "false"
+
   ################################################################################
   ######################### Datacenter and Rack awareness ########################
   ################################################################################

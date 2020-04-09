@@ -15,6 +15,7 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/workqueue"
+	"os"
 	"time"
 )
 
@@ -32,7 +33,13 @@ func NewController(cfg *rest.Config) *Controller {
 }
 
 func (c *Controller) Run(ctx context.Context) {
-	log.Infoln("Starting the controller...")
+	namespace := os.Getenv("NAMESPACE")
+
+	if namespace == "" {
+		namespace = meta_v1.NamespaceAll
+	}
+
+	log.Infof("Starting the controller for namespace %s...", namespace)
 	clientSet, err := kubernetes.NewForConfig(c.cfg)
 	if err == nil {
 		stopCh := make(chan struct{})
@@ -41,13 +48,13 @@ func (c *Controller) Run(ctx context.Context) {
 		c.informer = cache.NewSharedIndexInformer(
 			&cache.ListWatch{
 				ListFunc: func(options meta_v1.ListOptions) (runtime.Object, error) {
-					return clientSet.CoreV1().Events(meta_v1.NamespaceAll).List(options)
+					return clientSet.CoreV1().Pods(namespace).List(options)
 				},
 				WatchFunc: func(options meta_v1.ListOptions) (watch.Interface, error) {
-					return clientSet.CoreV1().Events(meta_v1.NamespaceAll).Watch(options)
+					return clientSet.CoreV1().Pods(namespace).Watch(options)
 				},
 			},
-			&k8s_v1.Event{},
+			&k8s_v1.Pod{},
 			0, //No resync
 			cache.Indexers{},
 		)
@@ -60,8 +67,8 @@ func (c *Controller) Run(ctx context.Context) {
 				}
 			},
 			UpdateFunc: func(old, new interface{}) {
-				oldEvent, _ := old.(*k8s_v1.Event)
-				newEvent, _ := new.(*k8s_v1.Event)
+				oldEvent, _ := old.(*k8s_v1.Pod)
+				newEvent, _ := new.(*k8s_v1.Pod)
 				if oldEvent.ResourceVersion != newEvent.ResourceVersion {
 					key, err := cache.MetaNamespaceKeyFunc(new)
 					if err == nil {
@@ -78,6 +85,7 @@ func (c *Controller) Run(ctx context.Context) {
 		})
 
 		go c.informer.Run(stopCh)
+
 		log.Infoln("Controller started.")
 		if !cache.WaitForCacheSync(stopCh, c.informer.HasSynced) {
 			uruntime.HandleError(fmt.Errorf("Timed out waiting for caches to sync"))
@@ -124,6 +132,9 @@ func (c *Controller) processItem(key string) error {
 	obj, _, err := c.informer.GetIndexer().GetByKey(key)
 	if err != nil {
 		return fmt.Errorf("error fetching object with key %s from store: %v", key, err)
+	}
+	if obj == nil {
+		return nil
 	}
 	sts.Process(obj)
 	return nil

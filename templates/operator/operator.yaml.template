@@ -31,6 +31,13 @@ tasks:
       parameter: EXTERNAL_SERVICE
       resources:
         - external-service.yaml
+  - name: recovery-controller
+    kind: Toggle
+    spec:
+      parameter: RECOVERY_CONTROLLER
+      resources:
+        - recovery-controller.yaml
+        - recovery-controller-rbac.yaml
   - name: node-resolver-rbac
     kind: Toggle
     spec:
@@ -54,3 +61,4 @@ plans:
             tasks:
               - node
               - ext-service
+              - recovery-controller

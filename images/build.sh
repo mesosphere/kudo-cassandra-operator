@@ -17,6 +17,7 @@ fi
 readonly cassandra_docker_image="${CASSANDRA_DOCKER_IMAGE:-}"
 readonly prometheus_exporter_docker_image="${PROMETHEUS_EXPORTER_DOCKER_IMAGE:-}"
 readonly integration_tests_docker_image="${INTEGRATION_TESTS_DOCKER_IMAGE:-}"
+readonly recovery_controller_docker_image="${RECOVERY_CONTROLLER_DOCKER_IMAGE:-}"
 
 if [[ -z ${cassandra_docker_image} ]]; then
   echo "Missing CASSANDRA_DOCKER_IMAGE" >&2
@@ -30,6 +31,11 @@ fi
 
 if [[ -z ${integration_tests_docker_image} ]]; then
   echo "Missing INTEGRATION_TESTS_DOCKER_IMAGE" >&2
+  exit 1
+fi
+
+if [[ -z ${recovery_controller_docker_image} ]]; then
+  echo "Missing RECOVERY_CONTROLLER_DOCKER_IMAGE" >&2
   exit 1
 fi
 
@@ -48,8 +54,14 @@ docker image build \
        -f "${project_directory}/images/Dockerfile.integration-tests" \
        "${project_directory}/images"
 
+docker image build \
+       -t "${recovery_controller_docker_image}" \
+       -f "${project_directory}/images/Dockerfile.recovery-controller" \
+       "${project_directory}/images"
+
 if [[ "${1:-}" == "push" ]]; then
   docker push "${cassandra_docker_image}"
   docker push "${prometheus_exporter_docker_image}"
   docker push "${integration_tests_docker_image}"
+  docker push "${recovery_controller_docker_image}"
 fi

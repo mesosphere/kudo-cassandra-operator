@@ -45,6 +45,7 @@ export KUBERNETES_VERSION="1.15.0"
 export CASSANDRA_EXPORTER_DOCKER_IMAGE="criteord/cassandra_exporter"
 export CASSANDRA_EXPORTER_VERSION="2.3.4"
 
+export RECOVERY_CONTROLLER_VERSION="0.0.1"
 ################################################################################
 ############################## Docker images ###################################
 ################################################################################
@@ -60,6 +61,11 @@ export PROMETHEUS_EXPORTER_DOCKER_IMAGE_NAMESPACE="mesosphere"
 export PROMETHEUS_EXPORTER_DOCKER_IMAGE_NAME="cassandra-prometheus-exporter"
 export PROMETHEUS_EXPORTER_DOCKER_IMAGE_TAG="${CASSANDRA_EXPORTER_VERSION}-${OPERATOR_VERSION}${POSSIBLE_SNAPSHOT_SUFFIX}${IMAGE_DISAMBIGUATION_SUFFIX:-}"
 export PROMETHEUS_EXPORTER_DOCKER_IMAGE="${PROMETHEUS_EXPORTER_DOCKER_IMAGE_NAMESPACE}/${PROMETHEUS_EXPORTER_DOCKER_IMAGE_NAME}:${PROMETHEUS_EXPORTER_DOCKER_IMAGE_TAG}"
+
+export RECOVERY_CONTROLLER_DOCKER_IMAGE_NAMESPACE="mesosphere"
+export RECOVERY_CONTROLLER_DOCKER_IMAGE_NAME="kudo-cassandra-recovery"
+export RECOVERY_CONTROLLER_DOCKER_IMAGE_TAG="${RECOVERY_CONTROLLER_VERSION}-${OPERATOR_VERSION}${POSSIBLE_SNAPSHOT_SUFFIX}${IMAGE_DISAMBIGUATION_SUFFIX:-}"
+export RECOVERY_CONTROLLER_DOCKER_IMAGE="${RECOVERY_CONTROLLER_DOCKER_IMAGE_NAMESPACE}/${RECOVERY_CONTROLLER_DOCKER_IMAGE_NAME}:${RECOVERY_CONTROLLER_DOCKER_IMAGE_TAG}"
 
 ################################################################################
 ################################# Testing ######################################
