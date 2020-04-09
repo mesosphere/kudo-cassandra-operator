@@ -1,15 +1,16 @@
 #!/bin/bash
+set -o errexit
+set -o nounset
+set -o pipefail
 
-TOOL_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+REPO_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." >/dev/null 2>&1 && pwd )"
 
 if [[ $# -eq 0 ]] ; then
-    echo 'script requires the command to run in dockered linux env'
-    echo 'example:  ./tools/docker.sh ./tools/generate_parameters_markdown.py '
+    echo 'script requires the command to run in dockered linux env' >&2
+    echo 'example:  ./tools/docker.sh ./tools/generate_parameters_markdown.py ' >&2
     exit 0
 fi
 
-cd "$TOOL_DIR" || exit
-docker build . -t cass-tools
+docker build "${REPO_ROOT}/tools" -t kudo-cassandra-tools
 
-cd "$TOOL_DIR/.." || exit
-docker run  -v "$PWD:/opt/kudo-cassandra-operator" cass-tools "$1"
+docker run -v "${REPO_ROOT}:/opt/kudo-cassandra-operator" kudo-cassandra-tools "$@"
