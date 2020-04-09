@@ -160,6 +160,8 @@ func (c *Executor) Run(arguments ...string) (string, string, error) {
 		}
 	}
 
+	// The generate-tls-artifacts.sh takes time to execute in the container.
+	// Waiting for it to complete before exec-ing in the container
 	fmt.Printf("Waiting 10 secs for pod %s to initialize", pod.Name)
 	time.Sleep(10 * time.Second)
 

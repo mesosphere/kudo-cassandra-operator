@@ -5,13 +5,13 @@ metadata:
   namespace: {{ .Namespace }}
 data:
   node-readiness-probe.sh: |
-    {{ if and (ne $.Params.JMX_LOCAL_ONLY "true") (eq $.Params.TRANSPORT_ENCRYPTION_ENABLED "true") }}
+    {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
     nodetool --ssl status -p {{ .Params.JMX_PORT }} | grep -q "UN  ${POD_IP}"
     {{ else }}
     nodetool status -p {{ .Params.JMX_PORT }} | grep -q "UN  ${POD_IP}"
     {{ end }}
   node-liveness-probe.sh: |
-    {{ if and (ne $.Params.JMX_LOCAL_ONLY "true") (eq $.Params.TRANSPORT_ENCRYPTION_ENABLED "true") }}
+    {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
     nodetool --ssl info
     {{ else }}
     nodetool info

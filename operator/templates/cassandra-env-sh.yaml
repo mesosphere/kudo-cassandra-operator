@@ -249,7 +249,7 @@ data:
     JMX_PORT="{{ .Params.JMX_PORT }}"
     RMI_PORT="{{ .Params.RMI_PORT }}"
 
-    {{ if and (ne $.Params.JMX_LOCAL_ONLY "true") (eq $.Params.TRANSPORT_ENCRYPTION_ENABLED "true") }}
+    {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
       JVM_OPTS="$JVM_OPTS -Dcom.sun.management.jmxremote.local.only=false"
       JVM_OPTS="$JVM_OPTS -Djava.rmi.server.hostname=$POD_NAME.{{ .Name }}-svc.$POD_NAMESPACE.svc.cluster.local"
       

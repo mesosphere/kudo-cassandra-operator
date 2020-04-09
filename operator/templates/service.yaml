@@ -19,7 +19,7 @@ spec:
     - port: {{ .Params.RPC_PORT }}
       name: rpc
     {{ end }}
-    {{ if eq .Params.JMX_LOCAL_ONLY "false" }}
+    {{ if ne .Params.JMX_LOCAL_ONLY "true" }}
     - port: {{ .Params.JMX_PORT }}
       name: jmx
     - port: {{ .Params.RMI_PORT }}

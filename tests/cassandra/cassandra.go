@@ -111,9 +111,8 @@ func Nodes(client client.Client, instance kudo.Instance) ([]map[string]string, e
 	var command cmd.Builder
 
 	jmxLocal, jmxLocalSet := instance.Spec.Parameters["JMX_LOCAL_ONLY"]
-	tls, tlsSet := instance.Spec.Parameters["TRANSPORT_ENCRYPTION_ENABLED"]
 
-	if jmxLocalSet && tlsSet && tls == "true" && jmxLocal != "true" {
+	if jmxLocalSet && jmxLocal != "true" {
 		command = cmd.New("nodetool").
 			WithArguments("--ssl", "status").
 			WithStdout(&stdout)

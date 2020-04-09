@@ -6,7 +6,7 @@ metadata:
 data:
   config.yml: |
     host: localhost:{{ .Params.JMX_PORT }}
-    {{ if and (ne $.Params.JMX_LOCAL_ONLY "true") (eq $.Params.TRANSPORT_ENCRYPTION_ENABLED "true") }}
+    {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
     ssl: True
     {{ else }}
     ssl: False

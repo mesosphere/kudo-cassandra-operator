@@ -5,7 +5,7 @@ metadata:
   namespace: {{ .Namespace }}
 data:
   nodetool-ssl.properties: |
-    {{ if and (ne .Params.JMX_LOCAL_ONLY "true") (eq .Params.TRANSPORT_ENCRYPTION_ENABLED "true") }}
+    {{ if ne .Params.JMX_LOCAL_ONLY "true" }}
     -Dcom.sun.management.jmxremote.ssl=true
     -Dcom.sun.management.jmxremote.ssl.need.client.auth=true
     -Dcom.sun.management.jmxremote.registry.ssl=true

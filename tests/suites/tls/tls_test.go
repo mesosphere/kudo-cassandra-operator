@@ -211,15 +211,14 @@ var _ = Describe(TestName, func() {
 		})
 	})
 
-	Context("Installs the operator with node-to-node encryption enabled and Local JMX disabled", func() {
+	Context("Installs the operator with Local JMX disabled", func() {
 		It("Installs the operator from a directory", func() {
 			var err error
 
 			parameters := map[string]string{
-				"NODE_COUNT":                   strconv.Itoa(NodeCount),
-				"TLS_SECRET_NAME":              "cassandra-tls",
-				"TRANSPORT_ENCRYPTION_ENABLED": "true",
-				"JMX_LOCAL_ONLY":               "false",
+				"NODE_COUNT":      strconv.Itoa(NodeCount),
+				"TLS_SECRET_NAME": "cassandra-tls",
+				"JMX_LOCAL_ONLY":  "false",
 			}
 			suites.SetLocalClusterParameters(parameters)
 
@@ -235,24 +234,10 @@ var _ = Describe(TestName, func() {
 
 			assertNumberOfCassandraNodes(NodeCount)
 
-			By("Checking the container logs")
-			podName := fmt.Sprintf("%s-%s-%d", TestInstance, "node", 0)
-
-			pod, err := kubernetes.GetPod(Client, podName, TestNamespace)
-			Expect(err).To(BeNil())
-
-			outputBytes, err := pod.ContainerLogs("cassandra")
-			Expect(err).To(BeNil())
-			Expect(string(outputBytes)).To(ContainSubstring("Starting Encrypted Messaging Service on SSL port"))
-
-			By("Testing data read & write using CQLSH")
-			output, err := cassandra.Cqlsh(Client, Operator.Instance, testCQLScript)
-			Expect(err).To(BeNil())
-			Expect(output).To(ContainSubstring(testCQLScriptOutput))
-
 			By("Checking nodetool access from an utlity pod")
+			podName := fmt.Sprintf("%s-%s-%d", TestInstance, "node", 0)
 			nodetool := cassandra.NewNodeTool(Client, TestNamespace, TestInstance, true)
-			output, _, err = nodetool.Run("-h", fmt.Sprintf("%s.%s-svc.%s.svc.cluster.local", podName, TestInstance, TestNamespace), "--ssl", "info")
+			output, _, err := nodetool.Run("-h", fmt.Sprintf("%s.%s-svc.%s.svc.cluster.local", podName, TestInstance, TestNamespace), "--ssl", "info")
 			Expect(output).To(ContainSubstring("Native Transport active: true"))
 			Expect(err).To(BeNil())
 		})
