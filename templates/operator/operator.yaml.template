@@ -16,6 +16,10 @@ tasks:
       resources:
         - service.yaml
         - cassandra-yaml.yaml
+        - cassandra-topology.yaml
+        - cassandra-sa.yaml
+        - role.yaml
+        - rolebinding.yaml
         - cassandra-env-sh.yaml
         - jvm-options.yaml
         - stateful-set.yaml

@@ -1,3 +1,11 @@
+FROM golang:alpine AS build-env
+ADD ./cassandra-bootstrap /cassandra-bootstrap
+WORKDIR /cassandra-bootstrap
+RUN apk add --no-cache gcc musl-dev git mercurial ca-certificates
+ENV GO111MODULE=on
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o cassandra-bootstrap
+
+
 FROM ${CASSANDRA_DOCKER_IMAGE_FROM}
 
 RUN set -eux; \
@@ -16,3 +24,4 @@ RUN set -eux; \
   setcap cap_sys_resource,cap_ipc_lock+eip $(readlink -f $(which java))
 
 USER cassandra
+COPY --from=build-env /cassandra-bootstrap /etc/cassandra-bootstrap/
