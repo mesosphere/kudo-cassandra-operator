@@ -156,6 +156,7 @@ kubectl exec "${kudo_cassandra_pod_0}" \
 - [pytablewriter](https://pytablewriter.readthedocs.io/en/latest/)
 - [Python 3](https://docs.python.org/3/)
 - [shellcheck](https://www.shellcheck.net/)
+- [docker](https://docs.docker.com/)
 
 ### Compiling templates
 
@@ -168,6 +169,10 @@ The centralized place for that data is the `metadata.sh` file.
 
 Templates are under the `templates` directory. The `tools/compile_templates.sh`
 script will compile all templates under `templates` to files in the repository.
+
+**note:** these scripts currently only run on linux. On other platforms pass the
+the script through the `tools/docker.sh` script, for example:
+`./tools/docker.sh ./tools/compile_templates.sh`.
 
 For example, given the following data file:
 
