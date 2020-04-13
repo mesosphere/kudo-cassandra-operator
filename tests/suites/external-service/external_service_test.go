@@ -1,4 +1,4 @@
-package external_service
+package externalservice
 
 import (
 	"fmt"
@@ -6,11 +6,12 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/onsi/ginkgo/reporters"
+	log "github.com/sirupsen/logrus"
+
 	"github.com/kudobuilder/test-tools/pkg/client"
 	"github.com/kudobuilder/test-tools/pkg/kubernetes"
 	"github.com/kudobuilder/test-tools/pkg/kudo"
-	"github.com/onsi/ginkgo/reporters"
-	log "github.com/sirupsen/logrus"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

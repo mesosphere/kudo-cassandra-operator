@@ -9,11 +9,14 @@ Thanks for sending a pull request! Here are some tips:
 
 3. Please make sure that that `git status` looks clean after running
    `./tools/compile_templates.sh`. If there's a diff you might need to commit
-   further changes.
+   further changes. This script is currently linux only. To run on another platform
+   run the docker.sh script; example: ./tools/docker.sh ./tools/compile_templates.sh
 
 4. Please make sure that that `git status` looks clean after running
    `./tools/generate_parameters_markdown.py`. If there's a diff you might need
-   to commit further changes.
+   to commit further changes. ./tools/docker.sh ./tools/generate_parameters_markdown.py
+   This script is currently linux only. To run on another platform run the docker.sh script;
+   example: ./tools/docker.sh ./tools/generate_parameters_markdown.py
 
 5. Please make sure that that `git status` looks clean after running
    `./tools/format_files.sh`. If there's a diff you might need to commit further
