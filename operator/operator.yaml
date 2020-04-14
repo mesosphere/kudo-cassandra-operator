@@ -38,6 +38,12 @@ tasks:
       parameter: SERVICE_ACCOUNT_INSTALL
       resources:
         - node-resolver-rbac.yaml
+  - name: repair-pod
+    kind: Apply
+    spec:
+      resources:
+        - repair-job-rbac.yaml
+        - repair-job.yaml
 plans:
   deploy:
     strategy: serial
@@ -55,3 +61,12 @@ plans:
             tasks:
               - node
               - ext-service
+  repair-pod:
+    strategy: serial
+    phases:
+      - name: nodes
+        strategy: parallel
+        steps:
+          - name: repair
+            tasks:
+              - repair-pod

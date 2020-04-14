@@ -1,0 +1,18 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ $.Name }}-node-repair-job
+  namespace: {{ $.Namespace }}
+  labels:
+    cassandra: {{ $.OperatorName }}
+    app: {{ $.Name }}
+spec:
+  template:
+    spec:
+      containers:
+        - name: repair-job
+          image: bitnami/kubectl:1.18.0
+          command: [ "kubectl", "exec", "{{ $.Params.REPAIR_POD }}", "--", "nodetool", "repair" ]
+      restartPolicy: Never
+      serviceAccountName: {{ .Name }}-node-repairer

@@ -6,13 +6,14 @@ import (
 	"strconv"
 	"testing"
 
+	. "github.com/onsi/ginkgo"
+	"github.com/onsi/ginkgo/reporters"
+	. "github.com/onsi/gomega"
+
 	"github.com/kudobuilder/test-tools/pkg/client"
 	"github.com/kudobuilder/test-tools/pkg/kubernetes"
 	"github.com/kudobuilder/test-tools/pkg/kudo"
 	"github.com/kudobuilder/test-tools/pkg/tls"
-	. "github.com/onsi/ginkgo"
-	"github.com/onsi/ginkgo/reporters"
-	. "github.com/onsi/gomega"
 
 	"github.com/mesosphere/kudo-cassandra-operator/tests/cassandra"
 	"github.com/mesosphere/kudo-cassandra-operator/tests/suites"
