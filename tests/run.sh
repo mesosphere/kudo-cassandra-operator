@@ -43,6 +43,5 @@ if [[ -z ${1-} ]]
 then
     ${GINKGO_PATH} --slowSpecThreshold=${GINKO_SLOW_TEST_THRESHOLD:-240} --succinct=false -v ./suites/... ${TESTS_FOCUS:+--ginkgo.focus=${TESTS_FOCUS}}
 else
-    ${GINKGO_PATH} --slowSpecThreshold=${GINKO_SLOW_TEST_THRESHOLD:-240} --succinct=false -v ./suites/$1/... ${TESTS_FOCUS:+--ginkgo.focus=${TESTS_FOCUS}}
+    ${GINKGO_PATH} --slowSpecThreshold=${GINKO_SLOW_TEST_THRESHOLD:-240} --succinct=false -v "./suites/$1/..." ${TESTS_FOCUS:+--ginkgo.focus=${TESTS_FOCUS}}
 fi
-
