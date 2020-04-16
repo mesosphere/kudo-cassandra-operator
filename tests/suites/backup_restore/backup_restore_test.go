@@ -160,9 +160,6 @@ var _ = Describe("backup and restore", func() {
 			Do(Client)
 		Expect(err).To(BeNil())
 
-		err = Operator.Instance.WaitForPlanInProgress("deploy", kudo.WaitTimeout(time.Second*90))
-		Expect(err).To(BeNil())
-
 		By("Waiting for the plan to complete")
 		err = Operator.Instance.WaitForPlanComplete("deploy")
 		Expect(err).To(BeNil())
@@ -178,9 +175,6 @@ var _ = Describe("backup and restore", func() {
 		err = Operator.Instance.UpdateParameters(map[string]string{
 			"BACKUP_TRIGGER": "2",
 		})
-		Expect(err).To(BeNil())
-
-		err = Operator.Instance.WaitForPlanInProgress("backup", kudo.WaitTimeout(time.Second*90))
 		Expect(err).To(BeNil())
 
 		By("Waiting for the plan to complete")
@@ -221,9 +215,6 @@ var _ = Describe("backup and restore", func() {
 
 		Expect(err).To(BeNil())
 
-		err = Operator.Instance.WaitForPlanInProgress("deploy", kudo.WaitTimeout(time.Second*90))
-		Expect(err).To(BeNil())
-
 		By("Waiting for the plan to complete")
 		err = Operator.Instance.WaitForPlanComplete("deploy", kudo.WaitTimeout(time.Minute*10))
 		Expect(err).To(BeNil())
@@ -248,9 +239,6 @@ var _ = Describe("backup and restore", func() {
 
 		err = Operator.Instance.UpdateParameters(parameters)
 
-		Expect(err).To(BeNil())
-
-		err = Operator.Instance.WaitForPlanInProgress("deploy", kudo.WaitTimeout(time.Second*90))
 		Expect(err).To(BeNil())
 
 		By("Waiting for the plan to complete")

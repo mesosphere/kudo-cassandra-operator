@@ -151,7 +151,11 @@ spec:
               /etc/tls/bin/generate-tls-artifacts.sh;
               {{ end }}
               /etc/cassandra/generate-cqlshrc.sh;
-              /etc/cassandra/wait-for-node-zero.sh;
+              {{ if $.Params.NODE_TOPOLOGY }}
+              /etc/cassandra/wait-for-node-zero.sh {{ $.Name }}-{{ $datacenter.datacenter }};
+              {{ else }}
+              /etc/cassandra/wait-for-node-zero.sh {{ $.Name }};
+              {{ end }}
               cassandra -f
           # Comment the `command` above and uncomment the one below if pods are
           # crash-looping and you would like to investigate their state. This is
@@ -287,25 +291,25 @@ spec:
               mountPath: /etc/cassandra_exporter/config.yml
               subPath: config.yml
         {{ end }}
-        {{ if eq .Params.BACKUP_RESTORE_ENABLED "true" }}
+        {{ if eq $.Params.BACKUP_RESTORE_ENABLED "true" }}
         - name: medusa-backup
-          image: {{ .Params.BACKUP_MEDUSA_DOCKER_IMAGE }}
-          imagePullPolicy: {{ .Params.BACKUP_MEDUSA_DOCKER_IMAGE_PULL_POLICY }}
+          image: {{ $.Params.BACKUP_MEDUSA_DOCKER_IMAGE }}
+          imagePullPolicy: {{ $.Params.BACKUP_MEDUSA_DOCKER_IMAGE_PULL_POLICY }}
           env:
             - name: AWS_ACCESS_KEY_ID
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Params.BACKUP_AWS_CREDENTIALS_SECRET }}
+                  name: {{ $.Params.BACKUP_AWS_CREDENTIALS_SECRET }}
                   key: access-key
             - name: AWS_SECRET_ACCESS_KEY
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Params.BACKUP_AWS_CREDENTIALS_SECRET }}
+                  name: {{ $.Params.BACKUP_AWS_CREDENTIALS_SECRET }}
                   key: secret-key
             - name: AWS_SECURITY_TOKEN
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Params.BACKUP_AWS_CREDENTIALS_SECRET }}
+                  name: {{ $.Params.BACKUP_AWS_CREDENTIALS_SECRET }}
                   key: security-token
                   optional: true
             - name: NODE_NAME
@@ -334,11 +338,11 @@ spec:
                   fieldPath: metadata.uid
           resources:
             requests:
-              memory: "{{ .Params.BACKUP_MEDUSA_MEM_MIB }}Mi"
-              cpu: "{{ .Params.BACKUP_MEDUSA_CPU_MC }}m"
+              memory: "{{ $.Params.BACKUP_MEDUSA_MEM_MIB }}Mi"
+              cpu: "{{ $.Params.BACKUP_MEDUSA_CPU_MC }}m"
             limits:
-              memory: "{{ .Params.BACKUP_MEDUSA_MEM_LIMIT_MIB }}Mi"
-              cpu: "{{ .Params.BACKUP_MEDUSA_CPU_LIMIT_MC }}m"
+              memory: "{{ $.Params.BACKUP_MEDUSA_MEM_LIMIT_MIB }}Mi"
+              cpu: "{{ $.Params.BACKUP_MEDUSA_CPU_LIMIT_MC }}m"
           ports:
             - containerPort: 8082
               name: management
@@ -357,7 +361,6 @@ spec:
         {{ end }}
       initContainers:
       {{ if $.Params.NODE_TOPOLOGY }}
-      initContainers:
         - name: node-resolver
           image: bitnami/kubectl:latest
           command:
@@ -395,11 +398,10 @@ spec:
               memory: "256Mi"
               cpu: "200m"
       {{ end }}
-      {{ if eq .Params.RESTORE_FLAG "true" }}
-      initContainers:
+      {{ if eq $.Params.RESTORE_FLAG "true" }}
         - name: medusa-restore
-          image: {{ .Params.BACKUP_MEDUSA_DOCKER_IMAGE }}
-          imagePullPolicy: {{ .Params.BACKUP_MEDUSA_DOCKER_IMAGE_PULL_POLICY }}
+          image: {{ $.Params.BACKUP_MEDUSA_DOCKER_IMAGE }}
+          imagePullPolicy: {{ $.Params.BACKUP_MEDUSA_DOCKER_IMAGE_PULL_POLICY }}
           command:
             - bash
             - -c
@@ -410,17 +412,17 @@ spec:
             - name: AWS_ACCESS_KEY_ID
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Params.BACKUP_AWS_CREDENTIALS_SECRET }}
+                  name: {{ $.Params.BACKUP_AWS_CREDENTIALS_SECRET }}
                   key: access-key
             - name: AWS_SECRET_ACCESS_KEY
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Params.BACKUP_AWS_CREDENTIALS_SECRET }}
+                  name: {{ $.Params.BACKUP_AWS_CREDENTIALS_SECRET }}
                   key: secret-key
             - name: AWS_SECURITY_TOKEN
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Params.BACKUP_AWS_CREDENTIALS_SECRET }}
+                  name: {{ $.Params.BACKUP_AWS_CREDENTIALS_SECRET }}
                   key: security-token
                   optional: true
             - name: NODE_NAME
@@ -449,11 +451,11 @@ spec:
                   fieldPath: metadata.uid
           resources:
             requests:
-              memory: "{{ .Params.BACKUP_MEDUSA_MEM_MIB }}Mi"
-              cpu: "{{ .Params.BACKUP_MEDUSA_CPU_MC }}m"
+              memory: "{{ $.Params.BACKUP_MEDUSA_MEM_MIB }}Mi"
+              cpu: "{{ $.Params.BACKUP_MEDUSA_CPU_MC }}m"
             limits:
-              memory: "{{ .Params.BACKUP_MEDUSA_MEM_LIMIT_MIB }}Mi"
-              cpu: "{{ .Params.BACKUP_MEDUSA_CPU_LIMIT_MC }}m"
+              memory: "{{ $.Params.BACKUP_MEDUSA_MEM_LIMIT_MIB }}Mi"
+              cpu: "{{ $.Params.BACKUP_MEDUSA_CPU_LIMIT_MC }}m"
           volumeMounts:
             - name: var-lib-cassandra
               mountPath: /var/lib/cassandra/
@@ -466,10 +468,10 @@ spec:
             - name: cassandra-medusa-config-ini
               mountPath: /etc/medusa/medusa.ini
               subPath: medusa.ini
-            - name: node-readiness-probe-sh
+            - name: node-scripts
               mountPath: /etc/cassandra/restore-capture-tokenmap.sh
               subPath: restore-capture-tokenmap.sh
-            - name: node-readiness-probe-sh
+            - name: node-scripts
               mountPath: /etc/cassandra/init-container-restore.sh
               subPath: init-container-restore.sh
       {{ end }}
