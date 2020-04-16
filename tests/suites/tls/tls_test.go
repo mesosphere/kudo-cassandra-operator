@@ -212,7 +212,7 @@ var _ = Describe(TestName, func() {
 		})
 	})
 
-	Context("Installs the operator with Local JMX disabled", func() {
+	Context("Installs the operator with encrypted remote JMX", func() {
 		It("Installs the operator from a directory", func() {
 			var err error
 
