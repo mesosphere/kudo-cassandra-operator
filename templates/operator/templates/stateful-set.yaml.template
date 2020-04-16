@@ -121,8 +121,8 @@ spec:
             preStop:
               exec:
                 command:
-                  - nodetool
-                  - drain
+                  - /bin/bash
+                  - /etc/cassandra/node-drain.sh
           readinessProbe:
             exec:
               command:
@@ -223,6 +223,9 @@ spec:
               mountPath: /etc/cassandra/jvm.options
               subPath: jvm.options
             - name: node-scripts
+              mountPath: /etc/cassandra/node-drain.sh
+              subPath: node-drain.sh
+            - name: node-scripts
               mountPath: /etc/cassandra/node-readiness-probe.sh
               subPath: node-readiness-probe.sh
             - name: node-scripts
@@ -238,6 +241,11 @@ spec:
               mountPath: /etc/tls/certs
             - name: generate-tls-artifacts
               mountPath: /etc/tls/bin
+          {{ end }}
+          {{ if $.Params.AUTHENTICATION_CREDENTIALS_SECRET }}
+            - name: {{ $.Params.AUTHENTICATION_CREDENTIALS_SECRET }}
+              mountPath: /etc/cassandra/authentication
+              readOnly: true
           {{ end }}
         {{ if eq $.Params.PROMETHEUS_EXPORTER_ENABLED "true" }}
         - name: prometheus-exporter
@@ -355,6 +363,11 @@ spec:
           configMap:
             name:  {{ $.Name }}-generate-tls-artifacts-sh
             defaultMode: 0755
+        {{ end }}
+        {{ if $.Params.AUTHENTICATION_CREDENTIALS_SECRET }}
+        - name: {{ $.Params.AUTHENTICATION_CREDENTIALS_SECRET }}
+          secret:
+            secretName: {{ $.Params.AUTHENTICATION_CREDENTIALS_SECRET }}
         {{ end }}
   volumeClaimTemplates:
     - metadata:

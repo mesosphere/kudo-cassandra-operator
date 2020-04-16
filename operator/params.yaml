@@ -273,6 +273,10 @@ parameters:
     description: "Authentication backend, implementing IAuthenticator; used to identify users."
     default: "AllowAllAuthenticator"
 
+  - name: AUTHENTICATION_CREDENTIALS_SECRET
+    description: "Secret containing the credentials used by the operator when running 'nodetool' for its functionality. Only relevant if AUTHENTICATOR is set to 'PasswordAuthenticator'. The secret needs to have a 'username' and a 'password' entry."
+    default: ""
+
   - name: AUTHORIZER
     description: "Authorization backend, implementing IAuthorizer; used to limit access/provide permissions."
     default: "AllowAllAuthorizer"
