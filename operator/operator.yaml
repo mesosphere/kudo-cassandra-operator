@@ -1,7 +1,7 @@
 apiVersion: kudo.dev/v1beta1
 name: "cassandra"
 operatorVersion: "0.1.2"
-kudoVersion: "0.10.1"
+kudoVersion: "0.11.1"
 kubernetesVersion: "1.15.0"
 appVersion: "3.11.5"
 maintainers:
@@ -10,11 +10,6 @@ maintainers:
 url: http://cassandra.apache.org/
 
 tasks:
-  - name: pvc
-    kind: Apply
-    spec:
-      resources:
-        - pvc.yaml
   - name: node
     kind: Apply
     spec:
@@ -26,61 +21,51 @@ tasks:
         - stateful-set.yaml
         - cassandra-exporter-config-yml.yaml
         - service-monitor.yaml
-        - node-readiness-probe-sh.yaml
+        - node-scripts.yaml
         - generate-tls-artifacts-sh.yaml
         - generate-cqlshrc-sh.yaml
-        - external-service.yaml
-        - medusa-config-ini.yaml
         - pdb.yaml
-  - name: backup-cleanup
-    kind: Delete
+  - name: ext-service
+    kind: Toggle
     spec:
+      parameter: EXTERNAL_SERVICE
       resources:
-        - backup-job.yaml
-  - name: backup
+        - external-service.yaml
+  - name: node-resolver-rbac
+    kind: Toggle
+    spec:
+      parameter: SERVICE_ACCOUNT_INSTALL
+      resources:
+        - node-resolver-rbac.yaml
+  - name: repair-pod
     kind: Apply
     spec:
       resources:
-        - backup-job.yaml
-  - name: remove-stateful-set
-    kind: Delete
-    spec:
-      resources:
-        - stateful-set.yaml
+        - repair-job-rbac.yaml
+        - repair-job.yaml
 plans:
   deploy:
     strategy: serial
     phases:
+      - name: rbac
+        strategy: parallel
+        steps:
+          - name: node-resolver
+            tasks:
+              - node-resolver-rbac
       - name: nodes
         strategy: parallel
         steps:
           - name: node
             tasks:
               - node
-  backup:
+              - ext-service
+  repair-pod:
     strategy: serial
     phases:
-      - name: backup
-        strategy: serial
+      - name: nodes
+        strategy: parallel
         steps:
-          - name: cleanup
+          - name: repair
             tasks:
-             - backup-cleanup
-          - name: backup
-            tasks:
-             - backup
-  upgrade:
-    strategy: serial
-    phases:
-      - name: cleanup
-        strategy: serial
-        steps:
-          - name: cleanup-stateful-set
-            tasks:
-              - remove-stateful-set
-      - name: reinstall
-        strategy: serial
-        steps:
-          - name: node
-            tasks:
-              - node
+              - repair-pod

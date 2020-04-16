@@ -50,6 +50,7 @@ kubectl kudo install cassandra
 - [Monitoring](/docs/monitoring.md)
 - [Backup & Restore](/docs/backup.md)
 - [Security](/docs/security.md)
+- [Multi Datacenter](/docs/multidatacenter.md)
 - [Parameters reference](/docs/parameters.md)
 
 ## Version Chart

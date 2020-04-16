@@ -53,16 +53,41 @@ parameters:
     default: "60"
 
   - name: NODE_READINESS_PROBE_SUCCESS_THRESHOLD
-    description: "Minimum consecutive successes for the probe to be considered successful after having failed."
+    description: "Minimum consecutive successes for the readiness probe to be considered successful after having failed."
     default: "1"
 
   - name: NODE_READINESS_PROBE_FAILURE_THRESHOLD
-    description: "When a pod starts and the probe fails, `failure_threshold` attempts will be made before marking the pod as 'unready'."
+    description: "When a pod starts and the readiness probe fails, `failure_threshold` attempts will be made before marking the pod as 'unready'."
+    default: "3"
+
+  - name: NODE_LIVENESS_PROBE_INITIAL_DELAY_S
+    description: "Number of seconds after the container has started before the liveness probe is initiated."
+    default: "15"
+
+  - name: NODE_LIVENESS_PROBE_PERIOD_S
+    description: "How often (in seconds) to perform the liveness probe."
+    default: "20"
+
+  - name: NODE_LIVENESS_PROBE_TIMEOUT_S
+    description: "How long (in seconds) to wait for a liveness probe to succeed."
+    default: "60"
+
+  - name: NODE_LIVENESS_PROBE_SUCCESS_THRESHOLD
+    description: "Minimum consecutive successes for the liveness probe to be considered successful after having failed."
+    default: "1"
+
+  - name: NODE_LIVENESS_PROBE_FAILURE_THRESHOLD
+    description: "When a pod starts and the liveness probe fails, `failure_threshold` attempts will be made before restarting the pod."
     default: "3"
 
   - name: OVERRIDE_CLUSTER_NAME
     description: "Override the name of the Cassandra cluster set by the operator. This shouldn't be explicit set, unless you know what you're doing."
     default: ""
+
+  - name: EXTERNAL_SERVICE
+    displayName: "Main toggle for external access"
+    description: "Needs to be true for either EXTERNAL_NATIVE_TRANSPORT or EXTERNAL_RPC to work"
+    default: "false"
 
   - name: EXTERNAL_NATIVE_TRANSPORT
     displayName: "Enable external native transport"
@@ -160,6 +185,27 @@ parameters:
     default: ""
 
   ################################################################################
+  ######################### Datacenter and Rack awareness ########################
+  ################################################################################
+
+  - name: NODE_TOPOLOGY
+    description: "This describes a multi-datacenter setup. When set it has precedence over NODE_COUNT. See docs/multidatacenter.md for more details."
+    default:
+    type: array
+
+  - name: NODE_ANTI_AFFINITY
+    description: "Ensure that every Cassandra node is deployed on separate hosts"
+    default: "false"
+
+  - name: NODE_RESOLVE_SERVICEACCOUNT
+    description: "A service account that can list nodes in the cluster to read rack names for deployed pods"
+    default: "node-resolver"
+
+  - name: SERVICE_ACCOUNT_INSTALL
+    description: "This flag can be set to true to automatic installation of a cluster role, service account and role binding"
+    default: "false"
+
+  ################################################################################
   ######################### Prometheus exporter settings #########################
   ################################################################################
 
@@ -172,7 +218,7 @@ parameters:
 
   - name: PROMETHEUS_EXPORTER_CPU_MC
     description: "CPU request (in millicores) for the Prometheus exporter containers."
-    default: "1000"
+    default: "500"
 
   - name: PROMETHEUS_EXPORTER_CPU_LIMIT_MC
     description: "CPU limit (in millicores) for the Prometheus exporter containers."
@@ -217,6 +263,10 @@ parameters:
   - name: JMX_PORT
     description: "The JMX port that will be used to interface with the Cassandra application."
     default: "7199"
+
+  - name: JMX_LOCAL_ONLY
+    description: "If true, the JMX port will only be opened on localhost and not be available to the cluster"
+    default: "true"
 
   - name: TRANSPORT_ENCRYPTION_ENABLED
     description: "Enable node-to-node encryption."
@@ -913,3 +963,16 @@ parameters:
   - name: CUSTOM_JVM_OPTIONS_BASE64
     description: "Base64-encoded JVM options appended to jvm.options."
     default: ""
+
+  - name: POD_MANAGEMENT_POLICY
+    description: "podManagementPolicy of the Cassandra Statefulset"
+    default: "OrderedReady"
+
+  ################################################################################
+  ################################ Repair options ################################
+  ################################################################################
+
+  - name: REPAIR_POD
+    description: "Name of the pod on which 'nodetool repair' should be run."
+    default: ""
+    trigger: repair-pod

@@ -15,7 +15,7 @@ if [ "${DEBUG}" == "true" ]; then
   set -x
 fi
 
-if [[ $# > 0 ]]; then
+if [[ $# -gt 0 ]]; then
   case $1 in
   --check-only)
     CHECK_ONLY="true"

@@ -9,6 +9,11 @@ readonly project_directory="$(readlink -f "${script_directory}/..")"
 # shellcheck source=../metadata.sh
 source "${project_directory}/metadata.sh"
 
+if [[ -n ${IMAGE_DISAMBIGUATION_SUFFIX:-} ]]; then
+  # Refresh templated files to pick up the suffix, if explicitly set.
+  "${project_directory}/tools/compile_templates.sh"
+fi
+
 readonly cassandra_docker_image="${CASSANDRA_DOCKER_IMAGE:-}"
 readonly prometheus_exporter_docker_image="${PROMETHEUS_EXPORTER_DOCKER_IMAGE:-}"
 readonly medusa_backup_docker_image="${MEDUSA_BACKUP_DOCKER_IMAGE:-}"

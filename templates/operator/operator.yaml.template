@@ -26,12 +26,17 @@ tasks:
         - stateful-set.yaml
         - cassandra-exporter-config-yml.yaml
         - service-monitor.yaml
-        - node-readiness-probe-sh.yaml
+        - node-scripts.yaml
         - generate-tls-artifacts-sh.yaml
         - generate-cqlshrc-sh.yaml
-        - external-service.yaml
-        - medusa-config-ini.yaml
         - pdb.yaml
+        - medusa-config-ini.yaml
+  - name: ext-service
+    kind: Toggle
+    spec:
+      parameter: EXTERNAL_SERVICE
+      resources:
+        - external-service.yaml
   - name: backup-cleanup
     kind: Delete
     spec:
@@ -47,16 +52,44 @@ tasks:
     spec:
       resources:
         - stateful-set.yaml
+  - name: node-resolver-rbac
+    kind: Toggle
+    spec:
+      parameter: SERVICE_ACCOUNT_INSTALL
+      resources:
+        - node-resolver-rbac.yaml
+  - name: repair-pod
+    kind: Apply
+    spec:
+      resources:
+        - repair-job-rbac.yaml
+        - repair-job.yaml
 plans:
   deploy:
     strategy: serial
     phases:
+      - name: rbac
+        strategy: parallel
+        steps:
+          - name: node-resolver
+            tasks:
+              - node-resolver-rbac
       - name: nodes
         strategy: parallel
         steps:
           - name: node
             tasks:
               - node
+              - ext-service
+  repair-pod:
+    strategy: serial
+    phases:
+      - name: nodes
+        strategy: parallel
+        steps:
+          - name: repair
+            tasks:
+              - repair-pod
   backup:
     strategy: serial
     phases:

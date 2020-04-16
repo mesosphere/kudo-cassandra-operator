@@ -1,4 +1,4 @@
-package curl
+package cassandra
 
 import (
 	"fmt"
@@ -22,27 +22,20 @@ type Executor struct {
 	namespace string
 }
 
-func New(client client.Client, namespace string) Runner {
-	return &Executor{
-		client:    client,
-		namespace: namespace,
-	}
-}
-
 func (c *Executor) Run(arguments ...string) (string, string, error) {
-	curlPodName := fmt.Sprintf("curl-%s", uuid.NewUUID())
+	podName := fmt.Sprintf("nodetool-%s", uuid.NewUUID())
 
 	podTpl := v1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      curlPodName,
+			Name:      podName,
 			Namespace: c.namespace,
 		},
 		Spec: v1.PodSpec{
 			Containers: []v1.Container{
 				{
-					Name:    "curl",
-					Image:   "curlimages/curl",
-					Command: []string{"sleep", "300"},
+					Name:    "nodetool",
+					Image:   "cassandra:3.11.5",
+					Command: []string{"sleep", "3000000"},
 				},
 			},
 		},
@@ -50,12 +43,12 @@ func (c *Executor) Run(arguments ...string) (string, string, error) {
 
 	pod, err := kubernetes.NewPod(c.client, podTpl)
 	if err != nil {
-		return "", "", fmt.Errorf("failed to create new curl pod: %v", err)
+		return "", "", fmt.Errorf("failed to create new nodetool pod: %v", err)
 	}
 	defer func() {
 		fErr := pod.Delete()
 		if fErr != nil {
-			fmt.Printf("Failed to delete temporary curl pod %s: %v", pod.Name, fErr)
+			fmt.Printf("Failed to delete temporary nodetool pod %s: %v", pod.Name, fErr)
 		}
 	}()
 
@@ -73,15 +66,15 @@ func (c *Executor) Run(arguments ...string) (string, string, error) {
 	var stdOut strings.Builder
 	var stdErr strings.Builder
 
-	cmd := cmd.New("curl").
+	cmd := cmd.New("nodetool").
 		WithArguments(arguments...).
 		WithStdout(&stdOut).
 		WithStderr(&stdErr)
 
-	err = pod.ContainerExec("curl", cmd)
+	err = pod.ContainerExec("nodetool", cmd)
 	if err != nil {
-		return "", "", fmt.Errorf("failed to exec in container: %v", err)
+		err = fmt.Errorf("failed to exec in container: %v", err)
 	}
 
-	return stdOut.String(), stdErr.String(), nil
+	return stdOut.String(), stdErr.String(), err
 }

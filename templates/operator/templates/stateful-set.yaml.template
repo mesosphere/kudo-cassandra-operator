@@ -1,30 +1,88 @@
+{{ $topology := list 1 }}
+{{ if $.Params.NODE_TOPOLOGY }}
+{{ $topology = $.Params.NODE_TOPOLOGY }}
+{{ end }}
+{{ range $datacenter := $topology }}
+---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: {{ .Name }}-node
-  namespace: {{ .Namespace }}
+  {{ if $.Params.NODE_TOPOLOGY }}
+  name: {{ $.Name }}-{{ $datacenter.datacenter }}-node
+  {{ else }}
+  name: {{ $.Name }}-node
+  {{ end }}
+  namespace: {{ $.Namespace }}
   labels:
-    cassandra: {{ .OperatorName }}
-    app: {{ .Name }}
+    cassandra: {{ $.OperatorName }}
+    app: {{ $.Name }}
   annotations:
     reloader.kudo.dev/auto: "true"
 spec:
   selector:
     matchLabels:
-      app: {{ .Name }}
-      cassandra: {{ .OperatorName }}
-  serviceName: {{ .Name }}-svc
-  replicas: {{ .Params.NODE_COUNT }}
-  podManagementPolicy: Parallel
-  updateStrategy:
-    type: RollingUpdate
+      app: {{ $.Name }}
+      cassandra: {{ $.OperatorName }}
+  serviceName: {{ $.Name }}-svc
+  {{ if $.Params.NODE_TOPOLOGY }}
+  replicas: {{ $datacenter.nodes }}
+  {{ else }}
+  replicas: {{ $.Params.NODE_COUNT }}
+  {{ end }}
+  podManagementPolicy: {{ $.Params.POD_MANAGEMENT_POLICY }}
   template:
     metadata:
       labels:
-        app: {{ .Name }}
-        cassandra: {{ .OperatorName }}
-        kudo.dev/instance: {{ .Name }}
+        app: {{ $.Name }}
+        cassandra: {{ $.OperatorName }}
+        {{ if $.Params.NODE_TOPOLOGY }}
+        cassandra-dc: {{ $.OperatorName }}-{{ $datacenter.datacenter }}
+        {{ end }}
+        kudo.dev/instance: {{ $.Name }}
     spec:
+      {{ if $.Params.NODE_TOPOLOGY }}
+      serviceAccountName: {{ $.Params.NODE_RESOLVE_SERVICEACCOUNT }}
+      nodeSelector:
+      {{ range $k, $v := $datacenter.datacenterLabels }}
+        {{ $k }}: {{ $v }}
+      {{ end }}
+      {{ end }}
+      affinity:
+      {{ if $.Params.NODE_TOPOLOGY }}
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: {{ $datacenter.rackLabelKey }}
+                    operator: In
+                    values:
+                    {{ range $rack := $datacenter.racks }}
+                      - {{ $rack.rackLabelValue }}
+                    {{ end }}
+      {{ end }}
+      {{ if (eq $.Params.NODE_ANTI_AFFINITY "true") }}
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                    - {{ $.Name }}
+              topologyKey: "kubernetes.io/hostname"
+      {{ end }}
+      {{ if $.Params.NODE_TOPOLOGY }}
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - {{ $.Name }}
+                topologyKey: "{{ $datacenter.rackLabelKey }}"
+      {{ end }}
       securityContext:
         # FIXME(mpereira): are the two settings below necessary?
         # allowPrivilegeEscalation: false
@@ -48,8 +106,8 @@ spec:
         #     value: "1"
       containers:
         - name: cassandra
-          image: {{ .Params.NODE_DOCKER_IMAGE }}
-          imagePullPolicy: {{ .Params.NODE_DOCKER_IMAGE_PULL_POLICY }}
+          image: {{ $.Params.NODE_DOCKER_IMAGE }}
+          imagePullPolicy: {{ $.Params.NODE_DOCKER_IMAGE_PULL_POLICY }}
           securityContext:
             capabilities:
               add:
@@ -70,16 +128,26 @@ spec:
               command:
                   - /bin/bash
                   - /etc/cassandra/node-readiness-probe.sh
-            initialDelaySeconds: {{ .Params.NODE_READINESS_PROBE_INITIAL_DELAY_S }}
-            periodSeconds: {{ .Params.NODE_READINESS_PROBE_PERIOD_S }}
-            timeoutSeconds: {{ .Params.NODE_READINESS_PROBE_TIMEOUT_S }}
-            successThreshold: {{ .Params.NODE_READINESS_PROBE_SUCCESS_THRESHOLD }}
-            failureThreshold: {{ .Params.NODE_READINESS_PROBE_FAILURE_THRESHOLD }}
+            initialDelaySeconds: {{ $.Params.NODE_READINESS_PROBE_INITIAL_DELAY_S }}
+            periodSeconds: {{ $.Params.NODE_READINESS_PROBE_PERIOD_S }}
+            timeoutSeconds: {{ $.Params.NODE_READINESS_PROBE_TIMEOUT_S }}
+            successThreshold: {{ $.Params.NODE_READINESS_PROBE_SUCCESS_THRESHOLD }}
+            failureThreshold: {{ $.Params.NODE_READINESS_PROBE_FAILURE_THRESHOLD }}
+          livenessProbe:
+            exec:
+              command:
+                - /bin/bash
+                - /etc/cassandra/node-liveness-probe.sh
+            initialDelaySeconds: {{ $.Params.NODE_LIVENESS_PROBE_INITIAL_DELAY_S }}
+            periodSeconds: {{ $.Params.NODE_LIVENESS_PROBE_PERIOD_S }}
+            timeoutSeconds: {{ $.Params.NODE_LIVENESS_PROBE_TIMEOUT_S }}
+            successThreshold: {{ $.Params.NODE_LIVENESS_PROBE_SUCCESS_THRESHOLD }}
+            failureThreshold: {{ $.Params.NODE_LIVENESS_PROBE_FAILURE_THRESHOLD }}
           command:
             - bash
             - -c
           args:
-            - {{ if or (eq .Params.TRANSPORT_ENCRYPTION_ENABLED "true") (eq .Params.TRANSPORT_ENCRYPTION_CLIENT_ENABLED "true") }}
+            - {{ if or (eq $.Params.TRANSPORT_ENCRYPTION_ENABLED "true") (eq $.Params.TRANSPORT_ENCRYPTION_CLIENT_ENABLED "true") }}
               /etc/tls/bin/generate-tls-artifacts.sh;
               {{ end }}
               /etc/cassandra/generate-cqlshrc.sh;
@@ -118,27 +186,27 @@ spec:
                 fieldRef:
                   fieldPath: metadata.uid
             - name: PROMETHEUS_EXPORTER_ENABLED
-              value: "{{ .Params.PROMETHEUS_EXPORTER_ENABLED }}"
+              value: "{{ $.Params.PROMETHEUS_EXPORTER_ENABLED }}"
           resources:
             requests:
-              memory: "{{ .Params.NODE_MEM_MIB }}Mi"
-              cpu: "{{ .Params.NODE_CPU_MC }}m"
+              memory: "{{ $.Params.NODE_MEM_MIB }}Mi"
+              cpu: "{{ $.Params.NODE_CPU_MC }}m"
             limits:
-              memory: "{{ .Params.NODE_MEM_LIMIT_MIB }}Mi"
-              cpu: "{{ .Params.NODE_CPU_LIMIT_MC }}m"
+              memory: "{{ $.Params.NODE_MEM_LIMIT_MIB }}Mi"
+              cpu: "{{ $.Params.NODE_CPU_LIMIT_MC }}m"
           # Port names can't be longer than 15 characters.
           ports:
-            - containerPort: {{ .Params.STORAGE_PORT }}
+            - containerPort: {{ $.Params.STORAGE_PORT }}
               name: storage
-            - containerPort: {{ .Params.SSL_STORAGE_PORT }}
+            - containerPort: {{ $.Params.SSL_STORAGE_PORT }}
               name: ssl-storage
-            - containerPort: {{ .Params.NATIVE_TRANSPORT_PORT }}
+            - containerPort: {{ $.Params.NATIVE_TRANSPORT_PORT }}
               name: native
-            {{ if eq .Params.START_RPC "true" }}
-            - containerPort: {{ .Params.RPC_PORT }}
+            {{ if eq $.Params.START_RPC "true" }}
+            - containerPort: {{ $.Params.RPC_PORT }}
               name: rpc
             {{ end }}
-            - containerPort: {{ .Params.JMX_PORT }}
+            - containerPort: {{ $.Params.JMX_PORT }}
               name: jmx
           volumeMounts:
             - name: var-lib-cassandra
@@ -155,13 +223,16 @@ spec:
             - name: jvm-options
               mountPath: /etc/cassandra/jvm.options
               subPath: jvm.options
-            - name: node-readiness-probe-sh
+            - name: node-scripts
               mountPath: /etc/cassandra/node-readiness-probe.sh
               subPath: node-readiness-probe.sh
-            - name: node-readiness-probe-sh
+            - name: node-scripts
+              mountPath: /etc/cassandra/node-liveness-probe.sh
+              subPath: node-liveness-probe.sh
+            - name: node-scripts
               mountPath: /etc/cassandra/node-token-save.sh
               subPath: node-token-save.sh
-            - name: node-readiness-probe-sh
+            - name: node-scripts
               mountPath: /etc/cassandra/wait-for-node-zero.sh
               subPath: wait-for-node-zero.sh
             - name: dot-cassandra
@@ -169,16 +240,16 @@ spec:
             - name: generate-cqlshrc-sh
               mountPath: /etc/cassandra/generate-cqlshrc.sh
               subPath: generate-cqlshrc.sh
-          {{ if or (eq .Params.TRANSPORT_ENCRYPTION_ENABLED "true") (eq .Params.TRANSPORT_ENCRYPTION_CLIENT_ENABLED "true") }}
-            - name: {{ .Params.TLS_SECRET_NAME }}
+          {{ if or (eq $.Params.TRANSPORT_ENCRYPTION_ENABLED "true") (eq $.Params.TRANSPORT_ENCRYPTION_CLIENT_ENABLED "true") }}
+            - name: {{ $.Params.TLS_SECRET_NAME }}
               mountPath: /etc/tls/certs
             - name: generate-tls-artifacts
               mountPath: /etc/tls/bin
           {{ end }}
-        {{ if eq .Params.PROMETHEUS_EXPORTER_ENABLED "true" }}
+        {{ if eq $.Params.PROMETHEUS_EXPORTER_ENABLED "true" }}
         - name: prometheus-exporter
-          image: {{ .Params.PROMETHEUS_EXPORTER_DOCKER_IMAGE }}
-          imagePullPolicy: {{ .Params.PROMETHEUS_EXPORTER_DOCKER_IMAGE_PULL_POLICY }}
+          image: {{ $.Params.PROMETHEUS_EXPORTER_DOCKER_IMAGE }}
+          imagePullPolicy: {{ $.Params.PROMETHEUS_EXPORTER_DOCKER_IMAGE_PULL_POLICY }}
           env:
             - name: NODE_NAME
               valueFrom:
@@ -206,11 +277,11 @@ spec:
                   fieldPath: metadata.uid
           resources:
             requests:
-              memory: "{{ .Params.PROMETHEUS_EXPORTER_MEM_MIB }}Mi"
-              cpu: "{{ .Params.PROMETHEUS_EXPORTER_CPU_MC }}m"
+              memory: "{{ $.Params.PROMETHEUS_EXPORTER_MEM_MIB }}Mi"
+              cpu: "{{ $.Params.PROMETHEUS_EXPORTER_CPU_MC }}m"
             limits:
-              memory: "{{ .Params.PROMETHEUS_EXPORTER_MEM_LIMIT_MIB }}Mi"
-              cpu: "{{ .Params.PROMETHEUS_EXPORTER_CPU_LIMIT_MC }}m"
+              memory: "{{ $.Params.PROMETHEUS_EXPORTER_MEM_LIMIT_MIB }}Mi"
+              cpu: "{{ $.Params.PROMETHEUS_EXPORTER_CPU_LIMIT_MC }}m"
           volumeMounts:
             - name: cassandra-exporter-config-yml
               mountPath: /etc/cassandra_exporter/config.yml
@@ -284,6 +355,46 @@ spec:
               mountPath: /etc/medusa/medusa.ini
               subPath: medusa.ini
         {{ end }}
+      initContainers:
+      {{ if $.Params.NODE_TOPOLOGY }}
+      initContainers:
+        - name: node-resolver
+          image: bitnami/kubectl:latest
+          command:
+            - "sh"
+            - "-c"
+            - "/etc/cassandra/generate-rackdc-properties.sh"
+          env:
+            - name: RACKLABEL
+              value: "{{ $datacenter.rackLabelKey }}"
+            - name: CASSANDRA_DATACENTER
+              value: "{{ $datacenter.datacenter }}"
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+          volumeMounts:
+            - name: etc-cassandra
+              mountPath: /etc/cassandra/
+            - name: node-scripts
+              mountPath: /etc/cassandra/generate-rackdc-properties.sh
+              subPath: generate-rackdc-properties.sh
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "200m"
+      {{ end }}
       {{ if eq .Params.RESTORE_FLAG "true" }}
       initContainers:
         - name: medusa-restore
@@ -368,40 +479,40 @@ spec:
           emptyDir: {}
         - name: cassandra-yaml
           configMap:
-            name: {{ .Name }}-cassandra-yaml
+            name: {{ $.Name }}-cassandra-yaml
         - name: cassandra-env-sh
           configMap:
-            name: {{ .Name }}-cassandra-env-sh
+            name: {{ $.Name }}-cassandra-env-sh
         - name: jvm-options
           configMap:
-            name: {{ .Name }}-jvm-options
-        - name: node-readiness-probe-sh
+            name: {{ $.Name }}-jvm-options
+        - name: node-scripts
           configMap:
-            name: {{ .Name }}-node-readiness-probe-sh
+            name: {{ $.Name }}-node-scripts
             defaultMode: 0755
         - name: dot-cassandra
           emptyDir: {}
         - name: generate-cqlshrc-sh
           configMap:
-            name: {{ .Name }}-generate-cqlshrc-sh
+            name: {{ $.Name }}-generate-cqlshrc-sh
             defaultMode: 0755
-        {{ if eq .Params.PROMETHEUS_EXPORTER_ENABLED "true" }}
+        {{ if eq $.Params.PROMETHEUS_EXPORTER_ENABLED "true" }}
         - name: cassandra-exporter-config-yml
           configMap:
-            name: {{ .Name }}-cassandra-exporter-config-yml
+            name: {{ $.Name }}-cassandra-exporter-config-yml
         {{ end }}
-        {{ if eq .Params.BACKUP_RESTORE_ENABLED "true" }}
+        {{ if eq $.Params.BACKUP_RESTORE_ENABLED "true" }}
         - name: cassandra-medusa-config-ini
           configMap:
-            name: {{ .Name }}-cassandra-medusa-ini
+            name: {{ $.Name }}-cassandra-medusa-ini
         {{ end }}
-        {{ if or (eq .Params.TRANSPORT_ENCRYPTION_ENABLED "true") (eq .Params.TRANSPORT_ENCRYPTION_CLIENT_ENABLED "true") }}
-        - name: {{ .Params.TLS_SECRET_NAME }}
+        {{ if or (eq $.Params.TRANSPORT_ENCRYPTION_ENABLED "true") (eq $.Params.TRANSPORT_ENCRYPTION_CLIENT_ENABLED "true") }}
+        - name: {{ $.Params.TLS_SECRET_NAME }}
           secret:
-            secretName: {{ .Params.TLS_SECRET_NAME }}
+            secretName: {{ $.Params.TLS_SECRET_NAME }}
         - name: generate-tls-artifacts
           configMap:
-            name:  {{ .Name }}-generate-tls-artifacts-sh
+            name:  {{ $.Name }}-generate-tls-artifacts-sh
             defaultMode: 0755
         {{ end }}
   volumeClaimTemplates:
@@ -416,7 +527,8 @@ spec:
         accessModes: ["ReadWriteOnce"]
         resources:
           requests:
-            storage: "{{ .Params.NODE_DISK_SIZE_GIB }}Gi"
-        {{ if .Params.NODE_STORAGE_CLASS }}
-        storageClassName: {{ .Params.NODE_STORAGE_CLASS }}
+            storage: "{{ $.Params.NODE_DISK_SIZE_GIB }}Gi"
+        {{ if $.Params.NODE_STORAGE_CLASS }}
+        storageClassName: {{ $.Params.NODE_STORAGE_CLASS }}
         {{ end }}
+{{ end }}
