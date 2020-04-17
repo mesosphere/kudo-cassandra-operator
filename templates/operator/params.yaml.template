@@ -189,6 +189,10 @@ parameters:
     description: "The JMX port that will be used to interface with the Cassandra application."
     default: "7199"
 
+  - name: RMI_PORT
+    description: "The RMI port that will be used to interface with the Cassandra application when TRANSPORT_ENCRYPTION_ENABLED is set."
+    default: "7299"
+
   - name: JMX_LOCAL_ONLY
     description: "If true, the JMX port will only be opened on localhost and not be available to the cluster"
     default: "true"
