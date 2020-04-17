@@ -6,6 +6,15 @@ rules:
   - apiGroups: [""]
     resources: ["nodes"]
     verbs: ["get", "watch", "list"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["services"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["update", "get", "list"]
 ---
 apiVersion: v1
 kind: ServiceAccount

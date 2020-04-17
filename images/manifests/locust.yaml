@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shopping-locust
+  labels:
+    app: shopping-locust
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: shopping-locust
+  template:
+    metadata:
+      labels:
+        app: shopping-locust
+    spec:
+      containers:
+      - name: shopping-locust
+        image: mesosphere/workloads-demo:cassandra-locust-0.0.1
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8089
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: shopping-locust-svc
+  labels:
+    app: shopping-locust
+spec:
+  ports:
+  - port: 8089
+  selector:
+    app: shopping-locust
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: traefik
+    traefik.frontend.rule.type: PathPrefixStrip
+    traefik.ingress.kubernetes.io/rewrite-target: /demo
+    traefik.ingress.kubernetes.io/auth-response-headers: X-Forwarded-User,Authorization,Impersonate-User,Impersonate-Group
+    traefik.ingress.kubernetes.io/auth-type: forward
+    traefik.ingress.kubernetes.io/auth-url: http://traefik-forward-auth-kubeaddons.kubeaddons.svc.cluster.local:4181/
+    traefik.ingress.kubernetes.io/priority: "2"
+  labels:
+    app: shopping-locust
+  name: locust-app
+spec:
+  rules:
+  - http:
+      paths:
+      - backend:
+          serviceName: shopping-locust-svc
+          servicePort: 8089
+        path: /verizon/poc/
+      - backend:
+          serviceName: shopping-locust-svc
+          servicePort: 8089
+        path: /verizon/poc/static
+

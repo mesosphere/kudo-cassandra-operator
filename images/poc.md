@@ -1,30 +1,52 @@
 
-## Steps
+## Cassandra Failover Demo
+
+![failover](./resources/poc-diagram.png) 
 
 
-Start controller watching events
+
+### Setup
+
+Checkout the KUDO Cassandra github repo
 ```
-cd cassandra-recovery
-KUBECONFIG=path/to/kubeconfig go run main.go
-```
-
-## Install KUDO Cassandra
-
-```
-kubectl kudo install /Users/zain/go/src/github.com/mesosphere/kudo-cassandra-operator/operator/ -p NODE_MEM_MIB=256 -p PROMETHEUS_EXPORTER_ENABLED=false -p NODE_DOCKER_IMAGE=zmalikshxil/cassandra:3.11.5
-```
-
-replace `/Users/zain/go/src/github.com/mesosphere/kudo-cassandra-operator/operator/` with your own path to operator
-
-
-if you do any changes in cassandra-bootstrap binary, make sure to build the docker image and push it
-and replace `NODE_DOCKER_IMAGE=zmalikshxil/cassandra:3.11.5` with your own image
-
-```
-docker build . -t zmalikshxil/cassandra:3.11.5
-docker push zmalikshxil/cassandra:3.11.5
+git clone https://github.com/mesosphere/kudo-cassandra-operator.git 
+cd kudo-cassandra-operator
+git checkout node-replace-poc
 ```
 
----
-Delete any kubernetes node where a Cassandra node is running to verify the POC
+Install the KUDO Cassandra operator
+
+```
+kubectl kudo install ./operator --parameter-file=./images/topology/aws-topology.yaml
+```
+
+Watch the cassandra pods till we have the cluster up and healthy
+
+```
+kubectl get pods -w
+```
+
+Install the workload
+
+```
+kubectl apply -f ./images/manifests/
+```
+
+Get the benchmark endpoint
+
+```
+http://konvoy-cluster-url/verizon/poc/
+```
+
+Start with small test against the host `http://shopping-app-service` and check the shopping cart with 
+
+```
+kubectl exec -ti cassandra-instance-ring1-node-0  -- cqlsh -e "SELECT * FROM shopping.carts"
+```
+
+### Delete the whole ring1
+
+```
+kubectl delete pod cassandra-instance-ring1-node-0 cassandra-instance-ring1-node-1 cassandra-instance-ring1-node-2
+```
 

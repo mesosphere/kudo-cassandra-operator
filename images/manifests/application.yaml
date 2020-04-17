@@ -1,0 +1,123 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shopping-app-dc1
+  labels:
+    app: shopping-app-dc1
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: shopping-app-dc1
+  template:
+    metadata:
+      labels:
+        app: shopping-app-dc1
+        cassandra: app-demo
+    spec:
+      containers:
+      - name: shopping-app
+        image: mesosphere/workloads-demo:cassandra-app-0.0.1
+        imagePullPolicy: Always
+        env:
+        - name: CONTACT_POINTS
+          value: cassandra-instance-ring1-node-1.cassandra-instance-svc.default.svc.cluster.local
+        - name: LOCAL_DATA_CENTER
+          value: ring1
+        - name: REMOTE_DATA_CENTER
+          value: ring2
+        ports:
+        - containerPort: 8080
+        readinessProbe:
+          httpGet:
+            path: /status
+            port: 8080
+          initialDelaySeconds: 10
+          failureThreshold: 1
+          periodSeconds: 3
+          successThreshold: 2
+        livenessProbe:
+          httpGet:
+            path: /status
+            port: 8080
+          initialDelaySeconds: 10
+          failureThreshold: 1
+          successThreshold: 1
+          periodSeconds: 3
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shopping-app-dc2
+  labels:
+    app: shopping-app-dc2
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: shopping-app-dc2
+  template:
+    metadata:
+      labels:
+        app: shopping-app-dc2
+        cassandra: app-demo
+    spec:
+      containers:
+      - name: shopping-app
+        image: mesosphere/workloads-demo:cassandra-app-0.0.1
+        imagePullPolicy: Always
+        env:
+        - name: CONTACT_POINTS
+          value: cassandra-instance-ring2-node-0.cassandra-instance-svc.default.svc.cluster.local
+        - name: LOCAL_DATA_CENTER
+          value: ring2
+        - name: REMOTE_DATA_CENTER
+          value: ring1
+        ports:
+        - containerPort: 8080
+        readinessProbe:
+          httpGet:
+            path: /status
+            port: 8080
+          initialDelaySeconds: 10
+          failureThreshold: 1
+          successThreshold: 2
+          periodSeconds: 3
+        livenessProbe:
+          httpGet:
+            path: /status
+            port: 8080
+          initialDelaySeconds: 10
+          successThreshold: 1
+          failureThreshold: 1
+          periodSeconds: 3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: shopping-app
+  labels:
+    app: shopping-app
+spec:
+  ports:
+  - port: 8080
+    name: server
+  clusterIP: None
+  selector:
+    cassandra: app-demo
+    app: shopping-app-dc1
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: shopping-app2
+  labels:
+    app: shopping-app2
+spec:
+  ports:
+  - port: 8080
+    name: server
+  clusterIP: None
+  selector:
+    cassandra: app-demo
+    app: shopping-app-dc2
