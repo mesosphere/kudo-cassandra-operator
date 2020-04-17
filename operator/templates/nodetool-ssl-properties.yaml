@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Name }}-nodetool-ssl-properties
+  namespace: {{ .Namespace }}
+data:
+  nodetool-ssl.properties: |
+    {{ if ne .Params.JMX_LOCAL_ONLY "true" }}
+    -Dcom.sun.management.jmxremote.ssl=true
+    -Dcom.sun.management.jmxremote.ssl.need.client.auth=true
+    -Dcom.sun.management.jmxremote.registry.ssl=true
+    -Djavax.net.ssl.keyStore=/etc/cassandra/tls/cassandra.server.keystore.jks
+    -Djavax.net.ssl.keyStorePassword={{ .Params.TLS_KEYSTORE_PASSWORD }}
+    -Djavax.net.ssl.trustStore=/etc/cassandra/tls/cassandra.server.truststore.jks
+    -Djavax.net.ssl.trustStorePassword={{ .Params.TLS_TRUSTSTORE_PASSWORD }}
+    {{ end }}

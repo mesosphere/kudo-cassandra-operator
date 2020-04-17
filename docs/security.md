@@ -67,5 +67,18 @@ kubectl kudo install cassandra \
     -p TLS_SECRET_NAME=cassandra-tls
 ```
 
+#### Enabling only for JMX communication
+
+By default, KUDO Cassandra nodes only allow JMX connections from localhost.
+To enable remote JMX with encryption set `JMX_LOCAL_ONLY` to `false`.
+
+```
+kubectl kudo install cassandra \
+    --instance=cassandra \
+    --namespace=kudo-cassandra \
+    -p TLS_SECRET_NAME=cassandra-tls \
+    -p JMX_LOCAL_ONLY=false
+```
+
 Check out the [parameters reference](./parameters.md) for a complete list of all
 configurable settings available for KUDO Cassandra security.
