@@ -1,6 +1,6 @@
 {{ $auth_params := "" }}
 {{ if .Params.AUTHENTICATION_SECRET_NAME }}
-{{ $auth_params = "-u $(cat /etc/cassandra/authentication/username) -pw $(cat /etc/cassandra/authentication/password)" }}
+{{ $auth_params = "-u $(cat /etc/cassandra/authentication/username) -pwf <(paste -d ' ' /etc/cassandra/authentication/username /etc/cassandra/authentication/password)" }}
 {{ end }}
 apiVersion: v1
 kind: ConfigMap
