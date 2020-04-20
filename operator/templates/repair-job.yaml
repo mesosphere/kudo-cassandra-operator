@@ -1,3 +1,7 @@
+{{ $auth_params := "" }}
+{{ if $.Params.AUTHENTICATION_SECRET_NAME }}
+{{ $auth_params = "-u ${SECRET_USERNAME} -pwf <(echo \"${SECRET_USERNAME} ${SECRET_PASSWORD}\")" }}
+{{ end }}
 ---
 apiVersion: batch/v1
 kind: Job
@@ -14,7 +18,7 @@ spec:
         - name: repair-job
           image: bitnami/kubectl:{{ $.Params.KUBECTL_VERSION }}
           command: ["/bin/bash"]
-          args: [ "-c", "kubectl exec {{ $.Params.REPAIR_POD }} -- nodetool {{ if $.Params.AUTHENTICATION_SECRET_NAME }}-u $SECRET_USERNAME -pw $SECRET_PASSWORD{{ end }} repair"]
+          args: [ "-c", "kubectl exec {{ $.Params.REPAIR_POD }} -- nodetool {{ $auth_params }} repair"]
           {{ if $.Params.AUTHENTICATION_SECRET_NAME }}
           env:
             - name: SECRET_USERNAME
