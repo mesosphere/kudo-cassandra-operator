@@ -147,8 +147,11 @@ spec:
             - bash
             - -c
           args:
-            - {{ if or (eq $.Params.TRANSPORT_ENCRYPTION_ENABLED "true") (eq $.Params.TRANSPORT_ENCRYPTION_CLIENT_ENABLED "true") }}
+            - {{ if or (eq $.Params.TRANSPORT_ENCRYPTION_ENABLED "true") (eq $.Params.TRANSPORT_ENCRYPTION_CLIENT_ENABLED "true") (ne $.Params.JMX_LOCAL_ONLY "true") }}
               /etc/tls/bin/generate-tls-artifacts.sh;
+              {{ end }}
+              {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
+              cp /nodetool-ssl-properties/nodetool-ssl.properties /home/cassandra/.cassandra/nodetool-ssl.properties;
               {{ end }}
               /etc/cassandra/generate-cqlshrc.sh;
               {{ if $.Params.NODE_TOPOLOGY }}
@@ -244,16 +247,30 @@ spec:
             - name: generate-cqlshrc-sh
               mountPath: /etc/cassandra/generate-cqlshrc.sh
               subPath: generate-cqlshrc.sh
-          {{ if or (eq $.Params.TRANSPORT_ENCRYPTION_ENABLED "true") (eq $.Params.TRANSPORT_ENCRYPTION_CLIENT_ENABLED "true") }}
+          {{ if or (eq $.Params.TRANSPORT_ENCRYPTION_ENABLED "true") (eq $.Params.TRANSPORT_ENCRYPTION_CLIENT_ENABLED "true") (ne $.Params.JMX_LOCAL_ONLY "true") }}
             - name: {{ $.Params.TLS_SECRET_NAME }}
               mountPath: /etc/tls/certs
             - name: generate-tls-artifacts
               mountPath: /etc/tls/bin
           {{ end }}
+          {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
+            - name: nodetool-ssl-properties
+              mountPath: /nodetool-ssl-properties
+          {{ end }}
         {{ if eq $.Params.PROMETHEUS_EXPORTER_ENABLED "true" }}
         - name: prometheus-exporter
           image: {{ $.Params.PROMETHEUS_EXPORTER_DOCKER_IMAGE }}
           imagePullPolicy: {{ $.Params.PROMETHEUS_EXPORTER_DOCKER_IMAGE_PULL_POLICY }}
+          command:
+            - bash
+            - -c
+          args:
+            - {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
+              while IFS= read -r flag; do
+                JVM_OPTS="${JVM_OPTS} $flag";
+              done < /nodetool-ssl-properties/nodetool-ssl.properties;
+              {{ end }}
+              JVM_OPTS="${JVM_OPTS}" /sbin/dumb-init /bin/bash /run.sh;
           env:
             - name: NODE_NAME
               valueFrom:
@@ -290,6 +307,12 @@ spec:
             - name: cassandra-exporter-config-yml
               mountPath: /etc/cassandra_exporter/config.yml
               subPath: config.yml
+          {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
+            - name: etc-cassandra
+              mountPath: /etc/cassandra/
+            - name: nodetool-ssl-properties
+              mountPath: /nodetool-ssl-properties
+          {{ end }}
         {{ end }}
         {{ if eq $.Params.BACKUP_RESTORE_ENABLED "true" }}
         - name: medusa-backup
@@ -508,7 +531,7 @@ spec:
           configMap:
             name: {{ $.Name }}-cassandra-medusa-ini
         {{ end }}
-        {{ if or (eq $.Params.TRANSPORT_ENCRYPTION_ENABLED "true") (eq $.Params.TRANSPORT_ENCRYPTION_CLIENT_ENABLED "true") }}
+        {{ if or (eq $.Params.TRANSPORT_ENCRYPTION_ENABLED "true") (eq $.Params.TRANSPORT_ENCRYPTION_CLIENT_ENABLED "true") (ne $.Params.JMX_LOCAL_ONLY "true") }}
         - name: {{ $.Params.TLS_SECRET_NAME }}
           secret:
             secretName: {{ $.Params.TLS_SECRET_NAME }}
@@ -516,6 +539,11 @@ spec:
           configMap:
             name:  {{ $.Name }}-generate-tls-artifacts-sh
             defaultMode: 0755
+        {{ end }}
+        {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
+        - name: nodetool-ssl-properties
+          configMap:
+            name: {{ $.Name }}-nodetool-ssl-properties
         {{ end }}
   volumeClaimTemplates:
     - metadata:

@@ -10,11 +10,6 @@ maintainers:
 url: http://cassandra.apache.org/
 
 tasks:
-  - name: pvc
-    kind: Apply
-    spec:
-      resources:
-        - pvc.yaml
   - name: node
     kind: Apply
     spec:
@@ -23,35 +18,20 @@ tasks:
         - cassandra-yaml.yaml
         - cassandra-env-sh.yaml
         - jvm-options.yaml
-        - stateful-set.yaml
         - cassandra-exporter-config-yml.yaml
         - service-monitor.yaml
         - node-scripts.yaml
         - generate-tls-artifacts-sh.yaml
         - generate-cqlshrc-sh.yaml
         - pdb.yaml
-        - medusa-config-ini.yaml
+        - nodetool-ssl-properties.yaml
+        - stateful-set.yaml
   - name: ext-service
     kind: Toggle
     spec:
       parameter: EXTERNAL_SERVICE
       resources:
         - external-service.yaml
-  - name: backup-cleanup
-    kind: Delete
-    spec:
-      resources:
-        - backup-job.yaml
-  - name: backup
-    kind: Apply
-    spec:
-      resources:
-        - backup-job.yaml
-  - name: remove-stateful-set
-    kind: Delete
-    spec:
-      resources:
-        - stateful-set.yaml
   - name: node-resolver-rbac
     kind: Toggle
     spec:
@@ -90,30 +70,3 @@ plans:
           - name: repair
             tasks:
               - repair-pod
-  backup:
-    strategy: serial
-    phases:
-      - name: backup
-        strategy: serial
-        steps:
-          - name: cleanup
-            tasks:
-             - backup-cleanup
-          - name: backup
-            tasks:
-             - backup
-  upgrade:
-    strategy: serial
-    phases:
-      - name: cleanup
-        strategy: serial
-        steps:
-          - name: cleanup-stateful-set
-            tasks:
-              - remove-stateful-set
-      - name: reinstall
-        strategy: serial
-        steps:
-          - name: node
-            tasks:
-              - node

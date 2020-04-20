@@ -23,7 +23,6 @@ tasks:
         - cassandra-yaml.yaml
         - cassandra-env-sh.yaml
         - jvm-options.yaml
-        - stateful-set.yaml
         - cassandra-exporter-config-yml.yaml
         - service-monitor.yaml
         - node-scripts.yaml
@@ -31,6 +30,8 @@ tasks:
         - generate-cqlshrc-sh.yaml
         - pdb.yaml
         - medusa-config-ini.yaml
+        - nodetool-ssl-properties.yaml
+        - stateful-set.yaml
   - name: ext-service
     kind: Toggle
     spec:
