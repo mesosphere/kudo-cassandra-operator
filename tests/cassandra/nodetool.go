@@ -3,6 +3,7 @@ package cassandra
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -13,17 +14,100 @@ import (
 	"github.com/kudobuilder/test-tools/pkg/kubernetes"
 )
 
+// Runner interface
 type Runner interface {
 	Run(arguments ...string) (string, string, error)
 }
 
+// Executor struct
 type Executor struct {
-	client    client.Client
-	namespace string
+	client     client.Client
+	namespace  string
+	instance   string
+	sslEnabled bool
 }
 
+// NewNodeTool Create new nodetool
+func NewNodeTool(client client.Client, namespace, instance string, sslEnabled bool) Runner {
+	return &Executor{
+		client:     client,
+		namespace:  namespace,
+		instance:   instance,
+		sslEnabled: sslEnabled,
+	}
+}
+
+// Run Runs nodetool inside a new pod
 func (c *Executor) Run(arguments ...string) (string, string, error) {
 	podName := fmt.Sprintf("nodetool-%s", uuid.NewUUID())
+	defaultMode := int32(0755)
+	id := int64(999)
+	runAsNonRoot := true
+	args := "sleep 1000000;"
+	volumeMounts := []v1.VolumeMount{}
+	volumes := []v1.Volume{}
+
+	if c.sslEnabled {
+		args = "/etc/tls/bin/generate-tls-artifacts.sh;" +
+			"cp /nodetool-ssl-properties/nodetool-ssl.properties /home/cassandra/.cassandra/nodetool-ssl.properties;" +
+			args
+		volumeMounts = []v1.VolumeMount{
+			{
+				Name:      "cassandra-tls",
+				MountPath: "/etc/tls/certs",
+			},
+			{
+				Name:      "generate-tls-artifacts",
+				MountPath: "/etc/tls/bin",
+			},
+			{
+				Name:      "nodetool-ssl-properties",
+				MountPath: "/nodetool-ssl-properties",
+			},
+			{
+				Name:      "dot-cassandra",
+				MountPath: "/home/cassandra/.cassandra/",
+			},
+		}
+		volumes = []v1.Volume{
+			{
+				Name: "cassandra-tls",
+				VolumeSource: v1.VolumeSource{
+					Secret: &v1.SecretVolumeSource{
+						SecretName: "cassandra-tls",
+					},
+				},
+			},
+			{
+				Name: "generate-tls-artifacts",
+				VolumeSource: v1.VolumeSource{
+					ConfigMap: &v1.ConfigMapVolumeSource{
+						LocalObjectReference: v1.LocalObjectReference{
+							Name: fmt.Sprintf("%s-generate-tls-artifacts-sh", c.instance),
+						},
+						DefaultMode: &defaultMode,
+					},
+				},
+			},
+			{
+				Name: "nodetool-ssl-properties",
+				VolumeSource: v1.VolumeSource{
+					ConfigMap: &v1.ConfigMapVolumeSource{
+						LocalObjectReference: v1.LocalObjectReference{
+							Name: fmt.Sprintf("%s-nodetool-ssl-properties", c.instance),
+						},
+						DefaultMode: &defaultMode,
+					},
+				},
+			},
+			{
+				Name: "dot-cassandra",
+				VolumeSource: v1.VolumeSource{
+					EmptyDir: &v1.EmptyDirVolumeSource{},
+				},
+			},
+		}
+	}
 
 	podTpl := v1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
@@ -31,13 +115,27 @@ func (c *Executor) Run(arguments ...string) (string, string, error) {
 			Namespace: c.namespace,
 		},
 		Spec: v1.PodSpec{
+			SecurityContext: &v1.PodSecurityContext{
+				RunAsNonRoot: &runAsNonRoot,
+				RunAsUser:    &id,
+				RunAsGroup:   &id,
+				FSGroup:      &id,
+			},
 			Containers: []v1.Container{
 				{
-					Name:    "nodetool",
-					Image:   "cassandra:3.11.5",
-					Command: []string{"sleep", "3000000"},
+					Name:  "nodetool",
+					Image: "cassandra:3.11.5",
+					Command: []string{
+						"bash",
+						"-c",
+					},
+					Args: []string{
+						args,
+					},
+					VolumeMounts: volumeMounts,
 				},
 			},
+			Volumes: volumes,
 		},
 	}
 
@@ -62,6 +160,11 @@ func (c *Executor) Run(arguments ...string) (string, string, error) {
 			}
 		}
 	}
+
+	// The generate-tls-artifacts.sh takes time to execute in the container.
+	// Waiting for it to complete before exec-ing in the container
+	fmt.Printf("Waiting 10 secs for pod %s to initialize", pod.Name)
+	time.Sleep(10 * time.Second)
 
 	var stdOut strings.Builder
 	var stdErr strings.Builder

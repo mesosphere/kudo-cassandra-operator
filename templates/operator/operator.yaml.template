@@ -18,13 +18,14 @@ tasks:
         - cassandra-yaml.yaml
         - cassandra-env-sh.yaml
         - jvm-options.yaml
-        - stateful-set.yaml
         - cassandra-exporter-config-yml.yaml
         - service-monitor.yaml
         - node-scripts.yaml
         - generate-tls-artifacts-sh.yaml
         - generate-cqlshrc-sh.yaml
         - pdb.yaml
+        - nodetool-ssl-properties.yaml
+        - stateful-set.yaml
   - name: ext-service
     kind: Toggle
     spec:
