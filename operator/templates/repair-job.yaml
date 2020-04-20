@@ -1,6 +1,6 @@
 {{ $auth_params := "" }}
 {{ if $.Params.AUTHENTICATION_SECRET_NAME }}
-{{ $auth_params = "-u ${SECRET_USERNAME} -pwf <(echo \"${SECRET_USERNAME} ${SECRET_PASSWORD}\")" }}
+{{ $auth_params = "-u ${SECRET_USERNAME} -pwf <(echo \\\"${SECRET_USERNAME} ${SECRET_PASSWORD}\\\")" }}
 {{ end }}
 ---
 apiVersion: batch/v1
