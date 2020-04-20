@@ -9,7 +9,11 @@ metadata:
   namespace: {{ .Namespace }}
 data:
   node-drain.sh: |
+    {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
+    nodetool {{ $auth_params }} --ssl drain
+    {{ else }}
     nodetool {{ $auth_params }} drain
+    {{ end }}
   node-readiness-probe.sh: |
     {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
     nodetool {{ $auth_params }} --ssl status -p {{ .Params.JMX_PORT }} | grep -q "UN  ${POD_IP}"
