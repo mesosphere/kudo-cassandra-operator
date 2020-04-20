@@ -1,3 +1,7 @@
+{{ $auth_params := "" }}
+{{ if .Params.AUTHENTICATION_SECRET_NAME }}
+{{ $auth_params = "-u $(cat /etc/cassandra/authentication/username) -pw $(cat /etc/cassandra/authentication/password)" }}
+{{ end }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -5,11 +9,11 @@ metadata:
   namespace: {{ .Namespace }}
 data:
   node-drain.sh: |
-    nodetool {{ if .Params.AUTHENTICATION_CREDENTIALS_SECRET }}-u $(cat /etc/cassandra/authentication/username) -pw $(cat /etc/cassandra/authentication/password){{ end }} drain
+    nodetool {{ $auth_params }} drain
   node-readiness-probe.sh: |
-    nodetool {{ if .Params.AUTHENTICATION_CREDENTIALS_SECRET }}-u $(cat /etc/cassandra/authentication/username) -pw $(cat /etc/cassandra/authentication/password){{ end }} status -p {{ .Params.JMX_PORT }} | grep -q "UN  ${POD_IP}"
+    nodetool {{ $auth_params }} status -p {{ .Params.JMX_PORT }} | grep -q "UN  ${POD_IP}"
   node-liveness-probe.sh: |
-    nodetool {{ if .Params.AUTHENTICATION_CREDENTIALS_SECRET }}-u $(cat /etc/cassandra/authentication/username) -pw $(cat /etc/cassandra/authentication/password){{ end }} info
+    nodetool {{ $auth_params }} info
   generate-rackdc-properties.sh: |
     # Generate the rackdc-properties
     RACK=`kubectl get node -L$RACKLABEL | grep ${NODE_NAME} | awk '{print $6}'`

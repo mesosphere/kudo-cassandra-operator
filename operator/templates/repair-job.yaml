@@ -12,20 +12,20 @@ spec:
     spec:
       containers:
         - name: repair-job
-          image: bitnami/kubectl:latest
+          image: bitnami/kubectl:{{ $.Params.KUBECTL_VERSION }}
           command: ["/bin/bash"]
-          args: [ "-c", "kubectl exec {{ $.Params.REPAIR_POD }} -- nodetool {{ if $.Params.AUTHENTICATION_CREDENTIALS_SECRET }}-u $SECRET_USERNAME -pw $SECRET_PASSWORD{{ end }} repair"]
-          {{ if $.Params.AUTHENTICATION_CREDENTIALS_SECRET }}
+          args: [ "-c", "kubectl exec {{ $.Params.REPAIR_POD }} -- nodetool {{ if $.Params.AUTHENTICATION_SECRET_NAME }}-u $SECRET_USERNAME -pw $SECRET_PASSWORD{{ end }} repair"]
+          {{ if $.Params.AUTHENTICATION_SECRET_NAME }}
           env:
             - name: SECRET_USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: {{ $.Params.AUTHENTICATION_CREDENTIALS_SECRET }}
+                  name: {{ $.Params.AUTHENTICATION_SECRET_NAME }}
                   key: username
             - name: SECRET_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ $.Params.AUTHENTICATION_CREDENTIALS_SECRET }}
+                  name: {{ $.Params.AUTHENTICATION_SECRET_NAME }}
                   key: password
           {{ end }}
       restartPolicy: Never

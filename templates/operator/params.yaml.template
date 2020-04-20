@@ -273,8 +273,8 @@ parameters:
     description: "Authentication backend, implementing IAuthenticator; used to identify users."
     default: "AllowAllAuthenticator"
 
-  - name: AUTHENTICATION_CREDENTIALS_SECRET
-    description: "Secret containing the credentials used by the operator when running 'nodetool' for its functionality. Only relevant if AUTHENTICATOR is set to 'PasswordAuthenticator'. The secret needs to have a 'username' and a 'password' entry."
+  - name: AUTHENTICATION_SECRET_NAME
+    description: "Name of the secret containing the credentials used by the operator when running 'nodetool' for its functionality. Only relevant if AUTHENTICATOR is set to 'PasswordAuthenticator'. The secret needs to have a 'username' and a 'password' entry."
     default: ""
 
   - name: AUTHORIZER
@@ -780,6 +780,10 @@ parameters:
   - name: CUSTOM_CASSANDRA_YAML_BASE64
     description: "Base64-encoded Cassandra properties appended to cassandra.yaml."
     default: ""
+
+  - name: KUBECTL_VERSION
+    description: "Version of 'bitnami/kubectl' image. This image is used for some functionality of the operator."
+    default: "1.18.2"
 
   ################################################################################
   ################################ JVM Options ###################################

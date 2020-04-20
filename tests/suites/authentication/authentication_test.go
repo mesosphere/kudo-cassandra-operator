@@ -71,8 +71,8 @@ var _ = Describe("Authentication tests", func() {
 
 			By("Installing the operator with 'PasswordAuthenticator'")
 			parameters := map[string]string{
-				"AUTHENTICATOR":                     "PasswordAuthenticator",
-				"AUTHENTICATION_CREDENTIALS_SECRET": secretName,
+				"AUTHENTICATOR":              "PasswordAuthenticator",
+				"AUTHENTICATION_SECRET_NAME": secretName,
 			}
 
 			operator, err = kudo.InstallOperator(operatorDirectory).

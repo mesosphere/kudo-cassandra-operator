@@ -242,8 +242,8 @@ spec:
             - name: generate-tls-artifacts
               mountPath: /etc/tls/bin
           {{ end }}
-          {{ if $.Params.AUTHENTICATION_CREDENTIALS_SECRET }}
-            - name: {{ $.Params.AUTHENTICATION_CREDENTIALS_SECRET }}
+          {{ if $.Params.AUTHENTICATION_SECRET_NAME }}
+            - name: authentication-secret
               mountPath: /etc/cassandra/authentication
               readOnly: true
           {{ end }}
@@ -291,7 +291,7 @@ spec:
       {{ if $.Params.NODE_TOPOLOGY }}
       initContainers:
         - name: node-resolver
-          image: bitnami/kubectl:latest
+          image: bitnami/kubectl:{{ $.Params.KUBECTL_VERSION }}
           command:
             - "sh"
             - "-c"
@@ -364,10 +364,10 @@ spec:
             name:  {{ $.Name }}-generate-tls-artifacts-sh
             defaultMode: 0755
         {{ end }}
-        {{ if $.Params.AUTHENTICATION_CREDENTIALS_SECRET }}
-        - name: {{ $.Params.AUTHENTICATION_CREDENTIALS_SECRET }}
+        {{ if $.Params.AUTHENTICATION_SECRET_NAME }}
+        - name: authentication-secret
           secret:
-            secretName: {{ $.Params.AUTHENTICATION_CREDENTIALS_SECRET }}
+            secretName: {{ $.Params.AUTHENTICATION_SECRET_NAME }}
         {{ end }}
   volumeClaimTemplates:
     - metadata:
