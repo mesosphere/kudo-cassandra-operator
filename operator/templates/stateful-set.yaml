@@ -318,6 +318,14 @@ spec:
         - name: medusa-backup
           image: {{ $.Params.BACKUP_MEDUSA_DOCKER_IMAGE }}
           imagePullPolicy: {{ $.Params.BACKUP_MEDUSA_DOCKER_IMAGE_PULL_POLICY }}
+          command:
+            - bash
+            - -c
+          args:
+            - {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
+              cp /nodetool-ssl-properties/nodetool-ssl.properties /home/cassandra/.cassandra/nodetool-ssl.properties;
+              {{ end }}
+              python3 /medusa-frontend.py
           env:
             - name: AWS_ACCESS_KEY_ID
               valueFrom:
@@ -381,6 +389,12 @@ spec:
             - name: cassandra-medusa-config-ini
               mountPath: /etc/medusa/medusa.ini
               subPath: medusa.ini
+          {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
+            - name: dot-cassandra
+              mountPath: /home/cassandra/.cassandra/
+            - name: nodetool-ssl-properties
+              mountPath: /nodetool-ssl-properties
+          {{ end }}
         {{ end }}
       initContainers:
       {{ if $.Params.NODE_TOPOLOGY }}
@@ -429,7 +443,10 @@ spec:
             - bash
             - -c
           args:
-            - export POD_ID=`echo $POD_NAME | sed -n -e 's/.*-node-\([0-9]\{1,4\}\)$/\1/p'`;
+            - {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
+              cp /nodetool-ssl-properties/nodetool-ssl.properties /home/cassandra/.cassandra/nodetool-ssl.properties;
+              {{ end }}
+              export POD_ID=`echo $POD_NAME | sed -n -e 's/.*-node-\([0-9]\{1,4\}\)$/\1/p'`;
               /etc/cassandra/init-container-restore.sh
           env:
             - name: AWS_ACCESS_KEY_ID
@@ -497,6 +514,12 @@ spec:
             - name: node-scripts
               mountPath: /etc/cassandra/init-container-restore.sh
               subPath: init-container-restore.sh
+          {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
+            - name: dot-cassandra
+              mountPath: /home/cassandra/.cassandra/
+            - name: nodetool-ssl-properties
+              mountPath: /nodetool-ssl-properties
+          {{ end }}
       {{ end }}
       volumes:
         # Overwriting /etc/cassandra/ available in the Docker image.

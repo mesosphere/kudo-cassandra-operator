@@ -2,6 +2,7 @@ package external_service
 
 import (
 	"fmt"
+	"github.com/kudobuilder/test-tools/pkg/tls"
 	"os"
 	"strconv"
 	"testing"
@@ -80,12 +81,12 @@ var _ = BeforeSuite(func() {
 })
 
 var _ = AfterSuite(func() {
-	if err := Operator.Uninstall(); err != nil {
-		fmt.Printf("Failed to uninstall operator: %v\n", err)
-	}
-	if err := kubernetes.DeleteNamespace(Client, TestNamespace); err != nil {
-		fmt.Printf("Failed to delete namespace: %v\n", err)
-	}
+	//if err := Operator.Uninstall(); err != nil {
+	//	fmt.Printf("Failed to uninstall operator: %v\n", err)
+	//}
+	//if err := kubernetes.DeleteNamespace(Client, TestNamespace); err != nil {
+	//	fmt.Printf("Failed to delete namespace: %v\n", err)
+	//}
 
 	if err := aws.DeleteFolderInS3(BackupBucket, BackupPrefix); err != nil {
 		fmt.Printf("Error while cleaning up S3 bucket: %v\n", err)
@@ -106,6 +107,16 @@ func assertNumberOfCassandraNodes(nodeCount int) {
 		Expect(err).To(BeNil())
 		return len(nodes)
 	}, "60s", "2s").Should(Equal(nodeCount))
+}
+
+func createTlsSecret() string {
+	secretName := "cassandra-tls"
+	_, _ = tls.CreateCertSecret(secretName).
+		WithNamespace(TestNamespace).
+		WithCommonName("CassandraCA").
+		Do(Client)
+
+	return secretName
 }
 
 func createAwsCredentials() string {
@@ -136,7 +147,7 @@ func createAwsCredentials() string {
 
 var _ = Describe("backup and restore", func() {
 
-	It("Installs the operator from the current directory", func() {
+	It("Creates and restores a backup without SSL", func() {
 		var err error
 
 		awsSecretName := createAwsCredentials()
@@ -251,6 +262,129 @@ var _ = Describe("backup and restore", func() {
 		Expect(output).To(ContainSubstring(testCQLScriptOutput2))
 
 	})
+
+	//It("Creates and restores a backup with JMX SSL", func() {
+	//	var err error
+	//
+	//	awsSecretName := createAwsCredentials()
+	//	tlsSecretName := createTlsSecret()
+	//
+	//	parameters := map[string]string{
+	//		"NODE_COUNT":                    strconv.Itoa(NodeCount),
+	//		"JMX_LOCAL_ONLY":                "false",
+	//		"TLS_SECRET_NAME": 				 tlsSecretName,
+	//		"BACKUP_RESTORE_ENABLED":        "true",
+	//		"BACKUP_AWS_CREDENTIALS_SECRET": awsSecretName,
+	//		"BACKUP_PREFIX":                 BackupPrefix,
+	//		"BACKUP_NAME":                   BackupName,
+	//		"BACKUP_AWS_S3_BUCKET_NAME":     BackupBucket,
+	//		"POD_MANAGEMENT_POLICY":		 "Parallel",
+	//		"BACKUP_MEDUSA_DOCKER_IMAGE":	 "medusa-test:0.0.1",
+	//		"BACKUP_MEDUSA_DOCKER_IMAGE_PULL_POLICY": "IfNotPresent",
+	//	}
+	//	suites.SetLocalClusterParameters(parameters)
+	//
+	//	By("Installing the operator from current directory")
+	//	Operator, err = kudo.InstallOperator(OperatorDirectory).
+	//		WithNamespace(TestNamespace).
+	//		WithInstance(TestInstance).
+	//		WithParameters(parameters).
+	//		Do(Client)
+	//	Expect(err).To(BeNil())
+	//
+	//	By("Waiting for the plan to complete")
+	//	err = Operator.Instance.WaitForPlanComplete("deploy")
+	//	Expect(err).To(BeNil())
+	//
+	//	assertNumberOfCassandraNodes(NodeCount)
+	//
+	//	By("Writing Data to the cassandra cluster")
+	//	output, err := cassandra.Cqlsh(Client, Operator.Instance, testCQLScript)
+	//	Expect(err).To(BeNil())
+	//	Expect(output).To(ContainSubstring(testCQLScriptOutput))
+	//
+	//	By("Running the backup plan")
+	//	err = Operator.Instance.UpdateParameters(map[string]string{
+	//		"BACKUP_TRIGGER": "2",
+	//	})
+	//	Expect(err).To(BeNil())
+	//
+	//	By("Waiting for the plan to complete")
+	//	err = Operator.Instance.WaitForPlanComplete("backup")
+	//	Expect(err).To(BeNil())
+	//
+	//	By("Uninstalling the operator instance")
+	//	err = cassandra.Uninstall(Client, Operator)
+	//	Expect(err).To(BeNil())
+	//	Eventually(func() int {
+	//		pods, _ := kubernetes.ListPods(Client, TestNamespace)
+	//		fmt.Printf("Polling pods: %v\n", len(pods))
+	//		return len(pods)
+	//	}, "300s", "10s").Should(Equal(0))
+	//
+	//	By("Restoring the backup into a new instance")
+	//
+	//	By("Installing the operator from current directory")
+	//	parameters = map[string]string{
+	//		"NODE_COUNT":                    strconv.Itoa(NodeCount),
+	//		"JMX_LOCAL_ONLY":                "false",
+	//		"TLS_SECRET_NAME": 				 tlsSecretName,
+	//		"BACKUP_RESTORE_ENABLED":        "true",
+	//		"BACKUP_AWS_CREDENTIALS_SECRET": awsSecretName,
+	//		"BACKUP_PREFIX":                 BackupPrefix,
+	//		"BACKUP_NAME":                   BackupName,
+	//		"BACKUP_AWS_S3_BUCKET_NAME":     BackupBucket,
+	//		"RESTORE_FLAG":                  "true",
+	//		"RESTORE_OLD_NAMESPACE":         TestNamespace,
+	//		"RESTORE_OLD_NAME":              TestInstance,
+	//		"BACKUP_MEDUSA_DOCKER_IMAGE":	 "medusa-test:0.0.1",
+	//		"BACKUP_MEDUSA_DOCKER_IMAGE_PULL_POLICY": "IfNotPresent",
+	//	}
+	//	suites.SetLocalClusterParameters(parameters)
+	//
+	//	Operator, err = kudo.InstallOperator(OperatorDirectory).
+	//		WithNamespace(TestNamespace).
+	//		WithInstance(RestoreInstance).
+	//		WithParameters(parameters).
+	//		Do(Client)
+	//
+	//	Expect(err).To(BeNil())
+	//
+	//	By("Waiting for the plan to complete")
+	//	err = Operator.Instance.WaitForPlanComplete("deploy", kudo.WaitTimeout(time.Minute*10))
+	//	Expect(err).To(BeNil())
+	//
+	//	assertNumberOfCassandraNodes(NodeCount)
+	//
+	//	By("Reading Data from the cassandra cluster")
+	//	output, err = cassandra.Cqlsh(Client, Operator.Instance, confirmCQLScript)
+	//	Expect(err).To(BeNil())
+	//	Expect(output).To(ContainSubstring(testCQLScriptOutput))
+	//
+	//	By("Writing Additional Data to the cassandra cluster")
+	//	output, err = cassandra.Cqlsh(Client, Operator.Instance, additionalDataCQLScript)
+	//	Expect(err).To(BeNil())
+	//	Expect(output).To(ContainSubstring(testCQLScriptOutput2))
+	//
+	//	By("Updating a parameter and trigger a pod restart")
+	//	parameters = map[string]string{
+	//		"NODE_READINESS_PROBE_INITIAL_DELAY_S": "10",
+	//	}
+	//	suites.SetLocalClusterParameters(parameters)
+	//
+	//	err = Operator.Instance.UpdateParameters(parameters)
+	//
+	//	Expect(err).To(BeNil())
+	//
+	//	By("Waiting for the plan to complete")
+	//	err = Operator.Instance.WaitForPlanComplete("deploy")
+	//	Expect(err).To(BeNil())
+	//
+	//	By("Reading Data from the cassandra cluster again")
+	//	output, err = cassandra.Cqlsh(Client, Operator.Instance, confirmCQLScript)
+	//	Expect(err).To(BeNil())
+	//	Expect(output).To(ContainSubstring(testCQLScriptOutput2))
+	//})
 
 	It("Uninstalls the operator", func() {
 		err := cassandra.Uninstall(Client, Operator)
