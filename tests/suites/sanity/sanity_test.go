@@ -47,9 +47,7 @@ var _ = BeforeSuite(func() {
 })
 
 var _ = AfterEach(func() {
-	if CurrentGinkgoTestDescription().Failed {
-		debug.CollectArtifacts(Client, afero.NewOsFs(), GinkgoWriter, TestNamespace, KubectlPath)
-	}
+	debug.CollectArtifacts(Client, afero.NewOsFs(), GinkgoWriter, TestNamespace, KubectlPath)
 })
 
 var _ = AfterSuite(func() {

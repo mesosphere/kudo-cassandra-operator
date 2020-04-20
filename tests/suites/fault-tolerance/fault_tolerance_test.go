@@ -191,9 +191,7 @@ var _ = BeforeEach(func() {
 })
 
 var _ = AfterEach(func() {
-	if CurrentGinkgoTestDescription().Failed {
-		debug.CollectArtifacts(client, afero.NewOsFs(), GinkgoWriter, testNamespace, kubectlPath)
-	}
+	debug.CollectArtifacts(client, afero.NewOsFs(), GinkgoWriter, testNamespace, kubectlPath)
 
 	err := operator.Uninstall()
 	Expect(err).NotTo(HaveOccurred())
