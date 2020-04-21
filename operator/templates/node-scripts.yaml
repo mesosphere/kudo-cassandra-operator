@@ -49,6 +49,18 @@ data:
     if [ ! -z "$JVM_OPTS" ]; then
       echo "$JVM_OPTS" | sed -n -e 's/-Dcassandra.initial_token=\([-0-9,]*\)[[:space:]].*/\1/p' > /var/lib/cassandra/token_map
     fi
+  prepare-medusa-ini.sh: |
+    # Adds JMX username and password_file to medusa config.
+    # Expects the original medusa config /etc/medusa/medusa.init.orig
+    # Expects JMX credentials in /etc/cassandra/authentication/username|password
+    cp /etc/medusa/medusa.ini.orig /etc/medusa/medusa.ini;
+    {{ if .Params.AUTHENTICATION_SECRET_NAME }}
+    echo `paste -d ' ' /etc/cassandra/authentication/username /etc/cassandra/authentication/password` > /etc/medusa/nodetool_password_file;
+    sed -i "/nodetool_password_file_path/c\\nodetool_password_file_path = /etc/medusa/nodetool_password_file" /etc/medusa/medusa.ini;
+    sed -i "/nodetool_username/c\\nodetool_username = $(cat /etc/cassandra/authentication/username)" /etc/medusa/medusa.ini;
+    sed -i "/cql_username/c\\cql_username = $(cat /etc/cassandra/authentication/username)" /etc/medusa/medusa.ini;
+    sed -i "/cql_password/c\\cql_password = $(cat /etc/cassandra/authentication/password)" /etc/medusa/medusa.ini;
+    {{ end }}
   init-container-restore.sh: |
     # Used to restore data in the init container of medusa
     DATA_DIR=/var/lib/cassandra/data
@@ -63,7 +75,6 @@ data:
   wait-for-node-zero.sh: |
     # With parallel startup of all nodes, we still need to make sure that the first node is reachable for all others, otherwise
     # we may end up with separate clusters. So every node except node-0 waits for node-0 to be reachable
-    echo "
     if [ "$POD_NAME" != "$1-node-0" ]; then
       while :; do cqlsh $1-node-0.{{ $.Name }}-svc.{{ $.Namespace }}.svc.cluster.local -e "SELECT uuid() FROM system.local" > /dev/null 2>&1 && break; echo "Waiting for '$1-node-0.{{ $.Name }}-svc.{{ $.Namespace }}.svc.cluster.local' to be available..."; sleep 5; done;
     fi;

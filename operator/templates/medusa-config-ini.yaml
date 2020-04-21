@@ -15,11 +15,13 @@ data:
     start_cmd = /etc/cassandra/restore-capture-tokenmap.sh
 
     ;config_file = <path to cassandra.yaml. Defaults to /etc/cassandra/cassandra.yaml>
+
+    ; These four lines are adjusted bei node-scripts/prepare-medusa-ini.sh if authn is enabled
     ;cql_username = <username>
     ;cql_password = <password>
     ;nodetool_username =  <my nodetool username>
-    ;nodetool_password =  <my nodetool password>
     ;nodetool_password_file_path = <path to nodetool password file>
+
     ;nodetool_host = {{ .Name }}-node-0.{{ .Name }}-svc.{{ .Namespace }}.svc.cluster.local
     nodetool_host = localhost
     nodetool_port = {{ .Params.JMX_PORT }}

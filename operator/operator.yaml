@@ -30,6 +30,7 @@ tasks:
         - generate-cqlshrc-sh.yaml
         - pdb.yaml
         - medusa-config-ini.yaml
+        - backup-job-rbac.yaml
         - nodetool-ssl-properties.yaml
         - stateful-set.yaml
   - name: ext-service

@@ -8,10 +8,15 @@ metadata:
 spec:
   template:
     spec:
+      serviceAccountName: {{ $root.Name }}-node-backup
       containers:
         - name: backup
-          image: "curlimages/curl"
-          command: [ "sh", "-c", "curl --silent -X GET http://{{ $root.Name }}-node-{{ $v }}.{{ $root.Name }}-svc.{{ $root.Namespace }}.svc.cluster.local:8082/backup?name={{ $root.Params.BACKUP_NAME }} | tee /tmp/req; grep \"Done: 0\" /tmp/req" ]
+          image: bitnami/kubectl:{{ $.Params.KUBECTL_VERSION }}
+          command:
+            - bash
+            - -c
+          args:
+            - kubectl -n {{ $root.Namespace }} exec {{ $root.Name }}-node-{{ $v }} --container medusa-backup -- python3 /usr/local/bin/medusa backup --backup-name {{ $root.Params.BACKUP_NAME }}
           imagePullPolicy: {{ $root.Params.NODE_DOCKER_IMAGE_PULL_POLICY }}
       restartPolicy: Never
   backoffLimit: 0

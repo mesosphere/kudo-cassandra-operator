@@ -333,6 +333,7 @@ spec:
             - {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
               cp /nodetool-ssl-properties/nodetool-ssl.properties /home/cassandra/.cassandra/nodetool-ssl.properties;
               {{ end }}
+              /etc/cassandra/prepare-medusa-ini.sh;
               python3 /medusa-frontend.py
           env:
             - name: AWS_ACCESS_KEY_ID
@@ -394,14 +395,24 @@ spec:
             - name: cassandra-yaml
               mountPath: /etc/cassandra/cassandra.yaml
               subPath: cassandra.yaml
+            - name: etc-medusa
+              mountPath: /etc/medusa/
             - name: cassandra-medusa-config-ini
-              mountPath: /etc/medusa/medusa.ini
+              mountPath: /etc/medusa/medusa.ini.orig
               subPath: medusa.ini
+            - name: node-scripts
+              mountPath: /etc/cassandra/prepare-medusa-ini.sh
+              subPath: prepare-medusa-ini.sh
           {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
             - name: dot-cassandra
               mountPath: /home/cassandra/.cassandra/
             - name: nodetool-ssl-properties
               mountPath: /nodetool-ssl-properties
+          {{ end }}
+          {{ if $.Params.AUTHENTICATION_SECRET_NAME }}
+            - name: authentication-secret
+              mountPath: /etc/cassandra/authentication
+              readOnly: true
           {{ end }}
         {{ end }}
       initContainers:
@@ -454,6 +465,7 @@ spec:
             - {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
               cp /nodetool-ssl-properties/nodetool-ssl.properties /home/cassandra/.cassandra/nodetool-ssl.properties;
               {{ end }}
+              /etc/cassandra/prepare-medusa-ini.sh;
               export POD_ID=`echo $POD_NAME | sed -n -e 's/.*-node-\([0-9]\{1,4\}\)$/\1/p'`;
               /etc/cassandra/init-container-restore.sh
           env:
@@ -513,8 +525,10 @@ spec:
             - name: cassandra-yaml
               mountPath: /etc/cassandra/cassandra.yaml
               subPath: cassandra.yaml
+            - name: etc-medusa
+              mountPath: /etc/medusa/
             - name: cassandra-medusa-config-ini
-              mountPath: /etc/medusa/medusa.ini
+              mountPath: /etc/medusa/medusa.ini.orig
               subPath: medusa.ini
             - name: node-scripts
               mountPath: /etc/cassandra/restore-capture-tokenmap.sh
@@ -522,11 +536,19 @@ spec:
             - name: node-scripts
               mountPath: /etc/cassandra/init-container-restore.sh
               subPath: init-container-restore.sh
+            - name: node-scripts
+              mountPath: /etc/cassandra/prepare-medusa-ini.sh
+              subPath: prepare-medusa-ini.sh
           {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
             - name: dot-cassandra
               mountPath: /home/cassandra/.cassandra/
             - name: nodetool-ssl-properties
               mountPath: /nodetool-ssl-properties
+          {{ end }}
+          {{ if $.Params.AUTHENTICATION_SECRET_NAME }}
+            - name: authentication-secret
+              mountPath: /etc/cassandra/authentication
+              readOnly: true
           {{ end }}
       {{ end }}
       volumes:
@@ -558,6 +580,8 @@ spec:
             name: {{ $.Name }}-cassandra-exporter-config-yml
         {{ end }}
         {{ if eq $.Params.BACKUP_RESTORE_ENABLED "true" }}
+        - name: etc-medusa
+          emptyDir: {}
         - name: cassandra-medusa-config-ini
           configMap:
             name: {{ $.Name }}-cassandra-medusa-ini

@@ -22,4 +22,10 @@ data:
     usercert = /etc/tls/certs/tls.crt
     {{ end }}
     {{ end }}
+
+    {{ if .Params.AUTHENTICATION_SECRET_NAME }}
+    [authentication]
+    username = $(cat /etc/cassandra/authentication/username)
+    password = $(cat /etc/cassandra/authentication/password)
+    {{ end }}
     EOT
