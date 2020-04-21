@@ -1,6 +1,6 @@
 {{ $auth_params := "" }}
-{{ if $.Params.AUTHENTICATION_SECRET_NAME }}
-{{ $auth_params = "-u ${SECRET_USERNAME} -pw ${SECRET_PASSWORD}" }}
+{{ if .Params.AUTHENTICATION_SECRET_NAME }}
+{{ $auth_params = "-u \\\\$(cat /etc/cassandra/authentication/username) -pwf <(paste -d ' ' /etc/cassandra/authentication/username /etc/cassandra/authentication/password)" }}
 {{ end }}
 ---
 apiVersion: batch/v1
@@ -18,19 +18,6 @@ spec:
         - name: repair-job
           image: bitnami/kubectl:{{ $.Params.KUBECTL_VERSION }}
           command: ["/bin/bash"]
-          args: [ "-c", "kubectl exec {{ $.Params.REPAIR_POD }} -- nodetool {{ $auth_params }} repair"]
-          {{ if $.Params.AUTHENTICATION_SECRET_NAME }}
-          env:
-            - name: SECRET_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: {{ $.Params.AUTHENTICATION_SECRET_NAME }}
-                  key: username
-            - name: SECRET_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ $.Params.AUTHENTICATION_SECRET_NAME }}
-                  key: password
-          {{ end }}
+          args: [ "-c", "kubectl exec {{ $.Params.REPAIR_POD }} -- /bin/bash -c \"nodetool {{ $auth_params }} repair\""]
       restartPolicy: Never
       serviceAccountName: {{ .Name }}-node-repairer
