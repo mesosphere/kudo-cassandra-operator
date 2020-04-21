@@ -121,8 +121,8 @@ spec:
             preStop:
               exec:
                 command:
-                  - nodetool
-                  - drain
+                  - /bin/bash
+                  - /etc/cassandra/node-drain.sh
           readinessProbe:
             exec:
               command:
@@ -231,6 +231,9 @@ spec:
               mountPath: /etc/cassandra/jvm.options
               subPath: jvm.options
             - name: node-scripts
+              mountPath: /etc/cassandra/node-drain.sh
+              subPath: node-drain.sh
+            - name: node-scripts
               mountPath: /etc/cassandra/node-readiness-probe.sh
               subPath: node-readiness-probe.sh
             - name: node-scripts
@@ -256,6 +259,11 @@ spec:
           {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
             - name: nodetool-ssl-properties
               mountPath: /nodetool-ssl-properties
+          {{ end }}
+          {{ if $.Params.AUTHENTICATION_SECRET_NAME }}
+            - name: authentication-secret
+              mountPath: /etc/cassandra/authentication
+              readOnly: true
           {{ end }}
         {{ if eq $.Params.PROMETHEUS_EXPORTER_ENABLED "true" }}
         - name: prometheus-exporter
@@ -399,7 +407,7 @@ spec:
       initContainers:
       {{ if $.Params.NODE_TOPOLOGY }}
         - name: node-resolver
-          image: bitnami/kubectl:latest
+          image: bitnami/kubectl:{{ $.Params.KUBECTL_VERSION }}
           command:
             - "sh"
             - "-c"
@@ -567,6 +575,11 @@ spec:
         - name: nodetool-ssl-properties
           configMap:
             name: {{ $.Name }}-nodetool-ssl-properties
+        {{ end }}
+        {{ if $.Params.AUTHENTICATION_SECRET_NAME }}
+        - name: authentication-secret
+          secret:
+            secretName: {{ $.Params.AUTHENTICATION_SECRET_NAME }}
         {{ end }}
   volumeClaimTemplates:
     - metadata:

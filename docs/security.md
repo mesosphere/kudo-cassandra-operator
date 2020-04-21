@@ -82,3 +82,34 @@ kubectl kudo install cassandra \
 
 Check out the [parameters reference](./parameters.md) for a complete list of all
 configurable settings available for KUDO Cassandra security.
+
+## Authentication and Authorization
+
+The KUDO Cassandra operator can be configured to authenticate and authorize access to the Cassandra cluster. The `AUTHENTICATOR` parameter sets the [authenticator](http://cassandra.apache.org/doc/3.11/operating/security.html#authentication), the `AUTHORIZER` parameter sets the [authorizer](http://cassandra.apache.org/doc/3.11/operating/security.html#authorization).
+
+### Authentication credentials
+
+Some functionality of the operator use `nodetool`, thus these calls need to be authenticated as well. With enabled password authentication, create a [secret](https://kubernetes.io/docs/concepts/configuration/secret/) that contains the credentials of the user the operator should use and set the `AUTHENTICATION_SECRET_NAME` parameter accordingly.
+
+Here's an example of a secret that uses the default cassandra/cassandra credentials:
+
+```
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cassandra-credential
+type: Opaque
+data:
+  username: Y2Fzc2FuZHJh
+  password: Y2Fzc2FuZHJh
+```
+
+Reference this when installing the Cassandra operator with authentication.
+
+```
+kubectl kudo install cassandra \
+    --instance=cassandra \
+    --namespace=kudo-cassandra \
+    -p AUTHENTICATOR=PasswordAuthenticator \
+    -p AUTHENTICATION_SECRET_NAME=cassandra-credential
+```

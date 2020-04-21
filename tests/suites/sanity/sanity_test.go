@@ -11,11 +11,13 @@ import (
 	"time"
 
 	"github.com/kudobuilder/test-tools/pkg/client"
+	"github.com/kudobuilder/test-tools/pkg/debug"
 	"github.com/kudobuilder/test-tools/pkg/kubernetes"
 	"github.com/kudobuilder/test-tools/pkg/kudo"
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/reporters"
 	. "github.com/onsi/gomega"
+	"github.com/spf13/afero"
 
 	"github.com/mesosphere/kudo-cassandra-operator/tests/cassandra"
 	"github.com/mesosphere/kudo-cassandra-operator/tests/curl"
@@ -29,17 +31,23 @@ var (
 	TestNamespace     = fmt.Sprintf("%s-namespace", TestName)
 	TestInstance      = fmt.Sprintf("%s-instance", OperatorName)
 	KubeConfigPath    = os.Getenv("KUBECONFIG")
+	KubectlPath       = os.Getenv("KUBECTL_PATH")
 	OperatorDirectory = os.Getenv("OPERATOR_DIRECTORY")
 
 	// Node Count of 1 for Sanity test to have the tests a little bit faster
 	NodeCount = 1
 	Client    = client.Client{}
 	Operator  = kudo.Operator{}
+	Fs        = afero.NewOsFs()
 )
 
 var _ = BeforeSuite(func() {
 	Client, _ = client.NewForConfig(KubeConfigPath)
 	_ = kubernetes.CreateNamespace(Client, TestNamespace)
+})
+
+var _ = AfterEach(func() {
+	debug.CollectArtifacts(Client, afero.NewOsFs(), GinkgoWriter, TestNamespace, KubectlPath)
 })
 
 var _ = AfterSuite(func() {
