@@ -2,12 +2,13 @@ package external_service
 
 import (
 	"fmt"
-	"github.com/kudobuilder/test-tools/pkg/debug"
-	"github.com/spf13/afero"
 	"os"
 	"strconv"
 	"testing"
 	"time"
+
+	"github.com/kudobuilder/test-tools/pkg/debug"
+	"github.com/spf13/afero"
 
 	"github.com/kudobuilder/test-tools/pkg/client"
 	"github.com/kudobuilder/test-tools/pkg/kubernetes"
