@@ -7,11 +7,13 @@ import (
 	"time"
 
 	testclient "github.com/kudobuilder/test-tools/pkg/client"
+	"github.com/kudobuilder/test-tools/pkg/debug"
 	"github.com/kudobuilder/test-tools/pkg/kubernetes"
 	"github.com/kudobuilder/test-tools/pkg/kudo"
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/reporters"
 	. "github.com/onsi/gomega"
+	"github.com/spf13/afero"
 	"github.com/thoas/go-funk"
 	"k8s.io/apimachinery/pkg/api/errors"
 
@@ -20,8 +22,11 @@ import (
 
 var (
 	kubeConfigPath    = os.Getenv("KUBECONFIG")
+	kubectlPath       = os.Getenv("KUBECTL_PATH")
 	operatorName      = os.Getenv("OPERATOR_NAME")
 	operatorDirectory = os.Getenv("OPERATOR_DIRECTORY")
+	client            testclient.Client
+	operator          kudo.Operator
 
 	instanceName  = fmt.Sprintf("%s-instance", operatorName)
 	testNamespace = "fault-tolerance"
@@ -178,30 +183,32 @@ func deleteRBAC(client testclient.Client) {
 	}
 }
 
+var _ = BeforeEach(func() {
+	var err error
+
+	client, err = testclient.NewForConfig(kubeConfigPath)
+	Expect(err).NotTo(HaveOccurred())
+})
+
+var _ = AfterEach(func() {
+	debug.CollectArtifacts(client, afero.NewOsFs(), GinkgoWriter, testNamespace, kubectlPath)
+
+	err := operator.Uninstall()
+	Expect(err).NotTo(HaveOccurred())
+
+	deleteRBAC(client)
+
+	err = kubernetes.DeleteNamespace(client, testNamespace)
+	Expect(err).NotTo(HaveOccurred())
+})
+
 var _ = Describe("Fault tolerance tests", func() {
 
-	var (
-		client     testclient.Client
-		operator   kudo.Operator
-		parameters map[string]string
-	)
-
-	AfterEach(func() {
-		err := operator.Uninstall()
-		Expect(err).NotTo(HaveOccurred())
-
-		deleteRBAC(client)
-
-		err = kubernetes.DeleteNamespace(client, testNamespace)
-		Expect(err).NotTo(HaveOccurred())
-	})
+	var parameters map[string]string
 
 	Context("when configured with the 'GossipingPropertyFileSnitch' snitch", func() {
 		It("should set up the datacenter and rack properties", func() {
 			var err error
-
-			client, err = testclient.NewForConfig(kubeConfigPath)
-			Expect(err).NotTo(HaveOccurred())
 
 			By("Setting up Namespace and RBAC")
 			err = kubernetes.CreateNamespace(client, testNamespace)

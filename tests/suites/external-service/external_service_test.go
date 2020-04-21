@@ -6,15 +6,15 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/onsi/ginkgo/reporters"
-	log "github.com/sirupsen/logrus"
-
 	"github.com/kudobuilder/test-tools/pkg/client"
+	"github.com/kudobuilder/test-tools/pkg/debug"
 	"github.com/kudobuilder/test-tools/pkg/kubernetes"
 	"github.com/kudobuilder/test-tools/pkg/kudo"
-
 	. "github.com/onsi/ginkgo"
+	"github.com/onsi/ginkgo/reporters"
 	. "github.com/onsi/gomega"
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/afero"
 
 	"github.com/mesosphere/kudo-cassandra-operator/tests/cassandra"
 	"github.com/mesosphere/kudo-cassandra-operator/tests/suites"
@@ -26,6 +26,7 @@ var (
 	TestNamespace     = fmt.Sprintf("%s-namespace", TestName)
 	TestInstance      = fmt.Sprintf("%s-instance", OperatorName)
 	KubeConfigPath    = os.Getenv("KUBECONFIG")
+	KubectlPath       = os.Getenv("KUBECTL_PATH")
 	OperatorDirectory = os.Getenv("OPERATOR_DIRECTORY")
 
 	NodeCount = 1
@@ -36,6 +37,10 @@ var (
 var _ = BeforeSuite(func() {
 	Client, _ = client.NewForConfig(KubeConfigPath)
 	_ = kubernetes.CreateNamespace(Client, TestNamespace)
+})
+
+var _ = AfterEach(func() {
+	debug.CollectArtifacts(Client, afero.NewOsFs(), GinkgoWriter, TestNamespace, KubectlPath)
 })
 
 var _ = AfterSuite(func() {
