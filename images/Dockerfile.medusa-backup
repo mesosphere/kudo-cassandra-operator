@@ -7,7 +7,8 @@ ENV LC_ALL C.UTF-8
 ENV LANG C.UTF-8
 
 RUN apt-get update; \
-    apt-get install -y --no-install-recommends sudo libc6-dev gcc python3-dev python3-pip python3-setuptools groff vim; \
+    apt-get install -y --no-install-recommends sudo libc6-dev libev-dev gcc make cmake python3-dev python3-pip groff vim; \
+    sudo pip3 install setuptools wheel; \
     sudo pip3 install awscli cassandra-medusa[S3]==0.5.1
 
 CMD [ "python3", "/medusa-frontend.py" ]
