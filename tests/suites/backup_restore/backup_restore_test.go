@@ -279,6 +279,7 @@ var _ = Describe("backup and restore", func() {
 		By("Waiting for the plan to complete")
 		err = Operator.Instance.WaitForPlanComplete("deploy")
 		Expect(err).To(BeNil())
+		assertNumberOfCassandraNodes(NodeCount)
 
 		By("Reading Data from the cassandra cluster again")
 		output, err = cassandra.Cqlsh(Client, Operator.Instance, confirmCQLScript)

@@ -1,6 +1,5 @@
 FROM ${MEDUSA_BACKUP_DOCKER_IMAGE_FROM}
 
-COPY medusa/medusa-frontend.py /
 COPY medusa/cassandra-sudoer /etc/sudoers.d/
 
 COPY medusa/medusa-src /medusa-src
@@ -13,5 +12,7 @@ RUN apt-get update; \
     sudo pip3 install awscli; \
     cd medusa-src; \
     python3 setup.py  install
+
+CMD [ "sleep", "infinity" ]
 
 USER root
