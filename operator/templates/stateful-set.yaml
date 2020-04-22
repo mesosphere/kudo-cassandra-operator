@@ -334,7 +334,7 @@ spec:
               cp /nodetool-ssl-properties/nodetool-ssl.properties /home/cassandra/.cassandra/nodetool-ssl.properties;
               {{ end }}
               /etc/cassandra/prepare-medusa-ini.sh;
-              python3 /medusa-frontend.py
+              sleep infinity
           env:
             - name: AWS_ACCESS_KEY_ID
               valueFrom:
