@@ -119,11 +119,11 @@ parameters:
   ################################################################################
 
   - name: BACKUP_RESTORE_ENABLED
-    description: "TODO"
+    description: "Global flag that enables the medusa sidecar for backups"
     default: "false"
 
   - name: BACKUP_TRIGGER
-    description: "Dummy param to trigger backup"
+    description: "Trigger parameter to start a backup. Simply needs to be changed from the current value to start a backup"
     default: "1"
     trigger: backup
 
@@ -177,11 +177,11 @@ parameters:
     default: "false"
 
   - name: RESTORE_OLD_NAMESPACE
-    description: ""
+    description: "The namespace from the operator that was used to create the backup"
     default: ""
 
   - name: RESTORE_OLD_NAME
-    description: ""
+    description: "The instance name from the operator that was used to create the backup"
     default: ""
 
   ################################################################################

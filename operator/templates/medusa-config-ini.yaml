@@ -7,10 +7,10 @@ metadata:
 data:
   medusa.ini: |
     [cassandra]
-    ; aneumann: We don't stop medusa, so noop here
+    ; We don't stop medusa, so noop here
     stop_cmd = true
 
-    ; We don't start cassandra with medusa, but we need the token-map for correct startup. We have a custom
+    ; We don't start cassandra with medusa, but we need the token-map for correct startup. We have a bash
     ; script that captures the parameter that is passed to cassandra and store it for the real startup
     start_cmd = /etc/cassandra/restore-capture-tokenmap.sh
 

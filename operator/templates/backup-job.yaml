@@ -17,7 +17,6 @@ spec:
             - -c
           args:
             - kubectl -n {{ $root.Namespace }} exec {{ $root.Name }}-node-{{ $v }} --container medusa-backup -- python3 /usr/local/bin/medusa backup --backup-name {{ $root.Params.BACKUP_NAME }}
-          imagePullPolicy: {{ $root.Params.NODE_DOCKER_IMAGE_PULL_POLICY }}
       restartPolicy: Never
   backoffLimit: 0
 {{ end }}
