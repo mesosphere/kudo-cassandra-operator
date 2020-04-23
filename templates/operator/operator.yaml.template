@@ -15,7 +15,8 @@ tasks:
     spec:
       resources:
         - service.yaml
-        - cassandra-yaml.yaml
+        - tls-store-credentials.yaml
+        - generate-cassandra-yaml.yaml
         - cassandra-env-sh.yaml
         - jvm-options.yaml
         - cassandra-exporter-config-yml.yaml

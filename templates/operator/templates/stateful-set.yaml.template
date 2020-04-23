@@ -147,7 +147,8 @@ spec:
             - bash
             - -c
           args:
-            - {{ if or (eq $.Params.TRANSPORT_ENCRYPTION_ENABLED "true") (eq $.Params.TRANSPORT_ENCRYPTION_CLIENT_ENABLED "true") (ne $.Params.JMX_LOCAL_ONLY "true") }}
+            - /etc/cassandra/generate-cassandra-yaml.sh;
+              {{ if or (eq $.Params.TRANSPORT_ENCRYPTION_ENABLED "true") (eq $.Params.TRANSPORT_ENCRYPTION_CLIENT_ENABLED "true") (ne $.Params.JMX_LOCAL_ONLY "true") }}
               /etc/tls/bin/generate-tls-artifacts.sh;
               {{ end }}
               {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
@@ -216,9 +217,12 @@ spec:
             # Overwriting /etc/cassandra/ available in the Docker image.
             - name: etc-cassandra
               mountPath: /etc/cassandra/
-            - name: cassandra-yaml
-              mountPath: /etc/cassandra/cassandra.yaml
-              subPath: cassandra.yaml
+            - name: truststore-credentials
+              mountPath: /etc/cassandra/truststore
+              readOnly: yes
+            - name: generate-cassandra-yaml
+              mountPath: /etc/cassandra/generate-cassandra-yaml.sh
+              subPath: generate-cassandra-yaml.sh
             - name: cassandra-env-sh
               mountPath: /etc/cassandra/cassandra-env.sh
               subPath: cassandra-env.sh
@@ -354,9 +358,10 @@ spec:
         # Overwriting /etc/cassandra/ available in the Docker image.
         - name: etc-cassandra
           emptyDir: {}
-        - name: cassandra-yaml
+        - name: generate-cassandra-yaml
           configMap:
-            name: {{ $.Name }}-cassandra-yaml
+            name: {{ $.Name }}-generate-cassandra-yaml
+            defaultMode: 0755
         - name: cassandra-env-sh
           configMap:
             name: {{ $.Name }}-cassandra-env-sh
@@ -397,6 +402,9 @@ spec:
           secret:
             secretName: {{ $.Params.AUTHENTICATION_SECRET_NAME }}
         {{ end }}
+        - name: truststore-credentials
+          secret:
+            secretName: tls-store-credentials
   volumeClaimTemplates:
     - metadata:
         name: var-lib-cassandra
