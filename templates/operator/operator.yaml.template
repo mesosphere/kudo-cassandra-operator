@@ -25,7 +25,7 @@ tasks:
         - generate-tls-artifacts-sh.yaml
         - generate-cqlshrc-sh.yaml
         - pdb.yaml
-        - nodetool-ssl-properties.yaml
+        - generate-nodetool-ssl-properties.yaml
         - stateful-set.yaml
   - name: ext-service
     kind: Toggle

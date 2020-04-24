@@ -152,6 +152,7 @@ spec:
               /etc/tls/bin/generate-tls-artifacts.sh;
               {{ end }}
               {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
+              /nodetool-ssl-properties/generate-nodetool-ssl-properties.sh;
               cp /nodetool-ssl-properties/nodetool-ssl.properties /home/cassandra/.cassandra/nodetool-ssl.properties;
               {{ end }}
               /etc/cassandra/generate-cqlshrc.sh;
@@ -250,8 +251,9 @@ spec:
               mountPath: /etc/tls/bin
           {{ end }}
           {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
-            - name: nodetool-ssl-properties
-              mountPath: /nodetool-ssl-properties
+            - name: generate-nodetool-ssl-properties
+              mountPath: /nodetool-ssl-properties/generate-nodetool-ssl-properties.sh
+              subPath: generate-nodetool-ssl-properties.sh
           {{ end }}
           {{ if $.Params.AUTHENTICATION_SECRET_NAME }}
             - name: authentication-secret
@@ -267,6 +269,7 @@ spec:
             - -c
           args:
             - {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
+              /nodetool-ssl-properties/generate-nodetool-ssl-properties.sh;
               while IFS= read -r flag; do
                 JVM_OPTS="${JVM_OPTS} $flag";
               done < /nodetool-ssl-properties/nodetool-ssl.properties;
@@ -311,8 +314,9 @@ spec:
           {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
             - name: etc-cassandra
               mountPath: /etc/cassandra/
-            - name: nodetool-ssl-properties
-              mountPath: /nodetool-ssl-properties
+            - name: generate-nodetool-ssl-properties
+              mountPath: /nodetool-ssl-properties/generate-nodetool-ssl-properties.sh
+              subPath: generate-nodetool-ssl-properties.sh
           {{ end }}
         {{ end }}
       {{ if $.Params.NODE_TOPOLOGY }}
@@ -393,9 +397,10 @@ spec:
             defaultMode: 0755
         {{ end }}
         {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
-        - name: nodetool-ssl-properties
+        - name: generate-nodetool-ssl-properties
           configMap:
-            name: {{ $.Name }}-nodetool-ssl-properties
+            name: {{ $.Name }}-generate-nodetool-ssl-properties
+            defaultMode: 0755
         {{ end }}
         {{ if $.Params.AUTHENTICATION_SECRET_NAME }}
         - name: authentication-secret
