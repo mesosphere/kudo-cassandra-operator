@@ -12,7 +12,7 @@ data:
     readonly truststore_password=$(cat /etc/cassandra/truststore/truststore_password)
     readonly keystore_password=$(cat /etc/cassandra/truststore/keystore_password)
 
-    cat <<EOF >> /nodetool-ssl-properties/nodetool-ssl.properties
+    cat <<EOF >> /etc/cassandra/nodetool-ssl.properties
     {{ if ne .Params.JMX_LOCAL_ONLY "true" }}
     -Dcom.sun.management.jmxremote.ssl=true
     -Dcom.sun.management.jmxremote.ssl.need.client.auth=true

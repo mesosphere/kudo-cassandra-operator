@@ -152,8 +152,8 @@ spec:
               /etc/tls/bin/generate-tls-artifacts.sh;
               {{ end }}
               {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
-              /nodetool-ssl-properties/generate-nodetool-ssl-properties.sh;
-              cp /nodetool-ssl-properties/nodetool-ssl.properties /home/cassandra/.cassandra/nodetool-ssl.properties;
+              /etc/cassandra/generate-nodetool-ssl-properties.sh;
+              cp /etc/cassandra/nodetool-ssl.properties /home/cassandra/.cassandra/nodetool-ssl.properties;
               {{ end }}
               /etc/cassandra/generate-cqlshrc.sh;
               cassandra -f
@@ -252,7 +252,7 @@ spec:
           {{ end }}
           {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
             - name: generate-nodetool-ssl-properties
-              mountPath: /nodetool-ssl-properties/generate-nodetool-ssl-properties.sh
+              mountPath: /etc/cassandra/generate-nodetool-ssl-properties.sh
               subPath: generate-nodetool-ssl-properties.sh
           {{ end }}
           {{ if $.Params.AUTHENTICATION_SECRET_NAME }}
@@ -269,10 +269,10 @@ spec:
             - -c
           args:
             - {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
-              /nodetool-ssl-properties/generate-nodetool-ssl-properties.sh;
+              /etc/cassandra/generate-nodetool-ssl-properties.sh;
               while IFS= read -r flag; do
                 JVM_OPTS="${JVM_OPTS} $flag";
-              done < /nodetool-ssl-properties/nodetool-ssl.properties;
+              done < /etc/cassandra/nodetool-ssl.properties;
               {{ end }}
               JVM_OPTS="${JVM_OPTS}" /sbin/dumb-init /bin/bash /run.sh;
           env:
@@ -315,7 +315,7 @@ spec:
             - name: etc-cassandra
               mountPath: /etc/cassandra/
             - name: generate-nodetool-ssl-properties
-              mountPath: /nodetool-ssl-properties/generate-nodetool-ssl-properties.sh
+              mountPath: /etc/cassandra/generate-nodetool-ssl-properties.sh
               subPath: generate-nodetool-ssl-properties.sh
           {{ end }}
         {{ end }}
