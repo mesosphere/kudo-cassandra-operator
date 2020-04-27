@@ -35,6 +35,10 @@ docker run \
        -e "OPERATOR_DIRECTORY=${container_operator_directory}" \
        -e "VENDOR_DIRECTORY=${container_vendor_directory}" \
        -e "TEST_ARTIFACTS_DIRECTORY=${container_artifacts_directory}" \
+       -e "AWS_ACCESS_KEY_ID" \
+       -e "AWS_SECRET_ACCESS_KEY" \
+       -e "BUILD_NUMBER" \
+       -e "TEAMCITY_PROJECT_NAME" \
        -v "${kubeconfig}:${container_kubeconfig}:ro" \
        -v "${OPERATOR_DIRECTORY}:${container_operator_directory}" \
        -v "${project_directory}:${container_project_directory}" \

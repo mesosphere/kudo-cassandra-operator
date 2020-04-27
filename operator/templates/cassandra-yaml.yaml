@@ -218,13 +218,19 @@ data:
     # will spread data evenly across them, subject to the granularity of
     # the configured compaction strategy.
     # If not set, the default directory is $CASSANDRA_HOME/data/data.
-    # data_file_directories:
-    #     - /var/lib/cassandra/data
+    #
+    # This needs to be set to a valid value for medusa to work
+    data_file_directories:
+        - /var/lib/cassandra/data
 
     # commit log.  when running on magnetic HDD, this should be a
     # separate spindle than the data directories.
+    #
+    # This needs to be set to a valid value for medusa to work
     {{ if .Params.COMMITLOG_DIRECTORY }}
     commitlog_directory: {{ .Params.COMMITLOG_DIRECTORY }}
+    {{ else }}
+    commitlog_directory: /var/lib/cassandra/commitlog
     {{ end }}
 
     # Enable / disable CDC functionality on a per-node basis. This modifies the logic used
@@ -408,8 +414,12 @@ data:
     # saved caches
     # If not set, the default directory is $CASSANDRA_HOME/data/saved_caches.
     # saved_caches_directory: /var/lib/cassandra/saved_caches
+    #
+    # This needs to be set to a valid value for medusa to work
     {{ if .Params.SAVED_CACHES_DIRECTORY }}
     saved_caches_directory: {{ .Params.SAVED_CACHES_DIRECTORY }}
+    {{ else }}
+    saved_caches_directory: /var/lib/cassandra/saved_caches
     {{ end }}
 
     # commitlog_sync may be either "periodic" or "batch."
