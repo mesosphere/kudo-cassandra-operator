@@ -12,7 +12,7 @@ data:
     readonly truststore_password=$(cat /etc/cassandra/truststore/truststore_password)
     readonly keystore_password=$(cat /etc/cassandra/truststore/keystore_password)
 
-    cat <<EOF >> /etc/cassandra/cassandra.yaml
+    cat <<EOF > /etc/cassandra/cassandra.yaml
     # Cassandra storage config YAML
 
     # NOTE:
