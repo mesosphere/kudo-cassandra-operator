@@ -49,7 +49,7 @@ func (c *Executor) Run(arguments ...string) (string, string, error) {
 
 	if c.sslEnabled {
 		args = "/etc/tls/bin/generate-tls-artifacts.sh;" +
-			"/etc/cassandra/generate-nodetool-ssl-properties.sh;" +
+			"/etc/cassandra/generate-nodetool-ssl-properties.sh &&" +
 			"cp /etc/cassandra/nodetool-ssl.properties /home/cassandra/.cassandra/nodetool-ssl.properties;" +
 			args
 		volumeMounts = []v1.VolumeMount{
