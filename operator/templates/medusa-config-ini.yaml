@@ -1,4 +1,3 @@
-{{ if eq .Params.BACKUP_RESTORE_ENABLED "true" }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -98,4 +97,3 @@ data:
 
     ; How many log files to keep
     ; backupCount = 50
-{{ end }}
