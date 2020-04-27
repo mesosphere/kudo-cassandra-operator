@@ -74,6 +74,11 @@ func (c *Executor) Run(arguments ...string) (string, string, error) {
 				Name:      "dot-cassandra",
 				MountPath: "/home/cassandra/.cassandra/",
 			},
+			{
+				Name:      "truststore-credentials",
+				MountPath: "/etc/cassandra/truststore",
+				ReadOnly:  true,
+			},
 		}
 		volumes = []v1.Volume{
 			{
@@ -116,6 +121,14 @@ func (c *Executor) Run(arguments ...string) (string, string, error) {
 				Name: "dot-cassandra",
 				VolumeSource: v1.VolumeSource{
 					EmptyDir: &v1.EmptyDirVolumeSource{},
+				},
+			},
+			{
+				Name: "truststore-credentials",
+				VolumeSource: v1.VolumeSource{
+					Secret: &v1.SecretVolumeSource{
+						SecretName: fmt.Sprintf("%s-tls-store-credentials", c.instance),
+					},
 				},
 			},
 		}

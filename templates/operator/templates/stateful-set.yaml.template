@@ -409,7 +409,7 @@ spec:
         {{ end }}
         - name: truststore-credentials
           secret:
-            secretName: tls-store-credentials
+            secretName: {{ $.Name }}-tls-store-credentials
   volumeClaimTemplates:
     - metadata:
         name: var-lib-cassandra
