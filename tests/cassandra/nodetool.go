@@ -49,9 +49,14 @@ func (c *Executor) Run(arguments ...string) (string, string, error) {
 
 	if c.sslEnabled {
 		args = "/etc/tls/bin/generate-tls-artifacts.sh;" +
-			"cp /nodetool-ssl-properties/nodetool-ssl.properties /home/cassandra/.cassandra/nodetool-ssl.properties;" +
+			"/etc/cassandra/generate-nodetool-ssl-properties.sh;" +
+			"cp /etc/cassandra/nodetool-ssl.properties /home/cassandra/.cassandra/nodetool-ssl.properties;" +
 			args
 		volumeMounts = []v1.VolumeMount{
+			{
+				Name:      "etc-cassandra",
+				MountPath: "/etc/cassandra",
+			},
 			{
 				Name:      "cassandra-tls",
 				MountPath: "/etc/tls/certs",
@@ -61,8 +66,9 @@ func (c *Executor) Run(arguments ...string) (string, string, error) {
 				MountPath: "/etc/tls/bin",
 			},
 			{
-				Name:      "nodetool-ssl-properties",
-				MountPath: "/nodetool-ssl-properties",
+				Name:      "generate-nodetool-ssl-properties",
+				MountPath: "/etc/cassandra/generate-nodetool-ssl-properties.sh",
+				SubPath:   "generate-nodetool-ssl-properties.sh",
 			},
 			{
 				Name:      "dot-cassandra",
@@ -70,6 +76,12 @@ func (c *Executor) Run(arguments ...string) (string, string, error) {
 			},
 		}
 		volumes = []v1.Volume{
+			{
+				Name: "etc-cassandra",
+				VolumeSource: v1.VolumeSource{
+					EmptyDir: &v1.EmptyDirVolumeSource{},
+				},
+			},
 			{
 				Name: "cassandra-tls",
 				VolumeSource: v1.VolumeSource{
@@ -90,11 +102,11 @@ func (c *Executor) Run(arguments ...string) (string, string, error) {
 				},
 			},
 			{
-				Name: "nodetool-ssl-properties",
+				Name: "generate-nodetool-ssl-properties",
 				VolumeSource: v1.VolumeSource{
 					ConfigMap: &v1.ConfigMapVolumeSource{
 						LocalObjectReference: v1.LocalObjectReference{
-							Name: fmt.Sprintf("%s-nodetool-ssl-properties", c.instance),
+							Name: fmt.Sprintf("%s-generate-nodetool-ssl-properties", c.instance),
 						},
 						DefaultMode: &defaultMode,
 					},
