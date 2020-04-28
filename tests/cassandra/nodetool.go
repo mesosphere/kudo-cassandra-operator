@@ -54,10 +54,6 @@ func (c *Executor) Run(arguments ...string) (string, string, error) {
 			args
 		volumeMounts = []v1.VolumeMount{
 			{
-				Name:      "etc-cassandra",
-				MountPath: "/etc/cassandra",
-			},
-			{
 				Name:      "cassandra-tls",
 				MountPath: "/etc/tls/certs",
 			},
@@ -81,12 +77,6 @@ func (c *Executor) Run(arguments ...string) (string, string, error) {
 			},
 		}
 		volumes = []v1.Volume{
-			{
-				Name: "etc-cassandra",
-				VolumeSource: v1.VolumeSource{
-					EmptyDir: &v1.EmptyDirVolumeSource{},
-				},
-			},
 			{
 				Name: "cassandra-tls",
 				VolumeSource: v1.VolumeSource{
