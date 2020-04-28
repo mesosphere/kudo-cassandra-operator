@@ -341,7 +341,7 @@ spec:
             - /etc/cassandra/generate-cassandra-yaml.sh;
               {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
               /etc/cassandra/generate-nodetool-ssl-properties.sh &&
-              cp /nodetool-ssl-properties/nodetool-ssl.properties /home/cassandra/.cassandra/nodetool-ssl.properties;
+              cp /etc/cassandra/nodetool-ssl.properties /home/cassandra/.cassandra/nodetool-ssl.properties;
               {{ end }}
               /etc/cassandra/prepare-medusa-ini.sh;
               sleep infinity
