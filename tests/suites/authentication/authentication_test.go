@@ -97,7 +97,7 @@ var _ = Describe("Authentication tests", func() {
 			})
 			Expect(err).To(BeNil())
 
-			err = operator.Instance.WaitForPlanComplete("repair-pod")
+			err = operator.Instance.WaitForPlanComplete("repair")
 			Expect(err).To(BeNil())
 
 			repair, err := cassandra.NodeWasRepaired(client, operator.Instance, podName)
