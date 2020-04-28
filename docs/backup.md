@@ -284,8 +284,7 @@ var-lib-cassandra-cassandra-node-1   Bound    pvc-2c85752f-6438-4c8d-8e87-9f4c91
 var-lib-cassandra-cassandra-node-2   Bound    pvc-56123519-50c8-4ef7-83ab-302655101497   20Gi       RWO            awsebscsiprovisioner   64m
 ```
 
-This is intentional, so that in case of an accidential deletion of the KUDO operator the data can still be accessed. In this case we don't need them
-and make sure to delete them before reinstalling the cluster with the S3 backup:
+This is intentional, so that in case of an accidental deletion of the KUDO operator the data can still be accessed. In this case we don't need them, so to make sure to delete them before reinstalling the cluster with the S3 backup:
 
 ```bash
 kubectl delete pvc --all --namespace $NAMESPACE
