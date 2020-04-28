@@ -152,7 +152,7 @@ spec:
               /etc/tls/bin/generate-tls-artifacts.sh;
               {{ end }}
               {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
-              /etc/cassandra/generate-nodetool-ssl-properties.sh;
+              /etc/cassandra/generate-nodetool-ssl-properties.sh &&
               cp /etc/cassandra/nodetool-ssl.properties /home/cassandra/.cassandra/nodetool-ssl.properties;
               {{ end }}
               /etc/cassandra/generate-cqlshrc.sh;
@@ -338,7 +338,9 @@ spec:
             - bash
             - -c
           args:
-            - {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
+            - /etc/cassandra/generate-cassandra-yaml.sh;
+              {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
+              /etc/cassandra/generate-nodetool-ssl-properties.sh &&
               cp /nodetool-ssl-properties/nodetool-ssl.properties /home/cassandra/.cassandra/nodetool-ssl.properties;
               {{ end }}
               /etc/cassandra/prepare-medusa-ini.sh;
@@ -400,9 +402,9 @@ spec:
             # Overwriting /etc/cassandra/ available in the Docker image.
             - name: etc-cassandra
               mountPath: /etc/cassandra/
-            - name: cassandra-yaml
-              mountPath: /etc/cassandra/cassandra.yaml
-              subPath: cassandra.yaml
+            - name: generate-cassandra-yaml
+              mountPath: /etc/cassandra/generate-cassandra-yaml.sh
+              subPath: generate-cassandra-yaml.sh
             - name: etc-medusa
               mountPath: /etc/medusa/
             - name: cassandra-medusa-config-ini
@@ -414,8 +416,9 @@ spec:
           {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
             - name: dot-cassandra
               mountPath: /home/cassandra/.cassandra/
-            - name: nodetool-ssl-properties
-              mountPath: /nodetool-ssl-properties
+            - name: generate-nodetool-ssl-properties
+              mountPath: /etc/cassandra/generate-nodetool-ssl-properties.sh
+              subPath: generate-nodetool-ssl-properties.sh
           {{ end }}
           {{ if $.Params.AUTHENTICATION_SECRET_NAME }}
             - name: authentication-secret
