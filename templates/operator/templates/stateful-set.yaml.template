@@ -402,6 +402,9 @@ spec:
             # Overwriting /etc/cassandra/ available in the Docker image.
             - name: etc-cassandra
               mountPath: /etc/cassandra/
+            - name: truststore-credentials
+              mountPath: /etc/cassandra/truststore
+              readOnly: yes
             - name: generate-cassandra-yaml
               mountPath: /etc/cassandra/generate-cassandra-yaml.sh
               subPath: generate-cassandra-yaml.sh
