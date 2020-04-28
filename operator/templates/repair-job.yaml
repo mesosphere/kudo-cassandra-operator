@@ -12,6 +12,7 @@ metadata:
     cassandra: {{ $.OperatorName }}
     app: {{ $.Name }}
 spec:
+  backoffLimit: 0
   template:
     spec:
       containers:

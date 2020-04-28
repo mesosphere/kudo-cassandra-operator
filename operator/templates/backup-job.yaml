@@ -5,6 +5,7 @@ kind: Job
 metadata:
   name: backup-node-{{ $v }}
 spec:
+  backoffLimit: 0
   template:
     spec:
       serviceAccountName: {{ $.Name }}-node-exec
@@ -17,5 +18,4 @@ spec:
           args:
             - kubectl -n {{ $.Namespace }} exec {{ $.Name }}-node-{{ $v }} --container medusa-backup -- python3 /usr/local/bin/medusa backup --backup-name {{ $.Params.BACKUP_NAME }}
       restartPolicy: Never
-  backoffLimit: 0
 {{ end }}
