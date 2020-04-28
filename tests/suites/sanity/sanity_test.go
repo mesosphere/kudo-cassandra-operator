@@ -229,7 +229,7 @@ var _ = Describe(TestName, func() {
 		assertNumberOfCassandraNodes(NodeCount)
 
 		By("Triggering a Cassandra node repair")
-		podName, err := cassandra.FirstPodName(Operator.Instance)
+		podName, err := cassandra.PodName(Operator.Instance, 0)
 		Expect(err).To(BeNil())
 
 		err = Operator.Instance.UpdateParameters(map[string]string{
@@ -240,7 +240,23 @@ var _ = Describe(TestName, func() {
 		err = Operator.Instance.WaitForPlanComplete("repair-pod")
 		Expect(err).To(BeNil())
 
-		repair, err := cassandra.NodeWasRepaired(Client, Operator.Instance)
+		repair, err := cassandra.NodeWasRepaired(Client, Operator.Instance, podName)
+		Expect(err).To(BeNil())
+		Expect(repair).To(BeTrue())
+
+		By("Triggering a Cassandra node repair again to make sure it can execute twice")
+		podName, err = cassandra.PodName(Operator.Instance, 1)
+		Expect(err).To(BeNil())
+
+		err = Operator.Instance.UpdateParameters(map[string]string{
+			"REPAIR_POD": podName,
+		})
+		Expect(err).To(BeNil())
+
+		err = Operator.Instance.WaitForPlanComplete("repair-pod")
+		Expect(err).To(BeNil())
+
+		repair, err = cassandra.NodeWasRepaired(Client, Operator.Instance, podName)
 		Expect(err).To(BeNil())
 		Expect(repair).To(BeTrue())
 	})

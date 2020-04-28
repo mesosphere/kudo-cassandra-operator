@@ -7,7 +7,7 @@ metadata:
 spec:
   template:
     spec:
-      serviceAccountName: {{ $.Name }}-node-backup
+      serviceAccountName: {{ $.Name }}-node-exec
       containers:
         - name: backup
           image: bitnami/kubectl:{{ $.Params.KUBECTL_VERSION }}
