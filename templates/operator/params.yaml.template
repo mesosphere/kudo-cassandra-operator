@@ -109,6 +109,81 @@ parameters:
     description: "The external port to use for Cassandra rpc protocol."
     default: "9160"
 
+  - name: MAX_UNAVAILABLE_NODES
+    displayName: "Max number of nodes that can be unavailable"
+    description: "Maximum number of nodes that are allowed to be down, either for restarts or from unscheduled outage. See PodDisruptionBudget"
+    default: 1
+
+  ################################################################################
+  ########################## Backup and Restore settings #########################
+  ################################################################################
+
+  - name: BACKUP_RESTORE_ENABLED
+    description: "Global flag that enables the medusa sidecar for backups"
+    default: "false"
+
+  - name: BACKUP_TRIGGER
+    description: "Trigger parameter to start a backup. Simply needs to be changed from the current value to start a backup"
+    default: "1"
+    trigger: backup
+
+  - name: BACKUP_AWS_CREDENTIALS_SECRET
+    description: If set, can be used to provide the access_key, secret_key and security_token with a secret
+    required: false
+
+  - name: BACKUP_AWS_S3_BUCKET_NAME
+    description: The name of the AWS S3 bucket to store the backups
+    required: false
+
+  - name: BACKUP_AWS_S3_STORAGE_PROVIDER
+    description: Should be one of the s3_* values from https://github.com/apache/libcloud/blob/trunk/libcloud/storage/types.py
+    required: false
+    default: s3_us_west_oregon
+
+  - name: BACKUP_PREFIX
+    description: A prefix to be used inside the S3 bucket
+    required: false
+
+  - name: BACKUP_MEDUSA_CPU_MC
+    description: "CPU request (in millicores) for the Medusa backup containers."
+    default: "100"
+
+  - name: BACKUP_MEDUSA_CPU_LIMIT_MC
+    description: "CPU limit (in millicores) for the Medusa backup containers."
+    default: "500"
+
+  - name: BACKUP_MEDUSA_MEM_MIB
+    description: "Memory request (in MiB) for the Medusa backup containers."
+    default: "256"
+
+  - name: BACKUP_MEDUSA_MEM_LIMIT_MIB
+    description: "Memory limit (in MiB) for the Medusa backup containers."
+    default: "512"
+
+  - name: BACKUP_MEDUSA_DOCKER_IMAGE
+    description: "Medusa backup Docker image."
+    default: "${MEDUSA_BACKUP_DOCKER_IMAGE}"
+
+  - name: BACKUP_MEDUSA_DOCKER_IMAGE_PULL_POLICY
+    description: "Medusa backup Docker image pull policy."
+    default: "Always"
+
+  - name: BACKUP_NAME
+    description: "The name of the backup to create or restore"
+    default: ""
+
+  - name: RESTORE_FLAG
+    description: "If true, a restore is done on installation"
+    default: "false"
+
+  - name: RESTORE_OLD_NAMESPACE
+    description: "The namespace from the operator that was used to create the backup"
+    default: ""
+
+  - name: RESTORE_OLD_NAME
+    description: "The instance name from the operator that was used to create the backup"
+    default: ""
+
   ################################################################################
   ######################### Datacenter and Rack awareness ########################
   ################################################################################

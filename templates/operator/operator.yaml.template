@@ -33,6 +33,28 @@ tasks:
       parameter: EXTERNAL_SERVICE
       resources:
         - external-service.yaml
+  - name: backup-deploy
+    kind: Toggle
+    spec:
+      parameter: BACKUP_RESTORE_ENABLED
+      resources:
+        - medusa-config-ini.yaml
+        - backup-job-rbac.yaml
+  - name: backup-cleanup
+    kind: Delete
+    spec:
+      resources:
+        - backup-job.yaml
+  - name: backup
+    kind: Apply
+    spec:
+      resources:
+        - backup-job.yaml
+  - name: remove-stateful-set
+    kind: Delete
+    spec:
+      resources:
+        - stateful-set.yaml
   - name: node-resolver-rbac
     kind: Toggle
     spec:
@@ -62,6 +84,7 @@ plans:
             tasks:
               - node
               - ext-service
+              - backup-deploy
   repair-pod:
     strategy: serial
     phases:
@@ -71,3 +94,15 @@ plans:
           - name: repair
             tasks:
               - repair-pod
+  backup:
+    strategy: serial
+    phases:
+      - name: backup
+        strategy: serial
+        steps:
+          - name: cleanup
+            tasks:
+             - backup-cleanup
+          - name: backup
+            tasks:
+             - backup

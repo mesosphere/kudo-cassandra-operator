@@ -311,3 +311,9 @@ data:
     JVM_OPTS="$JVM_OPTS $MX4J_ADDRESS"
     JVM_OPTS="$JVM_OPTS $MX4J_PORT"
     JVM_OPTS="$JVM_OPTS $JVM_EXTRA_OPTS"
+
+    # This is used in case of a restore. The restore init container saves the token map in this location
+    if [ -f /var/lib/cassandra/token_map ]; then
+        INITIAL_TOKENS=`cat /var/lib/cassandra/token_map`
+        JVM_OPTS="$JVM_OPTS -Dcassandra.initial_token=$INITIAL_TOKENS"
+    fi
