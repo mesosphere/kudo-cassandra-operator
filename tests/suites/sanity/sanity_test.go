@@ -4,13 +4,14 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
-	"github.com/kudobuilder/kudo/pkg/apis/kudo/v1beta1"
 	"math/big"
 	"os"
 	"strconv"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/kudobuilder/kudo/pkg/apis/kudo/v1beta1"
 
 	"github.com/kudobuilder/test-tools/pkg/client"
 	"github.com/kudobuilder/test-tools/pkg/debug"
