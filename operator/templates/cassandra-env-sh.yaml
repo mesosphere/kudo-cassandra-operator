@@ -318,8 +318,6 @@ data:
         JVM_OPTS="$JVM_OPTS -Dcassandra.initial_token=$INITIAL_TOKENS"
     fi
 
-    rm /etc/cassandra/cassandra.yaml
-    cp /etc/cassandra/cassandra.yaml.source /etc/cassandra/cassandra.yaml;
     if [ -s /var/lib/cassandra/replace.ip ]; then
       replace_ip=$(cat /var/lib/cassandra/replace.ip);
       echo "File replace.ip found with IP:${replace_ip}";

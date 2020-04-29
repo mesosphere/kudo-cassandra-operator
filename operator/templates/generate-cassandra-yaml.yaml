@@ -12,8 +12,15 @@ data:
     readonly truststore_password=$(cat /etc/cassandra/truststore/truststore_password)
     readonly keystore_password=$(cat /etc/cassandra/truststore/keystore_password)
 
+    AUTO_BOOTSTRAP=""
+    if [ -s /var/lib/cassandra/replace.ip ]; then
+      AUTO_BOOTSTRAP="auto_bootstrap: true"
+    fi
+
     cat <<EOF > /etc/cassandra/cassandra.yaml
     # Cassandra storage config YAML
+
+    ${AUTO_BOOTSTRAP}
 
     # NOTE:
     #   See http://wiki.apache.org/cassandra/StorageConfiguration for

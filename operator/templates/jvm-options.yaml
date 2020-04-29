@@ -4,7 +4,7 @@ metadata:
   name: {{ .Name }}-jvm-options
   namespace: {{ .Namespace }}
 data:
-  jvm.options.source: |
+  jvm.options: |
     ###########################################################################
     #                             jvm.options                                 #
     #                                                                         #

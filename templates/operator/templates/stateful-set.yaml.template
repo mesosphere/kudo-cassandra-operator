@@ -159,7 +159,6 @@ spec:
               /etc/cassandra/generate-cqlshrc.sh;
               /etc/cassandra-bootstrap/cassandra-bootstrap &
               sleep 5;
-              cp /etc/cassandra/jvm.options.source /etc/cassandra/jvm.options;
               {{ if $.Params.NODE_TOPOLOGY }}
               /etc/cassandra/wait-for-node-zero.sh {{ $.Name }}-{{ $datacenter.datacenter }};
               {{ else }}

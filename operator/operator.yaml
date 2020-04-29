@@ -1,7 +1,7 @@
 apiVersion: kudo.dev/v1beta1
 name: "cassandra"
 operatorVersion: "0.1.2"
-kudoVersion: "0.11.0"
+kudoVersion: "0.11.1"
 kubernetesVersion: "1.15.0"
 appVersion: "3.11.5"
 maintainers:
@@ -15,26 +15,50 @@ tasks:
     spec:
       resources:
         - service.yaml
-        - cassandra-yaml.yaml
+        - tls-store-credentials.yaml
+        - generate-cassandra-yaml.yaml
         - cassandra-topology.yaml
         - cassandra-sa.yaml
         - role.yaml
         - rolebinding.yaml
         - cassandra-env-sh.yaml
         - jvm-options.yaml
-        - stateful-set.yaml
         - cassandra-exporter-config-yml.yaml
         - service-monitor.yaml
         - node-scripts.yaml
         - generate-tls-artifacts-sh.yaml
         - generate-cqlshrc-sh.yaml
         - pdb.yaml
+        - generate-nodetool-ssl-properties.yaml
+        - stateful-set.yaml
   - name: ext-service
     kind: Toggle
     spec:
       parameter: EXTERNAL_SERVICE
       resources:
         - external-service.yaml
+  - name: backup-deploy
+    kind: Toggle
+    spec:
+      parameter: BACKUP_RESTORE_ENABLED
+      resources:
+        - medusa-config-ini.yaml
+        - backup-job-rbac.yaml
+  - name: backup-cleanup
+    kind: Delete
+    spec:
+      resources:
+        - backup-job.yaml
+  - name: backup
+    kind: Apply
+    spec:
+      resources:
+        - backup-job.yaml
+  - name: remove-stateful-set
+    kind: Delete
+    spec:
+      resources:
+        - stateful-set.yaml
   - name: recovery-controller
     kind: Toggle
     spec:
@@ -48,6 +72,12 @@ tasks:
       parameter: SERVICE_ACCOUNT_INSTALL
       resources:
         - node-resolver-rbac.yaml
+  - name: repair-pod
+    kind: Apply
+    spec:
+      resources:
+        - repair-job-rbac.yaml
+        - repair-job.yaml
 plans:
   deploy:
     strategy: serial
@@ -66,3 +96,25 @@ plans:
               - node
               - ext-service
               - recovery-controller
+              - backup-deploy
+  repair-pod:
+    strategy: serial
+    phases:
+      - name: nodes
+        strategy: parallel
+        steps:
+          - name: repair
+            tasks:
+              - repair-pod
+  backup:
+    strategy: serial
+    phases:
+      - name: backup
+        strategy: serial
+        steps:
+          - name: cleanup
+            tasks:
+             - backup-cleanup
+          - name: backup
+            tasks:
+             - backup
