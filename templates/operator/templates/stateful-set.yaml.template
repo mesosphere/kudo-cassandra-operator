@@ -122,8 +122,8 @@ spec:
             preStop:
               exec:
                 command:
-                  - nodetool
-                  - drain
+                  - /bin/bash
+                  - /etc/cassandra/node-drain.sh
           readinessProbe:
             exec:
               command:
@@ -148,13 +148,23 @@ spec:
             - bash
             - -c
           args:
-            - {{ if or (eq $.Params.TRANSPORT_ENCRYPTION_ENABLED "true") (eq $.Params.TRANSPORT_ENCRYPTION_CLIENT_ENABLED "true") }}
+            - /etc/cassandra/generate-cassandra-yaml.sh;
+              {{ if or (eq $.Params.TRANSPORT_ENCRYPTION_ENABLED "true") (eq $.Params.TRANSPORT_ENCRYPTION_CLIENT_ENABLED "true") (ne $.Params.JMX_LOCAL_ONLY "true") }}
               /etc/tls/bin/generate-tls-artifacts.sh;
+              {{ end }}
+              {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
+              /etc/cassandra/generate-nodetool-ssl-properties.sh &&
+              cp /etc/cassandra/nodetool-ssl.properties /home/cassandra/.cassandra/nodetool-ssl.properties;
               {{ end }}
               /etc/cassandra/generate-cqlshrc.sh;
               /etc/cassandra-bootstrap/cassandra-bootstrap &
               sleep 5;
               cp /etc/cassandra/jvm.options.source /etc/cassandra/jvm.options;
+              {{ if $.Params.NODE_TOPOLOGY }}
+              /etc/cassandra/wait-for-node-zero.sh {{ $.Name }}-{{ $datacenter.datacenter }};
+              {{ else }}
+              /etc/cassandra/wait-for-node-zero.sh {{ $.Name }};
+              {{ end }}
               cassandra -f
           # Comment the `command` above and uncomment the one below if pods are
           # crash-looping and you would like to investigate their state. This is
@@ -219,36 +229,69 @@ spec:
             # Overwriting /etc/cassandra/ available in the Docker image.
             - name: etc-cassandra
               mountPath: /etc/cassandra/
-            - name: cassandra-yaml
-              mountPath: /etc/cassandra/cassandra.yaml.source
-              subPath: cassandra.yaml.source
+            - name: truststore-credentials
+              mountPath: /etc/cassandra/truststore
+              readOnly: yes
+            - name: generate-cassandra-yaml
+              mountPath: /etc/cassandra/generate-cassandra-yaml.sh
+              subPath: generate-cassandra-yaml.sh
             - name: cassandra-env-sh
               mountPath: /etc/cassandra/cassandra-env.sh
               subPath: cassandra-env.sh
             - name: jvm-options
-              mountPath: /etc/cassandra/jvm.options.source
-              subPath: jvm.options.source
+              mountPath: /etc/cassandra/jvm.options
+              subPath: jvm.options
+            - name: node-scripts
+              mountPath: /etc/cassandra/node-drain.sh
+              subPath: node-drain.sh
             - name: node-scripts
               mountPath: /etc/cassandra/node-readiness-probe.sh
               subPath: node-readiness-probe.sh
             - name: node-scripts
               mountPath: /etc/cassandra/node-liveness-probe.sh
               subPath: node-liveness-probe.sh
+            - name: node-scripts
+              mountPath: /etc/cassandra/node-token-save.sh
+              subPath: node-token-save.sh
+            - name: node-scripts
+              mountPath: /etc/cassandra/wait-for-node-zero.sh
+              subPath: wait-for-node-zero.sh
             - name: dot-cassandra
               mountPath: /home/cassandra/.cassandra/
             - name: generate-cqlshrc-sh
               mountPath: /etc/cassandra/generate-cqlshrc.sh
               subPath: generate-cqlshrc.sh
-          {{ if or (eq $.Params.TRANSPORT_ENCRYPTION_ENABLED "true") (eq $.Params.TRANSPORT_ENCRYPTION_CLIENT_ENABLED "true") }}
+          {{ if or (eq $.Params.TRANSPORT_ENCRYPTION_ENABLED "true") (eq $.Params.TRANSPORT_ENCRYPTION_CLIENT_ENABLED "true") (ne $.Params.JMX_LOCAL_ONLY "true") }}
             - name: {{ $.Params.TLS_SECRET_NAME }}
               mountPath: /etc/tls/certs
             - name: generate-tls-artifacts
               mountPath: /etc/tls/bin
           {{ end }}
+          {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
+            - name: generate-nodetool-ssl-properties
+              mountPath: /etc/cassandra/generate-nodetool-ssl-properties.sh
+              subPath: generate-nodetool-ssl-properties.sh
+          {{ end }}
+          {{ if $.Params.AUTHENTICATION_SECRET_NAME }}
+            - name: authentication-secret
+              mountPath: /etc/cassandra/authentication
+              readOnly: true
+          {{ end }}
         {{ if eq $.Params.PROMETHEUS_EXPORTER_ENABLED "true" }}
         - name: prometheus-exporter
           image: {{ $.Params.PROMETHEUS_EXPORTER_DOCKER_IMAGE }}
           imagePullPolicy: {{ $.Params.PROMETHEUS_EXPORTER_DOCKER_IMAGE_PULL_POLICY }}
+          command:
+            - bash
+            - -c
+          args:
+            - {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
+              /etc/cassandra/generate-nodetool-ssl-properties.sh;
+              while IFS= read -r flag; do
+                JVM_OPTS="${JVM_OPTS} $flag";
+              done < /etc/cassandra/nodetool-ssl.properties;
+              {{ end }}
+              JVM_OPTS="${JVM_OPTS}" /sbin/dumb-init /bin/bash /run.sh;
           env:
             - name: NODE_NAME
               valueFrom:
@@ -285,11 +328,117 @@ spec:
             - name: cassandra-exporter-config-yml
               mountPath: /etc/cassandra_exporter/config.yml
               subPath: config.yml
+          {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
+            - name: etc-cassandra
+              mountPath: /etc/cassandra/
+            - name: generate-nodetool-ssl-properties
+              mountPath: /etc/cassandra/generate-nodetool-ssl-properties.sh
+              subPath: generate-nodetool-ssl-properties.sh
+          {{ end }}
         {{ end }}
-      {{ if $.Params.NODE_TOPOLOGY }}
+        {{ if eq $.Params.BACKUP_RESTORE_ENABLED "true" }}
+        - name: medusa-backup
+          image: {{ $.Params.BACKUP_MEDUSA_DOCKER_IMAGE }}
+          imagePullPolicy: {{ $.Params.BACKUP_MEDUSA_DOCKER_IMAGE_PULL_POLICY }}
+          command:
+            - bash
+            - -c
+          args:
+            - /etc/cassandra/generate-cassandra-yaml.sh;
+              {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
+              /etc/cassandra/generate-nodetool-ssl-properties.sh &&
+              cp /etc/cassandra/nodetool-ssl.properties /home/cassandra/.cassandra/nodetool-ssl.properties;
+              {{ end }}
+              /etc/cassandra/prepare-medusa-ini.sh;
+              sleep infinity
+          env:
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $.Params.BACKUP_AWS_CREDENTIALS_SECRET }}
+                  key: access-key
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $.Params.BACKUP_AWS_CREDENTIALS_SECRET }}
+                  key: secret-key
+            - name: AWS_SECURITY_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $.Params.BACKUP_AWS_CREDENTIALS_SECRET }}
+                  key: security-token
+                  optional: true
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_SERVICE_ACCOUNT
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.serviceAccountName
+            - name: POD_UID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.uid
+          resources:
+            requests:
+              memory: "{{ $.Params.BACKUP_MEDUSA_MEM_MIB }}Mi"
+              cpu: "{{ $.Params.BACKUP_MEDUSA_CPU_MC }}m"
+            limits:
+              memory: "{{ $.Params.BACKUP_MEDUSA_MEM_LIMIT_MIB }}Mi"
+              cpu: "{{ $.Params.BACKUP_MEDUSA_CPU_LIMIT_MC }}m"
+          ports:
+            - containerPort: 8082
+              name: management
+          volumeMounts:
+            - name: var-lib-cassandra
+              mountPath: /var/lib/cassandra/
+            # Overwriting /etc/cassandra/ available in the Docker image.
+            - name: etc-cassandra
+              mountPath: /etc/cassandra/
+            - name: truststore-credentials
+              mountPath: /etc/cassandra/truststore
+              readOnly: yes
+            - name: generate-cassandra-yaml
+              mountPath: /etc/cassandra/generate-cassandra-yaml.sh
+              subPath: generate-cassandra-yaml.sh
+            - name: etc-medusa
+              mountPath: /etc/medusa/
+            - name: cassandra-medusa-config-ini
+              mountPath: /etc/medusa/medusa.ini.orig
+              subPath: medusa.ini
+            - name: node-scripts
+              mountPath: /etc/cassandra/prepare-medusa-ini.sh
+              subPath: prepare-medusa-ini.sh
+          {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
+            - name: dot-cassandra
+              mountPath: /home/cassandra/.cassandra/
+            - name: generate-nodetool-ssl-properties
+              mountPath: /etc/cassandra/generate-nodetool-ssl-properties.sh
+              subPath: generate-nodetool-ssl-properties.sh
+          {{ end }}
+          {{ if $.Params.AUTHENTICATION_SECRET_NAME }}
+            - name: authentication-secret
+              mountPath: /etc/cassandra/authentication
+              readOnly: true
+          {{ end }}
+        {{ end }}
       initContainers:
+      {{ if $.Params.NODE_TOPOLOGY }}
         - name: node-resolver
-          image: bitnami/kubectl:latest
+          image: bitnami/kubectl:{{ $.Params.KUBECTL_VERSION }}
           command:
             - "sh"
             - "-c"
@@ -325,13 +474,117 @@ spec:
               memory: "256Mi"
               cpu: "200m"
       {{ end }}
+      {{ if eq $.Params.RESTORE_FLAG "true" }}
+        - name: medusa-restore
+          image: {{ $.Params.BACKUP_MEDUSA_DOCKER_IMAGE }}
+          imagePullPolicy: {{ $.Params.BACKUP_MEDUSA_DOCKER_IMAGE_PULL_POLICY }}
+          command:
+            - bash
+            - -c
+          args:
+            - /etc/cassandra/generate-cassandra-yaml.sh;
+              {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
+              /etc/cassandra/generate-nodetool-ssl-properties.sh &&
+              cp /etc/cassandra/nodetool-ssl.properties /home/cassandra/.cassandra/nodetool-ssl.properties;
+              {{ end }}
+              /etc/cassandra/prepare-medusa-ini.sh;
+              export POD_ID=`echo $POD_NAME | sed -n -e 's/.*-node-\([0-9]\{1,4\}\)$/\1/p'`;
+              /etc/cassandra/init-container-restore.sh
+          env:
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $.Params.BACKUP_AWS_CREDENTIALS_SECRET }}
+                  key: access-key
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $.Params.BACKUP_AWS_CREDENTIALS_SECRET }}
+                  key: secret-key
+            - name: AWS_SECURITY_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $.Params.BACKUP_AWS_CREDENTIALS_SECRET }}
+                  key: security-token
+                  optional: true
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_SERVICE_ACCOUNT
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.serviceAccountName
+            - name: POD_UID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.uid
+          resources:
+            requests:
+              memory: "{{ $.Params.BACKUP_MEDUSA_MEM_MIB }}Mi"
+              cpu: "{{ $.Params.BACKUP_MEDUSA_CPU_MC }}m"
+            limits:
+              memory: "{{ $.Params.BACKUP_MEDUSA_MEM_LIMIT_MIB }}Mi"
+              cpu: "{{ $.Params.BACKUP_MEDUSA_CPU_LIMIT_MC }}m"
+          volumeMounts:
+            - name: var-lib-cassandra
+              mountPath: /var/lib/cassandra/
+            # Overwriting /etc/cassandra/ available in the Docker image.
+            - name: etc-cassandra
+              mountPath: /etc/cassandra/
+            - name: truststore-credentials
+              mountPath: /etc/cassandra/truststore
+              readOnly: yes
+            - name: generate-cassandra-yaml
+              mountPath: /etc/cassandra/generate-cassandra-yaml.sh
+              subPath: generate-cassandra-yaml.sh
+            - name: etc-medusa
+              mountPath: /etc/medusa/
+            - name: cassandra-medusa-config-ini
+              mountPath: /etc/medusa/medusa.ini.orig
+              subPath: medusa.ini
+            - name: node-scripts
+              mountPath: /etc/cassandra/restore-capture-tokenmap.sh
+              subPath: restore-capture-tokenmap.sh
+            - name: node-scripts
+              mountPath: /etc/cassandra/init-container-restore.sh
+              subPath: init-container-restore.sh
+            - name: node-scripts
+              mountPath: /etc/cassandra/prepare-medusa-ini.sh
+              subPath: prepare-medusa-ini.sh
+          {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
+            - name: dot-cassandra
+              mountPath: /home/cassandra/.cassandra/
+            - name: generate-nodetool-ssl-properties
+              mountPath: /etc/cassandra/generate-nodetool-ssl-properties.sh
+              subPath: generate-nodetool-ssl-properties.sh
+          {{ end }}
+          {{ if $.Params.AUTHENTICATION_SECRET_NAME }}
+            - name: authentication-secret
+              mountPath: /etc/cassandra/authentication
+              readOnly: true
+          {{ end }}
+      {{ end }}
       volumes:
         # Overwriting /etc/cassandra/ available in the Docker image.
         - name: etc-cassandra
           emptyDir: {}
-        - name: cassandra-yaml
+        - name: generate-cassandra-yaml
           configMap:
-            name: {{ $.Name }}-cassandra-yaml
+            name: {{ $.Name }}-generate-cassandra-yaml
+            defaultMode: 0755
         - name: cassandra-env-sh
           configMap:
             name: {{ $.Name }}-cassandra-env-sh
@@ -353,7 +606,14 @@ spec:
           configMap:
             name: {{ $.Name }}-cassandra-exporter-config-yml
         {{ end }}
-        {{ if or (eq $.Params.TRANSPORT_ENCRYPTION_ENABLED "true") (eq $.Params.TRANSPORT_ENCRYPTION_CLIENT_ENABLED "true") }}
+        {{ if eq $.Params.BACKUP_RESTORE_ENABLED "true" }}
+        - name: etc-medusa
+          emptyDir: {}
+        - name: cassandra-medusa-config-ini
+          configMap:
+            name: {{ $.Name }}-cassandra-medusa-ini
+        {{ end }}
+        {{ if or (eq $.Params.TRANSPORT_ENCRYPTION_ENABLED "true") (eq $.Params.TRANSPORT_ENCRYPTION_CLIENT_ENABLED "true") (ne $.Params.JMX_LOCAL_ONLY "true") }}
         - name: {{ $.Params.TLS_SECRET_NAME }}
           secret:
             secretName: {{ $.Params.TLS_SECRET_NAME }}
@@ -362,6 +622,20 @@ spec:
             name:  {{ $.Name }}-generate-tls-artifacts-sh
             defaultMode: 0755
         {{ end }}
+        {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
+        - name: generate-nodetool-ssl-properties
+          configMap:
+            name: {{ $.Name }}-generate-nodetool-ssl-properties
+            defaultMode: 0755
+        {{ end }}
+        {{ if $.Params.AUTHENTICATION_SECRET_NAME }}
+        - name: authentication-secret
+          secret:
+            secretName: {{ $.Params.AUTHENTICATION_SECRET_NAME }}
+        {{ end }}
+        - name: truststore-credentials
+          secret:
+            secretName: {{ $.Name }}-tls-store-credentials
   volumeClaimTemplates:
     - metadata:
         name: var-lib-cassandra

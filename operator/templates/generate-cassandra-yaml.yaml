@@ -1,10 +1,18 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ .Name }}-cassandra-yaml
+  name: {{ .Name }}-generate-cassandra-yaml
   namespace: {{ .Namespace }}
 data:
-  cassandra.yaml.source: |
+  generate-cassandra-yaml.sh: |
+    #!/usr/bin/env bash
+
+    set -euxo pipefail
+
+    readonly truststore_password=$(cat /etc/cassandra/truststore/truststore_password)
+    readonly keystore_password=$(cat /etc/cassandra/truststore/keystore_password)
+
+    cat <<EOF > /etc/cassandra/cassandra.yaml
     # Cassandra storage config YAML
 
     # NOTE:
@@ -92,7 +100,7 @@ data:
     max_hints_delivery_threads: {{ .Params.MAX_HINTS_DELIVERY_THREADS }}
 
     # Directory where Cassandra should store hints.
-    # If not set, the default directory is $CASSANDRA_HOME/data/hints.
+    # If not set, the default directory is \$CASSANDRA_HOME/data/hints.
     {{ if .Params.HINTS_DIRECTORY }}
     hints_directory: {{ .Params.HINTS_DIRECTORY }}
     {{ end }}
@@ -217,14 +225,20 @@ data:
     # Directories where Cassandra should store data on disk.  Cassandra
     # will spread data evenly across them, subject to the granularity of
     # the configured compaction strategy.
-    # If not set, the default directory is $CASSANDRA_HOME/data/data.
-    # data_file_directories:
-    #     - /var/lib/cassandra/data
+    # If not set, the default directory is \$CASSANDRA_HOME/data/data.
+    #
+    # This needs to be set to a valid value for medusa to work
+    data_file_directories:
+        - /var/lib/cassandra/data
 
     # commit log.  when running on magnetic HDD, this should be a
     # separate spindle than the data directories.
+    #
+    # This needs to be set to a valid value for medusa to work
     {{ if .Params.COMMITLOG_DIRECTORY }}
     commitlog_directory: {{ .Params.COMMITLOG_DIRECTORY }}
+    {{ else }}
+    commitlog_directory: /var/lib/cassandra/commitlog
     {{ end }}
 
     # Enable / disable CDC functionality on a per-node basis. This modifies the logic used
@@ -235,7 +249,7 @@ data:
     # CommitLogSegments are moved to this directory on flush if cdc_enabled: true and the
     # segment contains mutations for a CDC-enabled table. This should be placed on a
     # separate spindle than the data directories. If not set, the default directory is
-    # $CASSANDRA_HOME/data/cdc_raw.
+    # \$CASSANDRA_HOME/data/cdc_raw.
     {{ if .Params.CDC_RAW_DIRECTORY }}
     cdc_raw_directory: {{ .Params.CDC_RAW_DIRECTORY }}
     {{ end }}
@@ -406,10 +420,14 @@ data:
     {{ end }}
 
     # saved caches
-    # If not set, the default directory is $CASSANDRA_HOME/data/saved_caches.
+    # If not set, the default directory is \$CASSANDRA_HOME/data/saved_caches.
     # saved_caches_directory: /var/lib/cassandra/saved_caches
+    #
+    # This needs to be set to a valid value for medusa to work
     {{ if .Params.SAVED_CACHES_DIRECTORY }}
     saved_caches_directory: {{ .Params.SAVED_CACHES_DIRECTORY }}
+    {{ else }}
+    saved_caches_directory: /var/lib/cassandra/saved_caches
     {{ end }}
 
     # commitlog_sync may be either "periodic" or "batch."
@@ -477,7 +495,7 @@ data:
                     {{- end -}}"
           {{- else }}
           # We have a simple setup and use the first 3 nodes as seed
-          - seeds: "{{- range $i, $node := until (int (min 2 .Params.NODE_COUNT)) -}}
+          - seeds: "{{- range $i, $node := until (int (min 3 .Params.NODE_COUNT)) -}}
                       {{- if $i -}}, {{- end -}}
                       {{ $.Name }}-node-{{ $node }}.{{ $.Name }}-svc.{{ $.Namespace }}.svc.cluster.local
                     {{- end -}}"
@@ -1163,9 +1181,9 @@ data:
     server_encryption_options:
       internode_encryption: all
       keystore: /etc/cassandra/tls/cassandra.server.keystore.jks
-      keystore_password: {{ .Params.TLS_KEYSTORE_PASSWORD }}
+      keystore_password: ${keystore_password}
       truststore: /etc/cassandra/tls/cassandra.server.truststore.jks
-      truststore_password: {{ .Params.TLS_TRUSTSTORE_PASSWORD }}
+      truststore_password: ${truststore_password}
       protocol: TLSv1.2
       cipher_suites: [{{ .Params.TRANSPORT_ENCRYPTION_CIPHERS }}]
       algorithm: SunX509
@@ -1185,9 +1203,9 @@ data:
       optional: false
       {{ end }}
       keystore: /etc/cassandra/tls/cassandra.server.keystore.jks
-      keystore_password: {{ .Params.TLS_KEYSTORE_PASSWORD }}
+      keystore_password: ${keystore_password}
       truststore: /etc/cassandra/tls/cassandra.server.truststore.jks
-      truststore_password: {{ .Params.TLS_TRUSTSTORE_PASSWORD }}
+      truststore_password: ${truststore_password}
       protocol: TLSv1.2
       require_client_auth: {{ .Params.TRANSPORT_ENCRYPTION_CLIENT_REQUIRE_CLIENT_AUTH }}
       algorithm: SunX509
@@ -1390,3 +1408,5 @@ data:
     {{ if .Params.CUSTOM_CASSANDRA_YAML_BASE64 }}
     {{ .Params.CUSTOM_CASSANDRA_YAML_BASE64 | b64dec }}
     {{ end }}
+    EOF
+

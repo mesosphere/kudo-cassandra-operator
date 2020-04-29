@@ -15,6 +15,9 @@ data:
     readonly certificate="tls.crt"
     readonly private_key="tls.key"
 
+    readonly truststore_password=$(cat /etc/cassandra/truststore/truststore_password)
+    readonly keystore_password=$(cat /etc/cassandra/truststore/keystore_password)
+
     # In days.
     readonly validity=900
 
@@ -33,8 +36,8 @@ data:
             -genkey \
             -keyalg RSA \
             -dname "CN=$(hostname -f)" \
-            -storepass "{{ .Params.TLS_TRUSTSTORE_PASSWORD }}" \
-            -keypass "{{ .Params.TLS_KEYSTORE_PASSWORD }}" \
+            -storepass "${truststore_password}" \
+            -keypass "${keystore_password}" \
             -noprompt
 
     # Add the CACert to the client and server truststores so that clients and
@@ -43,14 +46,14 @@ data:
             -alias CARoot \
             -import \
             -file "/etc/cassandra/tls/${certificate}" \
-            -storepass "{{ .Params.TLS_TRUSTSTORE_PASSWORD }}" \
+            -storepass "${truststore_password}" \
             -noprompt
 
     keytool -keystore "${server_truststore}" \
             -alias CARoot \
             -importcert \
             -file "/etc/cassandra/tls/${certificate}" \
-            -storepass "{{ .Params.TLS_TRUSTSTORE_PASSWORD }}" \
+            -storepass "${truststore_password}" \
             -noprompt
 
     # Create a certificate signing request.
@@ -58,7 +61,7 @@ data:
             -alias localhost \
             -certreq \
             -file cert-req \
-            -storepass "{{ .Params.TLS_TRUSTSTORE_PASSWORD }}"
+            -storepass "${truststore_password}"
 
     # Add openssl certificate signing extension config file.
     cat > csr.conf <<EOF
@@ -85,7 +88,7 @@ data:
         -out cert-signed \
         -days ${validity} \
         -CAcreateserial \
-        -passin "pass:{{ .Params.TLS_TRUSTSTORE_PASSWORD }}" \
+        -passin "pass:${truststore_password}" \
         -extfile csr.conf \
         -extensions req_ext
 
@@ -94,7 +97,7 @@ data:
             -alias CARoot \
             -import \
             -file "/etc/cassandra/tls/${certificate}" \
-            -storepass "{{ .Params.TLS_TRUSTSTORE_PASSWORD }}" \
+            -storepass "${truststore_password}" \
             -noprompt
 
     # Import the signed certificate into server keystore.
@@ -102,6 +105,6 @@ data:
             -alias localhost \
             -import \
             -file cert-signed \
-            -storepass "{{ .Params.TLS_TRUSTSTORE_PASSWORD }}" \
+            -storepass "${truststore_password}" \
             -noprompt
     popd

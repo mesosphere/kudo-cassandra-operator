@@ -37,13 +37,16 @@ export VENDOR_DIRECTORY="${_project_directory}/shared/vendor"
 # https://github.com/docker-library/cassandra/blob/master/3.11/Dockerfile
 export CASSANDRA_VERSION="3.11.5"
 
-# https://github.com/kudobuilder/kudo/releases/tag/v0.10.1
-export KUDO_VERSION="0.11.0"
+# https://github.com/kudobuilder/kudo/releases/tag/vx.y.z
+export KUDO_VERSION="0.11.1"
 
 export KUBERNETES_VERSION="1.15.0"
 
 export CASSANDRA_EXPORTER_DOCKER_IMAGE="criteord/cassandra_exporter"
 export CASSANDRA_EXPORTER_VERSION="2.3.4"
+
+# https://github.com/thelastpickle/cassandra-medusa/releases
+export MEDUSA_BACKUP_VERSION="0.5.1"
 
 export RECOVERY_CONTROLLER_VERSION="0.0.1"
 ################################################################################
@@ -61,6 +64,12 @@ export PROMETHEUS_EXPORTER_DOCKER_IMAGE_NAMESPACE="mesosphere"
 export PROMETHEUS_EXPORTER_DOCKER_IMAGE_NAME="cassandra-prometheus-exporter"
 export PROMETHEUS_EXPORTER_DOCKER_IMAGE_TAG="${CASSANDRA_EXPORTER_VERSION}-${OPERATOR_VERSION}${POSSIBLE_SNAPSHOT_SUFFIX}${IMAGE_DISAMBIGUATION_SUFFIX:-}"
 export PROMETHEUS_EXPORTER_DOCKER_IMAGE="${PROMETHEUS_EXPORTER_DOCKER_IMAGE_NAMESPACE}/${PROMETHEUS_EXPORTER_DOCKER_IMAGE_NAME}:${PROMETHEUS_EXPORTER_DOCKER_IMAGE_TAG}"
+
+export MEDUSA_BACKUP_DOCKER_IMAGE_FROM="cassandra:${CASSANDRA_VERSION}"
+export MEDUSA_BACKUP_DOCKER_IMAGE_NAMESPACE="mesosphere"
+export MEDUSA_BACKUP_DOCKER_IMAGE_NAME="kudo-cassandra-medusa"
+export MEDUSA_BACKUP_DOCKER_IMAGE_TAG="${MEDUSA_BACKUP_VERSION}-${OPERATOR_VERSION}${POSSIBLE_SNAPSHOT_SUFFIX}${IMAGE_DISAMBIGUATION_SUFFIX:-}"
+export MEDUSA_BACKUP_DOCKER_IMAGE="${MEDUSA_BACKUP_DOCKER_IMAGE_NAMESPACE}/${MEDUSA_BACKUP_DOCKER_IMAGE_NAME}:${MEDUSA_BACKUP_DOCKER_IMAGE_TAG}"
 
 export RECOVERY_CONTROLLER_DOCKER_IMAGE_NAMESPACE="mesosphere"
 export RECOVERY_CONTROLLER_DOCKER_IMAGE_NAME="kudo-cassandra-recovery"

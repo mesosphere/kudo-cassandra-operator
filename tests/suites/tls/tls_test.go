@@ -6,13 +6,16 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/kudobuilder/test-tools/pkg/client"
-	"github.com/kudobuilder/test-tools/pkg/kubernetes"
-	"github.com/kudobuilder/test-tools/pkg/kudo"
-	"github.com/kudobuilder/test-tools/pkg/tls"
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/reporters"
 	. "github.com/onsi/gomega"
+	"github.com/spf13/afero"
+
+	"github.com/kudobuilder/test-tools/pkg/client"
+	"github.com/kudobuilder/test-tools/pkg/debug"
+	"github.com/kudobuilder/test-tools/pkg/kubernetes"
+	"github.com/kudobuilder/test-tools/pkg/kudo"
+	"github.com/kudobuilder/test-tools/pkg/tls"
 
 	"github.com/mesosphere/kudo-cassandra-operator/tests/cassandra"
 	"github.com/mesosphere/kudo-cassandra-operator/tests/suites"
@@ -24,6 +27,7 @@ var (
 	TestNamespace     = fmt.Sprintf("%s-namespace", TestName)
 	TestInstance      = fmt.Sprintf("%s-instance", OperatorName)
 	KubeConfigPath    = os.Getenv("KUBECONFIG")
+	KubectlPath       = os.Getenv("KUBECTL_PATH")
 	OperatorDirectory = os.Getenv("OPERATOR_DIRECTORY")
 
 	NodeCount = 2
@@ -51,6 +55,10 @@ var _ = BeforeSuite(func() {
 		WithNamespace(TestNamespace).
 		WithCommonName("CassandraCA").
 		Do(Client)
+})
+
+var _ = AfterEach(func() {
+	debug.CollectArtifacts(Client, afero.NewOsFs(), GinkgoWriter, TestNamespace, KubectlPath)
 })
 
 var _ = AfterSuite(func() {
@@ -203,6 +211,43 @@ var _ = Describe(TestName, func() {
 			output, err := cassandra.Cqlsh(Client, Operator.Instance, testCQLScript)
 			Expect(err).To(BeNil())
 			Expect(output).To(ContainSubstring(testCQLScriptOutput))
+		})
+		It("Uninstalls the operator", func() {
+			err := cassandra.Uninstall(Client, Operator)
+			Expect(err).To(BeNil())
+			// TODO(mpereira) Assert that it isn't running.
+		})
+	})
+
+	Context("Installs the operator with encrypted remote JMX", func() {
+		It("Installs the operator from a directory", func() {
+			var err error
+
+			parameters := map[string]string{
+				"NODE_COUNT":      strconv.Itoa(NodeCount),
+				"TLS_SECRET_NAME": "cassandra-tls",
+				"JMX_LOCAL_ONLY":  "false",
+			}
+			suites.SetLocalClusterParameters(parameters)
+
+			Operator, err = kudo.InstallOperator(OperatorDirectory).
+				WithNamespace(TestNamespace).
+				WithInstance(TestInstance).
+				WithParameters(parameters).
+				Do(Client)
+			Expect(err).To(BeNil())
+
+			err = Operator.Instance.WaitForPlanComplete("deploy")
+			Expect(err).To(BeNil())
+
+			assertNumberOfCassandraNodes(NodeCount)
+
+			By("Checking nodetool access from an utlity pod")
+			podName := fmt.Sprintf("%s-%s-%d", TestInstance, "node", 0)
+			nodetool := cassandra.NewNodeTool(Client, TestNamespace, TestInstance, true)
+			output, _, err := nodetool.Run("-h", fmt.Sprintf("%s.%s-svc.%s.svc.cluster.local", podName, TestInstance, TestNamespace), "--ssl", "info")
+			Expect(output).To(ContainSubstring("Native Transport active: true"))
+			Expect(err).To(BeNil())
 		})
 		It("Uninstalls the operator", func() {
 			err := cassandra.Uninstall(Client, Operator)

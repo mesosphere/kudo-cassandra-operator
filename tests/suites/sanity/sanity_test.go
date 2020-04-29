@@ -10,13 +10,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/onsi/ginkgo/reporters"
-
 	"github.com/kudobuilder/test-tools/pkg/client"
+	"github.com/kudobuilder/test-tools/pkg/debug"
 	"github.com/kudobuilder/test-tools/pkg/kubernetes"
 	"github.com/kudobuilder/test-tools/pkg/kudo"
 	. "github.com/onsi/ginkgo"
+	"github.com/onsi/ginkgo/reporters"
 	. "github.com/onsi/gomega"
+	"github.com/spf13/afero"
 
 	"github.com/mesosphere/kudo-cassandra-operator/tests/cassandra"
 	"github.com/mesosphere/kudo-cassandra-operator/tests/curl"
@@ -30,17 +31,23 @@ var (
 	TestNamespace     = fmt.Sprintf("%s-namespace", TestName)
 	TestInstance      = fmt.Sprintf("%s-instance", OperatorName)
 	KubeConfigPath    = os.Getenv("KUBECONFIG")
+	KubectlPath       = os.Getenv("KUBECTL_PATH")
 	OperatorDirectory = os.Getenv("OPERATOR_DIRECTORY")
 
 	// Node Count of 1 for Sanity test to have the tests a little bit faster
 	NodeCount = 1
 	Client    = client.Client{}
 	Operator  = kudo.Operator{}
+	Fs        = afero.NewOsFs()
 )
 
 var _ = BeforeSuite(func() {
 	Client, _ = client.NewForConfig(KubeConfigPath)
 	_ = kubernetes.CreateNamespace(Client, TestNamespace)
+})
+
+var _ = AfterEach(func() {
+	debug.CollectArtifacts(Client, afero.NewOsFs(), GinkgoWriter, TestNamespace, KubectlPath)
 })
 
 var _ = AfterSuite(func() {
@@ -102,14 +109,14 @@ var _ = Describe(TestName, func() {
 		newMemBytes := newMemMiB * 1024 * 1024
 		newMemLimitBytes := newMemLimitMiB * 1024 * 1024
 
-		newCpu := 800
-		newCpuLimit := 1100
+		newCPU := 800
+		newCPULimit := 1100
 
 		err = Operator.Instance.UpdateParameters(map[string]string{
 			"NODE_MEM_MIB":       strconv.Itoa(newMemMiB),
 			"NODE_MEM_LIMIT_MIB": strconv.Itoa(newMemLimitMiB),
-			"NODE_CPU_MC":        strconv.Itoa(newCpu),
-			"NODE_CPU_LIMIT_MC":  strconv.Itoa(newCpuLimit),
+			"NODE_CPU_MC":        strconv.Itoa(newCPU),
+			"NODE_CPU_LIMIT_MC":  strconv.Itoa(newCPULimit),
 		})
 		Expect(err).To(BeNil())
 
@@ -121,10 +128,10 @@ var _ = Describe(TestName, func() {
 		Expect(err).To(BeNil())
 		Expect(pod).To(Not(BeNil()))
 
-		Expect(pod.Spec.Containers[0].Resources.Requests.Cpu().AsDec().UnscaledBig()).To(Equal(big.NewInt(int64(newCpu))))
+		Expect(pod.Spec.Containers[0].Resources.Requests.Cpu().AsDec().UnscaledBig()).To(Equal(big.NewInt(int64(newCPU))))
 		Expect(pod.Spec.Containers[0].Resources.Requests.Memory().AsDec().UnscaledBig()).To(Equal(big.NewInt(int64(newMemBytes))))
 
-		Expect(pod.Spec.Containers[0].Resources.Limits.Cpu().AsDec().UnscaledBig()).To(Equal(big.NewInt(int64(newCpuLimit))))
+		Expect(pod.Spec.Containers[0].Resources.Limits.Cpu().AsDec().UnscaledBig()).To(Equal(big.NewInt(int64(newCPULimit))))
 		Expect(pod.Spec.Containers[0].Resources.Limits.Memory().AsDec().UnscaledBig()).To(Equal(big.NewInt(int64(newMemLimitBytes))))
 
 		assertNumberOfCassandraNodes(NodeCount)
@@ -220,6 +227,22 @@ var _ = Describe(TestName, func() {
 		Expect(err).To(BeNil())
 
 		assertNumberOfCassandraNodes(NodeCount)
+
+		By("Triggering a Cassandra node repair")
+		podName, err := cassandra.FirstPodName(Operator.Instance)
+		Expect(err).To(BeNil())
+
+		err = Operator.Instance.UpdateParameters(map[string]string{
+			"REPAIR_POD": podName,
+		})
+		Expect(err).To(BeNil())
+
+		err = Operator.Instance.WaitForPlanComplete("repair-pod")
+		Expect(err).To(BeNil())
+
+		repair, err := cassandra.NodeWasRepaired(Client, Operator.Instance)
+		Expect(err).To(BeNil())
+		Expect(repair).To(BeTrue())
 	})
 
 	It("Uninstalls the operator", func() {
