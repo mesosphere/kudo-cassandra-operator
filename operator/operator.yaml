@@ -17,6 +17,8 @@ tasks:
         - service.yaml
         - tls-store-credentials.yaml
         - generate-cassandra-yaml.yaml
+        - cassandra-topology.yaml
+        - cassandra-role.yaml
         - cassandra-env-sh.yaml
         - jvm-options.yaml
         - cassandra-exporter-config-yml.yaml

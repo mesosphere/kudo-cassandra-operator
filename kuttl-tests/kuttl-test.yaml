@@ -1,0 +1,12 @@
+apiVersion: kudo.dev/v1alpha1
+kind: TestSuite
+manifestDirs:
+  - ./manifests/
+commands:
+  - command: ./bin/kubectl-kudo init
+  - command: ./bin/kubectl-kudo install --skip-instance ../operator/
+testDirs:
+  - ./tests
+startKIND: true
+timeout: 300
+parallel: 3

@@ -1,0 +1,18 @@
+apiVersion: kudo.dev/v1beta1
+kind: Instance
+metadata:
+  name: cassandra
+spec:
+  operatorVersion:
+    name: cassandra-0.1.2
+    namespace: default
+    kind: OperatorVersion
+  name: "cassandra"
+  parameters:
+    NODE_COUNT: "1"
+    NODE_CPU_MC: "200"
+    NODE_MEM_MIB: "128"
+    NODE_DISK_SIZE_GIB: "1"
+    PROMETHEUS_EXPORTER_ENABLED: "false"
+    NODE_DOCKER_IMAGE: "zmalikshxil/cassandra:3.11.5-0.1.2-SNAPSHOT"
+    SERVICE_ACCOUNT_INSTALL: "true"

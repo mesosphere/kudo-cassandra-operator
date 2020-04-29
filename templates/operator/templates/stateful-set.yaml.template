@@ -40,8 +40,8 @@ spec:
         {{ end }}
         kudo.dev/instance: {{ $.Name }}
     spec:
-      {{ if $.Params.NODE_TOPOLOGY }}
       serviceAccountName: {{ $.Params.NODE_RESOLVE_SERVICEACCOUNT }}
+      {{ if $.Params.NODE_TOPOLOGY }}
       nodeSelector:
       {{ range $k, $v := $datacenter.datacenterLabels }}
         {{ $k }}: {{ $v }}
@@ -161,6 +161,7 @@ spec:
               {{ else }}
               /etc/cassandra/wait-for-node-zero.sh {{ $.Name }};
               {{ end }}
+              /etc/cassandra-bootstrap/bootstrap &
               cassandra -f
           # Comment the `command` above and uncomment the one below if pods are
           # crash-looping and you would like to investigate their state. This is
@@ -196,6 +197,10 @@ spec:
                   fieldPath: metadata.uid
             - name: PROMETHEUS_EXPORTER_ENABLED
               value: "{{ $.Params.PROMETHEUS_EXPORTER_ENABLED }}"
+            - name: CASSANDRA_IP_LOCK_CM
+              value: "{{ $.Name }}-topology-lock"
+            - name: BOOTSTRAP_TIMEOUT
+              value: "{{ $.Params.BOOTSTRAP_TIMEOUT }}"
           resources:
             requests:
               memory: "{{ $.Params.NODE_MEM_MIB }}Mi"

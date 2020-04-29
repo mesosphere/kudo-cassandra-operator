@@ -4,7 +4,7 @@
 set -euxo pipefail
 
 readonly script_directory="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
-readonly project_directory="$(readlink -f "${script_directory}")"
+readonly project_directory="$(realpath -L $script_directory)"
 
 # shellcheck source=metadata.sh
 source "${project_directory}/metadata.sh"
@@ -24,6 +24,12 @@ readonly container_project_directory="/${PROJECT_NAME}"
 readonly container_operator_directory="${container_project_directory}/operator"
 readonly container_vendor_directory="${container_project_directory}/shared/vendor"
 readonly container_artifacts_directory="${container_project_directory}/artifacts"
+
+
+# Unit tests of any subprojects
+pushd images/bootstrap
+make test
+popd
 
 # Note: DS_KUDO_VERSION is used by the shared data-services-kudo tooling.
 
