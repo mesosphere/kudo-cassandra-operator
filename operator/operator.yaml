@@ -15,7 +15,8 @@ tasks:
     spec:
       resources:
         - service.yaml
-        - cassandra-yaml.yaml
+        - tls-store-credentials.yaml
+        - generate-cassandra-yaml.yaml
         - cassandra-env-sh.yaml
         - jvm-options.yaml
         - cassandra-exporter-config-yml.yaml
@@ -24,7 +25,7 @@ tasks:
         - generate-tls-artifacts-sh.yaml
         - generate-cqlshrc-sh.yaml
         - pdb.yaml
-        - nodetool-ssl-properties.yaml
+        - generate-nodetool-ssl-properties.yaml
         - stateful-set.yaml
   - name: ext-service
     kind: Toggle
