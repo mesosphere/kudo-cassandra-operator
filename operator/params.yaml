@@ -300,14 +300,6 @@ parameters:
     description: "The TLS secret that contains the self-signed certificate (cassandra.crt) and the private key (cassandra.key). The secret will be mounted as a volume to make the artifacts available."
     default: "cassandra-tls"
 
-  - name: TLS_KEYSTORE_PASSWORD
-    description: "The password use to secure the Java Keystore for each cassandra node."
-    default: "cassandra"
-
-  - name: TLS_TRUSTSTORE_PASSWORD
-    description: "The password use to secure the Java Truststore for each cassandra node."
-    default: "cassandra"
-
   - name: NODE_MIN_HEAP_SIZE_MB
     description: "The minimum JVM heap size in MB. This has a smart default and doesn't need to be explicitly set."
     default: ""
