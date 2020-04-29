@@ -55,6 +55,13 @@ tasks:
     spec:
       resources:
         - stateful-set.yaml
+  - name: recovery-controller
+    kind: Toggle
+    spec:
+      parameter: RECOVERY_CONTROLLER
+      resources:
+        - recovery-controller.yaml
+        - recovery-controller-rbac.yaml
   - name: node-resolver-rbac
     kind: Toggle
     spec:
@@ -84,6 +91,7 @@ plans:
             tasks:
               - node
               - ext-service
+              - recovery-controller
               - backup-deploy
   repair-pod:
     strategy: serial

@@ -48,6 +48,7 @@ export CASSANDRA_EXPORTER_VERSION="2.3.4"
 # https://github.com/thelastpickle/cassandra-medusa/releases
 export MEDUSA_BACKUP_VERSION="0.5.1"
 
+export RECOVERY_CONTROLLER_VERSION="0.0.1"
 ################################################################################
 ############################## Docker images ###################################
 ################################################################################
@@ -70,7 +71,10 @@ export MEDUSA_BACKUP_DOCKER_IMAGE_NAME="kudo-cassandra-medusa"
 export MEDUSA_BACKUP_DOCKER_IMAGE_TAG="${MEDUSA_BACKUP_VERSION}-${OPERATOR_VERSION}${POSSIBLE_SNAPSHOT_SUFFIX}${IMAGE_DISAMBIGUATION_SUFFIX:-}"
 export MEDUSA_BACKUP_DOCKER_IMAGE="${MEDUSA_BACKUP_DOCKER_IMAGE_NAMESPACE}/${MEDUSA_BACKUP_DOCKER_IMAGE_NAME}:${MEDUSA_BACKUP_DOCKER_IMAGE_TAG}"
 
-
+export RECOVERY_CONTROLLER_DOCKER_IMAGE_NAMESPACE="mesosphere"
+export RECOVERY_CONTROLLER_DOCKER_IMAGE_NAME="kudo-cassandra-recovery"
+export RECOVERY_CONTROLLER_DOCKER_IMAGE_TAG="${RECOVERY_CONTROLLER_VERSION}-${OPERATOR_VERSION}${POSSIBLE_SNAPSHOT_SUFFIX}${IMAGE_DISAMBIGUATION_SUFFIX:-}"
+export RECOVERY_CONTROLLER_DOCKER_IMAGE="${RECOVERY_CONTROLLER_DOCKER_IMAGE_NAMESPACE}/${RECOVERY_CONTROLLER_DOCKER_IMAGE_NAME}:${RECOVERY_CONTROLLER_DOCKER_IMAGE_TAG}"
 
 ################################################################################
 ################################# Testing ######################################
