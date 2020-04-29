@@ -979,4 +979,4 @@ parameters:
   - name: REPAIR_POD
     description: "Name of the pod on which 'nodetool repair' should be run."
     default: ""
-    trigger: repair-pod
+    trigger: repair

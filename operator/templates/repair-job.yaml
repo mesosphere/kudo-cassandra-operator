@@ -12,6 +12,7 @@ metadata:
     cassandra: {{ $.OperatorName }}
     app: {{ $.Name }}
 spec:
+  backoffLimit: 0
   template:
     spec:
       containers:
@@ -20,4 +21,4 @@ spec:
           command: ["/bin/bash"]
           args: [ "-c", "kubectl exec {{ $.Params.REPAIR_POD }} -- /bin/bash -c \"nodetool {{ $auth_params }} repair\""]
       restartPolicy: Never
-      serviceAccountName: {{ .Name }}-node-repairer
+      serviceAccountName: {{ .Name }}-node
