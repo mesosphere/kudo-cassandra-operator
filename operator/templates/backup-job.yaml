@@ -8,7 +8,7 @@ spec:
   backoffLimit: 0
   template:
     spec:
-      serviceAccountName: {{ $.Name }}-node-exec
+      serviceAccountName: {{ $.Name }}-node
       containers:
         - name: backup
           image: bitnami/kubectl:{{ $.Params.KUBECTL_VERSION }}

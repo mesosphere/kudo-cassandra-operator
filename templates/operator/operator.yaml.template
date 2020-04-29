@@ -60,11 +60,11 @@ tasks:
       parameter: SERVICE_ACCOUNT_INSTALL
       resources:
         - node-resolver-rbac.yaml
-  - name: node-exec-rbac
+  - name: node-rbac
     kind: Apply
     spec:
       resources:
-        - node-exec-rbac.yaml
+        - node-rbac.yaml
   - name: repair-cleanup
     kind: Delete
     spec:
@@ -84,7 +84,7 @@ plans:
         steps:
           - name: rbac-deploy
             tasks:
-              - node-exec-rbac
+              - node-rbac
               - node-resolver-rbac
       - name: nodes
         strategy: parallel

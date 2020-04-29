@@ -21,4 +21,4 @@ spec:
           command: ["/bin/bash"]
           args: [ "-c", "kubectl exec {{ $.Params.REPAIR_POD }} -- /bin/bash -c \"nodetool {{ $auth_params }} repair\""]
       restartPolicy: Never
-      serviceAccountName: {{ .Name }}-node-exec
+      serviceAccountName: {{ .Name }}-node
