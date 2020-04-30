@@ -30,7 +30,7 @@ bin/kubectl_$(KUBERNETES_VERSION): bin/
 	ln -sf ./kubectl_$(KUBERNETES_VERSION) ./bin/kubectl
 
 bin/kubectl-kuttl_$(KUTTL_VERSION): bin/
-	curl -Lo bin/kubectl-kuttl_$(KUTTL_VERSION) https://github.com/kudobuilder/kuttl/releases/download/v$(KUTTL_VERSION)/kubectl-kuttl_$(KUTTL_VERSION)_$(OS)_$(MACHINE)
+	curl -Lo bin/kubectl-kuttl_$(KUTTL_VERSION) https://github.com/kudobuilder/kuttl/releases/download/v$(KUTTL_VERSION)/kubectl-kuttl_$(KUTTL_VERSION)_$(OS)_$(KUDO_MACHINE)
 	chmod +x bin/kubectl-kuttl_$(KUTTL_VERSION)
 	ln -sf ./kubectl-kuttl_$(KUTTL_VERSION) ./bin/kubectl-kuttl
 
