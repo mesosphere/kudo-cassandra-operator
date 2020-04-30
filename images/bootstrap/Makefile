@@ -9,4 +9,4 @@ lint: goimports
 
 test:
 	go get -u gotest.tools/gotestsum
-	gotestsum --junitfile bootstrap-unit-tests.xml
+	gotestsum --junitfile bootstrap-test-junit.xml
