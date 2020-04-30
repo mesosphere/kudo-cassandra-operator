@@ -12,5 +12,3 @@ RUN pip3 install pytablewriter
 RUN npm install --global prettier
 
 RUN go get golang.org/x/tools/cmd/goimports
-
-WORKDIR /opt/kudo-cassandra-operator

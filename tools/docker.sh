@@ -13,4 +13,4 @@ fi
 
 docker build "${REPO_ROOT}/tools" -t kudo-cassandra-tools
 
-docker run -v "${REPO_ROOT}:/opt/kudo-cassandra-operator" kudo-cassandra-tools "$@"
+docker run -v "${REPO_ROOT}:${REPO_ROOT}" -w "$(pwd)" kudo-cassandra-tools "$@"
