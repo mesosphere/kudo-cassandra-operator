@@ -1,14 +1,15 @@
 package sts
 
 import (
-	"github.com/mesosphere/kudo-cassandra-operator/images/cassandra-recovery/pkg/client"
-	"k8s.io/api/core/v1"
+	"log"
+	"os"
+
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	"os"
 
-	"log"
+	"github.com/mesosphere/kudo-cassandra-operator/images/cassandra-recovery/pkg/client"
 )
 
 var evictionLabel = os.Getenv("EVICTION_LABEL")
