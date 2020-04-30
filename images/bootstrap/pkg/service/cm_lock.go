@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	log "github.com/sirupsen/logrus"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -77,7 +77,6 @@ func (c *ConfigMapLock) UpdateCM() (bool, error) {
 	}
 	return true, err
 }
-
 
 func (c *ConfigMapLock) GetConfigMap(ns string, name string) (*v1.ConfigMap, error) {
 	return c.CoreV1().ConfigMaps(ns).Get(name, meta_v1.GetOptions{})

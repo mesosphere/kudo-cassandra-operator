@@ -1,9 +1,10 @@
 package main
 
 import (
+	"os"
+
 	"github.com/mesosphere/kudo-cassandra-operator/images/bootstrap/pkg/client"
 	"github.com/mesosphere/kudo-cassandra-operator/images/bootstrap/pkg/service"
-	"os"
 
 	log "github.com/sirupsen/logrus"
 )

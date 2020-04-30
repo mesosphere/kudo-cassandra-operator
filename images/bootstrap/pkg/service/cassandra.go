@@ -2,13 +2,13 @@ package service
 
 import (
 	"fmt"
-	"k8s.io/client-go/kubernetes"
 	"os"
 	"strings"
 	"time"
 
 	log "github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/client-go/kubernetes"
 )
 
 var (
