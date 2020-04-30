@@ -15,6 +15,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 
 	"github.com/mesosphere/kudo-cassandra-operator/tests/cassandra"
+	"github.com/mesosphere/kudo-cassandra-operator/tests/suites"
 )
 
 var (
@@ -71,9 +72,11 @@ var _ = Describe("Authentication tests", func() {
 
 			By("Installing the operator with 'PasswordAuthenticator'")
 			parameters := map[string]string{
+				"NODE_COUNT":                 "2",
 				"AUTHENTICATOR":              "PasswordAuthenticator",
 				"AUTHENTICATION_SECRET_NAME": secretName,
 			}
+			suites.SetLocalClusterParameters(parameters)
 
 			operator, err = kudo.InstallOperator(operatorDirectory).
 				WithNamespace(testNamespace).
@@ -94,10 +97,10 @@ var _ = Describe("Authentication tests", func() {
 			})
 			Expect(err).To(BeNil())
 
-			err = operator.Instance.WaitForPlanComplete("repair-pod")
+			err = operator.Instance.WaitForPlanComplete("repair")
 			Expect(err).To(BeNil())
 
-			repair, err := cassandra.NodeWasRepaired(client, operator.Instance)
+			repair, err := cassandra.NodeWasRepaired(client, operator.Instance, podName)
 			Expect(err).To(BeNil())
 			Expect(repair).To(BeTrue())
 		})

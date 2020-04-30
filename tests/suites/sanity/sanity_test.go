@@ -1,6 +1,7 @@
 package sanity
 
 import (
+	"context"
 	"encoding/base64"
 	"fmt"
 	"math/big"
@@ -9,6 +10,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/kudobuilder/kudo/pkg/apis/kudo/v1beta1"
 
 	"github.com/kudobuilder/test-tools/pkg/client"
 	"github.com/kudobuilder/test-tools/pkg/debug"
@@ -229,7 +232,7 @@ var _ = Describe(TestName, func() {
 		assertNumberOfCassandraNodes(NodeCount)
 
 		By("Triggering a Cassandra node repair")
-		podName, err := cassandra.FirstPodName(Operator.Instance)
+		podName, err := cassandra.PodName(Operator.Instance, 0)
 		Expect(err).To(BeNil())
 
 		err = Operator.Instance.UpdateParameters(map[string]string{
@@ -237,12 +240,40 @@ var _ = Describe(TestName, func() {
 		})
 		Expect(err).To(BeNil())
 
-		err = Operator.Instance.WaitForPlanComplete("repair-pod")
+		err = Operator.Instance.WaitForPlanComplete("repair")
 		Expect(err).To(BeNil())
 
-		repair, err := cassandra.NodeWasRepaired(Client, Operator.Instance)
+		repair, err := cassandra.NodeWasRepaired(Client, Operator.Instance, podName)
 		Expect(err).To(BeNil())
 		Expect(repair).To(BeTrue())
+
+		By("Triggering a Cassandra node repair again to make sure it can execute twice")
+		podName, err = cassandra.PodName(Operator.Instance, 1)
+		Expect(err).To(BeNil())
+
+		err = Operator.Instance.UpdateParameters(map[string]string{
+			"REPAIR_POD": podName,
+		})
+		Expect(err).To(BeNil())
+
+		err = Operator.Instance.WaitForPlanComplete("repair")
+		Expect(err).To(BeNil())
+
+		repair, err = cassandra.NodeWasRepaired(Client, Operator.Instance, podName)
+		Expect(err).To(BeNil())
+		Expect(repair).To(BeTrue())
+
+		By("Triggering a Cassandra node repair on an invalid pod name")
+		podName = "invalid-pod"
+		Expect(err).To(BeNil())
+
+		err = Operator.Instance.UpdateParameters(map[string]string{
+			"REPAIR_POD": podName,
+		})
+		Expect(err).To(BeNil())
+
+		err = WaitForPlanFailure(Operator.Instance, "repair")
+		Expect(err).To(BeNil())
 	})
 
 	It("Uninstalls the operator", func() {
@@ -251,3 +282,21 @@ var _ = Describe(TestName, func() {
 		// TODO(mpereira) Assert that it isn't running.
 	})
 })
+
+func WaitForPlanFailure(instance kudo.Instance, plan string, options ...kudo.WaitOption) error {
+	config := kudo.WaitConfig{
+		Timeout: time.Minute * 5,
+	}
+
+	for _, option := range options {
+		option(&config)
+	}
+
+	ctx, cancel := context.WithTimeout(context.TODO(), config.Timeout)
+	defer cancel()
+
+	ticker := time.NewTicker(time.Second * 10)
+	defer ticker.Stop()
+
+	return instance.WaitForPlanStatus(ctx, ticker, plan, v1beta1.ExecutionFatalError)
+}

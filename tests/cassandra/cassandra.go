@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -88,15 +89,29 @@ func OverrideOperatorVersion(
 }
 
 func FirstPodName(instance kudo.Instance) (string, error) {
+	return PodName(instance, 0)
+}
+
+func PodName(instance kudo.Instance, index int) (string, error) {
 	if instance.Spec.Parameters["NODE_TOPOLOGY"] != "" {
 		topology, err := TopologyFromYaml(instance.Spec.Parameters["NODE_TOPOLOGY"])
 		if err != nil {
 			return "", fmt.Errorf("failed to unmarshal topology: %v", err)
 		}
 
-		return fmt.Sprintf("%s-%s-%s-%d", instance.Name, topology[0].Datacenter, "node", 0), nil
+		if index >= topology[0].Nodes {
+			return "", fmt.Errorf("can not return PodName for index %d, node count for dc 0 is %d", index, topology[0].Nodes)
+		}
+		return fmt.Sprintf("%s-%s-%s-%d", instance.Name, topology[0].Datacenter, "node", index), nil
 	}
-	return fmt.Sprintf("%s-%s-%d", instance.Name, "node", 0), nil
+	nodeCount, err := strconv.Atoi(instance.Spec.Parameters["NODE_COUNT"])
+	if err != nil {
+		return "", fmt.Errorf("NODE_COUNT of instance is not a valid integer: %v", err)
+	}
+	if index >= nodeCount {
+		return "", fmt.Errorf("can not return PodName for index %d when NODE_COUNT is %d", index, nodeCount)
+	}
+	return fmt.Sprintf("%s-%s-%d", instance.Name, "node", index), nil
 }
 
 func Nodes(client client.Client, instance kudo.Instance) ([]map[string]string, error) {
@@ -258,16 +273,23 @@ func NodeJVMOptions(client client.Client, instance kudo.Instance) (map[string]st
 		",")
 }
 
-func NodeWasRepaired(client client.Client, instance kudo.Instance) (bool, error) {
+func NodeWasRepaired(client client.Client, instance kudo.Instance, podName string) (bool, error) {
 	return nodeLogsContain(
 		client,
 		instance,
+		podName,
 		"o.a.cassandra.repair.RepairRunnable - Starting repair command",
 	)
 }
 
-func nodeLogs(client client.Client, instance kudo.Instance) ([]byte, error) {
-	podName := fmt.Sprintf("%s-%s-%d", instance.Name, "node", 0)
+func nodeLogs(client client.Client, instance kudo.Instance, podName string) ([]byte, error) {
+	if podName == "" {
+		name, err := PodName(instance, 0)
+		if err != nil {
+			return nil, err
+		}
+		podName = name
+	}
 
 	pod, err := kubernetes.GetPod(client, podName, instance.Namespace)
 	if err != nil {
@@ -282,7 +304,7 @@ func configurationFromNodeLogs(
 	instance kudo.Instance,
 	regex string,
 	separator string) (map[string]string, error) {
-	logs, err := nodeLogs(client, instance)
+	logs, err := nodeLogs(client, instance, "")
 	if err != nil {
 		return nil, err
 	}
@@ -310,8 +332,8 @@ func configurationFromNodeLogs(
 	return configuration, nil
 }
 
-func nodeLogsContain(client client.Client, instance kudo.Instance, expected string) (bool, error) {
-	logs, err := nodeLogs(client, instance)
+func nodeLogsContain(client client.Client, instance kudo.Instance, nodeName string, expected string) (bool, error) {
+	logs, err := nodeLogs(client, instance, nodeName)
 	if err != nil {
 		return false, err
 	}
