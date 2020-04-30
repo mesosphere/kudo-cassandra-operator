@@ -5,6 +5,7 @@ go 1.13
 require (
 	github.com/aws/aws-sdk-go v1.29.14
 	github.com/imdario/mergo v0.3.8 // indirect
+	github.com/kudobuilder/kudo v0.11.1
 	github.com/kudobuilder/test-tools v0.4.0
 	github.com/onsi/ginkgo v1.11.0
 	github.com/onsi/gomega v1.8.1

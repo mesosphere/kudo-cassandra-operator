@@ -216,8 +216,10 @@ var _ = AfterEach(func() {
 	Expect(err).NotTo(HaveOccurred())
 
 	deleteRBAC(client)
+})
 
-	err = kubernetes.DeleteNamespace(client, testNamespace)
+var _ = AfterSuite(func() {
+	err := kubernetes.DeleteNamespace(client, testNamespace)
 	Expect(err).NotTo(HaveOccurred())
 })
 
