@@ -1,6 +1,7 @@
 package client
 
 import (
+	"fmt"
 	"os"
 
 	log "github.com/sirupsen/logrus"
@@ -9,14 +10,11 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-type Client struct{}
-
-func (c *Client) buildKubeConfig(kubeconfig string) (*rest.Config, error) {
+func buildKubeConfig(kubeconfig string) (*rest.Config, error) {
 	if kubeconfig != "" {
 		client, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
 		if err != nil {
-			log.Errorf("error creating kubernetes client from %s: %v", kubeconfig, err)
-			return nil, err
+			return nil, fmt.Errorf("error creating kubernetes client from %s: %v", kubeconfig, err)
 		}
 		return client, err
 	}
@@ -24,18 +22,28 @@ func (c *Client) buildKubeConfig(kubeconfig string) (*rest.Config, error) {
 	return rest.InClusterConfig()
 }
 
-func (c *Client) getKubernetesClient(kubeconfig *rest.Config) (*kubernetes.Clientset, error) {
+func getKubernetesClient(kubeconfig *rest.Config) (*kubernetes.Clientset, error) {
 	clientSet, err := kubernetes.NewForConfig(kubeconfig)
 	if err != nil {
-		log.Fatalf("error creating kubernetes client: %v", err)
-		return nil, err
+		return nil, fmt.Errorf("error creating kubernetes client: %v", err)
 	}
 	log.Infof("kubernetes client configured.")
 	return clientSet, nil
 }
 
-func GetKubernetesClient() (*rest.Config, error) {
-	c := Client{}
+func GetKubeConfig() (*rest.Config, error) {
 	kubeConfigPath := os.Getenv("KUBECONFIG")
-	return c.buildKubeConfig(kubeConfigPath)
+	return buildKubeConfig(kubeConfigPath)
+}
+
+func GetKubeClient() (*kubernetes.Clientset, error) {
+	config, err := GetKubeConfig()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get kube config: %v", err)
+	}
+	clientSet, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create kubernetes client: %v", err)
+	}
+	return clientSet, nil
 }

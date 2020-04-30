@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-
 	"github.com/mesosphere/kudo-cassandra-operator/images/cassandra-recovery/pkg/client"
 	"github.com/mesosphere/kudo-cassandra-operator/images/cassandra-recovery/pkg/controller"
 
@@ -13,7 +12,12 @@ func main() {
 
 	log.Printf("bootstrapping cassandra recovery POC...")
 
-	client, _ := client.GetKubernetesClient()
-	cont := controller.NewController(client)
+	clientSet, err := client.GetKubeClient()
+	if err != nil {
+		log.Fatalf("failed to get kube client: %v", err)
+		return
+	}
+
+	cont := controller.NewController(clientSet)
 	cont.Run(context.Background())
 }
