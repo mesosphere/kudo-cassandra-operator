@@ -199,6 +199,8 @@ spec:
               value: "{{ $.Params.PROMETHEUS_EXPORTER_ENABLED }}"
             - name: CASSANDRA_IP_LOCK_CM
               value: "{{ $.Name }}-topology-lock"
+            - name: BOOTSTRAP_TIMEOUT
+              value: "{{ $.Params.BOOTSTRAP_TIMEOUT }}"
           resources:
             requests:
               memory: "{{ $.Params.NODE_MEM_MIB }}Mi"

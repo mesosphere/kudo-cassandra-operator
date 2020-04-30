@@ -184,6 +184,11 @@ parameters:
     description: "The instance name from the operator that was used to create the backup"
     default: ""
 
+  - name: BOOTSTRAP_TIMEOUT
+    displayName: "Node bootstrap timeout"
+    description: "Timeout for the bootstrap binary to join the cluster with the new IP. Valid time units are "ns", "us", "ms", "s", "m", "h"."
+    default: "12h30m"
+
   ################################################################################
   ######################### Datacenter and Rack awareness ########################
   ################################################################################
