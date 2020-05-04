@@ -17,6 +17,7 @@ import (
 	"github.com/spf13/afero"
 	"github.com/thoas/go-funk"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/mesosphere/kudo-cassandra-operator/tests/cassandra"
 )
@@ -218,7 +219,13 @@ var _ = AfterEach(func() {
 
 	deleteRBAC(client)
 
-	err = kubernetes.DeleteNamespace(client, testNamespace)
+	// HACK: check if foreground delete propagation works better
+	foreground := metav1.DeletePropagationForeground
+	options := metav1.DeleteOptions{
+		PropagationPolicy: &foreground,
+	}
+
+	err = client.Kubernetes.CoreV1().Namespaces().Delete(testNamespace, &options)
 	Expect(err).NotTo(HaveOccurred())
 })
 
