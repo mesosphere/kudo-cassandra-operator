@@ -1,6 +1,7 @@
 package faulttolerance
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"testing"
@@ -15,7 +16,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/spf13/afero"
 	"github.com/thoas/go-funk"
-	"k8s.io/apimachinery/pkg/api/errors"
+	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 
 	"github.com/mesosphere/kudo-cassandra-operator/tests/cassandra"
 )
@@ -231,7 +232,7 @@ var _ = Describe("Fault tolerance tests", func() {
 
 			By("Setting up Namespace and RBAC")
 			err = kubernetes.CreateNamespace(client, testNamespace)
-			if err != nil && !errors.IsAlreadyExists(err) {
+			if err != nil && !k8serrors.IsAlreadyExists(errors.Unwrap(err)) {
 				Expect(err).NotTo(HaveOccurred())
 			}
 			deleteRBAC(client)
@@ -341,12 +342,12 @@ var _ = Describe("Fault tolerance tests", func() {
 
 			By("Setting up Namespace and RBAC")
 			err = kubernetes.CreateNamespace(client, testNamespace)
-			if err != nil && !errors.IsAlreadyExists(err) {
+			if err != nil && !k8serrors.IsAlreadyExists(errors.Unwrap(err)) {
 				Expect(err).NotTo(HaveOccurred())
 			}
 
 			err = kubernetes.CreateNamespace(client, dc2Namespace)
-			if err != nil && !errors.IsAlreadyExists(err) {
+			if err != nil && !k8serrors.IsAlreadyExists(errors.Unwrap(err)) {
 				Expect(err).NotTo(HaveOccurred())
 			}
 
