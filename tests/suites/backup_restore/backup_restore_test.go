@@ -288,7 +288,7 @@ var _ = Describe("backup and restore", func() {
 	})
 
 	// This test is disabled (PIt instead of It) and can be enabled as soon as https://github.com/thelastpickle/cassandra-medusa/pull/119 is merged and released
-	PIt("Creates and restores a backup with JMX SSL and authentication", func() {
+	It("Creates and restores a backup with JMX SSL and authentication", func() {
 		var err error
 
 		awsSecretName := createAwsCredentials()

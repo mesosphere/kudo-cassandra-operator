@@ -17,7 +17,6 @@ import (
 	"github.com/spf13/afero"
 	"github.com/thoas/go-funk"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/mesosphere/kudo-cassandra-operator/tests/cassandra"
 )
@@ -219,13 +218,7 @@ var _ = AfterEach(func() {
 
 	deleteRBAC(client)
 
-	// HACK: check if foreground delete propagation works better
-	foreground := metav1.DeletePropagationForeground
-	options := metav1.DeleteOptions{
-		PropagationPolicy: &foreground,
-	}
-
-	err = client.Kubernetes.CoreV1().Namespaces().Delete(testNamespace, &options)
+	err = kubernetes.DeleteNamespace(client, testNamespace)
 	Expect(err).NotTo(HaveOccurred())
 })
 
@@ -341,6 +334,7 @@ var _ = Describe("Fault tolerance tests", func() {
 
 	Context("when having two datacenters in different namespaces", func() {
 		var (
+			dc1Namespace = "fault-tolerance-1"
 			dc2Namespace = "fault-tolerance-2"
 		)
 
@@ -349,6 +343,11 @@ var _ = Describe("Fault tolerance tests", func() {
 
 			By("Setting up Namespace and RBAC")
 			err = kubernetes.CreateNamespace(client, testNamespace)
+			if err != nil && !k8serrors.IsAlreadyExists(errors.Unwrap(err)) {
+				Expect(err).NotTo(HaveOccurred())
+			}
+
+			err = kubernetes.CreateNamespace(client, dc1Namespace)
 			if err != nil && !k8serrors.IsAlreadyExists(errors.Unwrap(err)) {
 				Expect(err).NotTo(HaveOccurred())
 			}
@@ -380,7 +379,7 @@ var _ = Describe("Fault tolerance tests", func() {
 
 			By("Waiting for the operator to deploy")
 			operator, err = kudo.InstallOperator(operatorDirectory).
-				WithNamespace(testNamespace).
+				WithNamespace(dc1Namespace).
 				WithInstance(instanceName).
 				WithParameters(parameters).
 				Do(client)
@@ -394,7 +393,7 @@ var _ = Describe("Fault tolerance tests", func() {
 			topologyYaml, err = topology.ToYAML()
 			Expect(err).NotTo(HaveOccurred())
 
-			dns := fmt.Sprintf("[%s-dc1-node-0.%s-svc.%s.cluster.local]", instanceName, instanceName, testNamespace)
+			dns := fmt.Sprintf("[%s-dc1-node-0.%s-svc.%s.cluster.local]", instanceName, instanceName, dc1Namespace)
 
 			parameters = map[string]string{
 				"NODE_COUNT":                           "1", // NODE_TOPOLOGY should override this value
