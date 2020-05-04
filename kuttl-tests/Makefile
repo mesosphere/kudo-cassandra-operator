@@ -15,6 +15,7 @@ ifeq "$(MACHINE)" "x86_64"
 endif
 
 export PATH := $(shell pwd)/bin:$(PATH)
+export ROOT_DIR=$(realpath -L ./..)
 
 ARTIFACTS=dist
 
@@ -45,7 +46,6 @@ install-kuttl: bin/kubectl-kuttl_$(KUTTL_VERSION) bin/kubectl-kudo_$(KUDO_VERSIO
 .PHONY: test
 kind-test:  dist/ install-kuttl
 	go get github.com/jstemmer/go-junit-report
-	which kubectl
 	kubectl kuttl test --config=./kuttl-test.yaml --kind-config=./kind/kubernetes-$(KUBERNETES_VERSION).yaml --artifacts-dir=$(ARTIFACTS) 2>&1 |tee /dev/fd/2 | go-junit-report -set-exit-code > dist/addons-test-junit.xml
 
 clean:
