@@ -11,3 +11,11 @@ IMAGE_DISAMBIGUATION_SUFFIX="" "${project_directory}/tools/compile_templates.sh"
 "${project_directory}/tools/docker.sh" ./tools/generate_parameters_markdown.py
 
 "${project_directory}/tools/docker.sh" ./tools/format_files.sh
+
+if [ -n "$(git status --porcelain)" ]; then
+  echo "Changes found after running one of the previous steps." >&2
+  echo "Please make sure you follow the instructions in .github/pull_request_template.md" >&2
+  echo "before sending a pull request." >&2
+  git status --porcelain
+  exit 1
+fi
