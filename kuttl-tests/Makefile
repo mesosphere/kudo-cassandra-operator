@@ -40,13 +40,20 @@ bin/kubectl-kudo_$(KUDO_VERSION): bin/
 	chmod +x bin/kubectl-kudo_$(KUDO_VERSION)
 	ln -sf ./kubectl-kudo_$(KUDO_VERSION) ./bin/kubectl-kudo
 
+bin/kubectl-kudo_$(KUDO_VERSION): bin/
+
 .PHONY: install-kuttl
 install-kuttl: bin/kubectl-kuttl_$(KUTTL_VERSION) bin/kubectl-kudo_$(KUDO_VERSION) bin/kubectl_$(KUBERNETES_VERSION)
 
 .PHONY: test
-kind-test:  dist/ install-kuttl
+kind-test:  dist/ install-kuttl render-test-templates
 	go get github.com/jstemmer/go-junit-report
 	kubectl kuttl test --config=./kuttl-test.yaml --kind-config=./kind/kubernetes-$(KUBERNETES_VERSION).yaml --artifacts-dir=$(ARTIFACTS) 2>&1 |tee /dev/fd/2 | go-junit-report -set-exit-code > dist/addons-test-junit.xml
 
 clean:
 	rm -rf ./bin ./dist ./kubeconfig
+
+.PHONY: render-test-templates
+render-test-templates:
+	./render-test-templates.sh
+	cat tests/install-test/00-install.yaml
