@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+
 	"github.com/mesosphere/kudo-cassandra-operator/images/cassandra-recovery/pkg/client"
 	"github.com/mesosphere/kudo-cassandra-operator/images/cassandra-recovery/pkg/controller"
 
