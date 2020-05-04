@@ -1,9 +1,8 @@
 # Backup & Restore KUDO Cassandra
 
-This guide explains how to configure backup and restore for KUDO Cassandra
+This guide explains how to configure backup and restore for KUDO Cassandra.
 
 ## Pre-conditions
-
 - AWS S3 bucket for storing backups
 - AWS CLI for local checks (not required for the actual operator)
 - A `cqlsh` binary should be in the path
