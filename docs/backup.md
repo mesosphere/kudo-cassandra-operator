@@ -1,6 +1,6 @@
 # Backup & Restore KUDO Cassandra
 
-This guide explains how to configure backup and restore for KUDO Cassandra
+This guide explains how to configure backup and restore for KUDO Cassandra.
 
 ## Pre-conditions
 
@@ -13,11 +13,13 @@ This guide explains how to configure backup and restore for KUDO Cassandra
 ### Preparation
 
 #### 1. Verify that the S3 bucket is accessible
+
 ```bash
 aws s3 ls
 ```
 
-This should return a list of buckets accessible with your current AWS credentials
+This should return a list of buckets accessible with your current AWS
+credentials
 
 #### Setup environment variables
 
@@ -35,6 +37,7 @@ BACKUP_NAME=Backup1
 ```
 
 #### Create a secret with your AWS credentials
+
 ```bash
 cat <<EOF > aws-credentials.yaml
 kind: Secret
@@ -48,9 +51,12 @@ stringData:
 EOF
 ```
 
-Replace the values for access-key and secret key with the actual values for your AWS account.
+Replace the values for access-key and secret key with the actual values for your
+AWS account.
 
-If you are using temporary AWS credentials with a security token, the file should look like this:
+If you are using temporary AWS credentials with a security token, the file
+should look like this:
+
 ```bash
 cat <<EOF > aws-credentials.yaml
 kind: Secret
@@ -66,24 +72,32 @@ EOF
 ```
 
 You can find these values by looking at `~/.aws/credentials`:
+
 ```bash
 cat ~/.aws/credentials
 ```
 
 Apply the secret to your Kubernets cluster:
+
 ```bash
 kubectl apply --namespace $NAMESPACE -f aws-credentials.yaml
 ```
 
 #### 1. Install KUDO Cassandra with backups enabled
 
-To allow the backup plan to run, the cluster must be set up with a specific configuration:
+To allow the backup plan to run, the cluster must be set up with a specific
+configuration:
 
 - `BACKUP_RESTORE_ENABLED` This enables the backup functionality in general
-- `BACKUP_AWS_CREDENTIALS_SECRET` Allows the instances to access the AWS credentials without storing them in the operator itself
-- `BACKUP_AWS_S3_BUCKET_NAME` Defines the AWS S3 bucket where the backup will be stored
-- `BACKUP_PREFIX` Prepends a prefix to the backups in the S3 buckets and allows multiple KUDO Cassandra clusters to reside in the same bucket 
-- `EXTERNAL_NATIVE_TRANSPORT` Setting this to true is not required for the backup, but allows us to access the cluster with `cqlsh` from the local machine
+- `BACKUP_AWS_CREDENTIALS_SECRET` Allows the instances to access the AWS
+  credentials without storing them in the operator itself
+- `BACKUP_AWS_S3_BUCKET_NAME` Defines the AWS S3 bucket where the backup will be
+  stored
+- `BACKUP_PREFIX` Prepends a prefix to the backups in the S3 buckets and allows
+  multiple KUDO Cassandra clusters to reside in the same bucket
+- `EXTERNAL_NATIVE_TRANSPORT` Setting this to true is not required for the
+  backup, but allows us to access the cluster with `cqlsh` from the local
+  machine
 
 ```
 kubectl kudo install cassandra \
@@ -129,6 +143,7 @@ Plan(s) for "cassandra" in namespace "default":
 ```
 
 Save the DNS of the external service of the cluster:
+
 ```bash
 CASSANDRA_CLUSTER=`kubectl get service --namespace $NAMESPACE --field-selector metadata.name=$INSTANCE_NAME-svc-external -o jsonpath='{.items[*].status.loadBalancer.ingress[*].hostname}'`
 
@@ -140,7 +155,7 @@ echo "Cassandra Cluster DNS: $CASSANDRA_CLUSTER"
 ```bash
 cqlsh $CASSANDRA_CLUSTER <<EOF
 CREATE SCHEMA schema1 WITH replication = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 };
-USE schema1; 
+USE schema1;
 CREATE TABLE users (user_id varchar PRIMARY KEY,first varchar,last varchar,age int);
 INSERT INTO users (user_id, first, last, age) VALUES ('jsmith', 'John', 'Smith', 42);
 EOF
@@ -168,7 +183,8 @@ Expected output should show:
 
 TODO: Use plan trigger in KUDO v0.11
 
-The following command will trigger the creation of the backup with the name "Backup1"
+The following command will trigger the creation of the backup with the name
+"Backup1"
 
 ```bash
 kubectl kudo update --instance=$INSTANCE_NAME -n $NAMESPACE -p BACKUP_NAME=$BACKUP_NAME -p BACKUP_TRIGGER=3
@@ -177,11 +193,13 @@ kubectl kudo update --instance=$INSTANCE_NAME -n $NAMESPACE -p BACKUP_NAME=$BACK
 ### Verify backup progress
 
 First, get a list of running jobs:
+
 ```bash
 kubectl get jobs --namespace=$NAMESPACE
 ```
 
 This should produce a list of the started backup jobs, one for each active node:
+
 ```
 NAME            COMPLETIONS   DURATION   AGE
 backup-node-0   1/1           25s        33s
@@ -190,11 +208,14 @@ backup-node-2   1/1           23s        33s
 ```
 
 Next, lets view a list of all the pods:
+
 ```bash
 kubectl get pods --namespace=$NAMESPACE
 ```
 
-This shows us the cassandra nodes and the temporary backup-pods, created by the jobs:
+This shows us the cassandra nodes and the temporary backup-pods, created by the
+jobs:
+
 ```
 NAME                  READY   STATUS      RESTARTS   AGE
 backup-node-0-bq228   0/1     Completed   0          83s
@@ -205,9 +226,11 @@ cassandra-node-1      3/3     Running     0          27m
 cassandra-node-2      3/3     Running     0          27m
 ```
 
-The backup-pods will stay there when they are completed, but they will get cleaned up before the next backup job starts.
+The backup-pods will stay there when they are completed, but they will get
+cleaned up before the next backup job starts.
 
 Let's have a look at the logs at one of the backup pods:
+
 ```bash
 FIRST_BACKUP_POD_NAME=`kubectl get pods --namespace=$NAMESPACE | awk '{ if(NR==2) print $1}'`
 echo "Name of first backup pod is $FIRST_BACKUP_POD_NAME"
@@ -215,6 +238,7 @@ kubectl logs $FIRST_BACKUP_POD_NAME --namespace=$NAMESPACE
 ```
 
 This should show the logs of the backup job:
+
 ```
 Starting medusa: python3 /usr/local/bin/medusa backup --backup-name Backup1
 [2020-03-06 12:00:22,036] INFO: Monitoring provider is noop
@@ -266,13 +290,16 @@ KUDO Cassandra currently only supports a full restore into a new cluster.
 
 ### Remove the old KUDO Cassandra instance (optional)
 
-This step is not required, but may help if your cluster does not have enough resources to run two Cassandra clusters at the same time.
+This step is not required, but may help if your cluster does not have enough
+resources to run two Cassandra clusters at the same time.
 
 ```bash
 kubectl kudo uninstall --instance $INSTANCE_NAME --namespace $NAMESPACE
 ```
 
-You may have noticed that the uninstall of the operator does not delete the persistent volume claims:
+You may have noticed that the uninstall of the operator does not delete the
+persistent volume claims:
+
 ```bash
 kubectl get pvc --namespace $NAMESPACE
 ```
@@ -284,7 +311,9 @@ var-lib-cassandra-cassandra-node-1   Bound    pvc-2c85752f-6438-4c8d-8e87-9f4c91
 var-lib-cassandra-cassandra-node-2   Bound    pvc-56123519-50c8-4ef7-83ab-302655101497   20Gi       RWO            awsebscsiprovisioner   64m
 ```
 
-This is intentional, so that in case of an accidental deletion of the KUDO operator the data can still be accessed. In this case we don't need them, so to make sure to delete them before reinstalling the cluster with the S3 backup:
+This is intentional, so that in case of an accidental deletion of the KUDO
+operator the data can still be accessed. In this case we don't need them, so to
+make sure to delete them before reinstalling the cluster with the S3 backup:
 
 ```bash
 kubectl delete pvc --all --namespace $NAMESPACE
@@ -302,16 +331,25 @@ Now we have a clean namespace and can start the restore process
 
 To create a full restore, the operator needs to create a new cluster.
 
-*Important*: At the moment, only a restore with the very same settings are supported, this is especially true for:
+_Important_: At the moment, only a restore with the very same settings are
+supported, this is especially true for:
+
 - NODE_COUNT: A different node count will fail to create a successful restore.
-- NUM_TOKENS: This setting will be ignored on the restored cluster, as it will take over the tokens from the backup
+- NUM_TOKENS: This setting will be ignored on the restored cluster, as it will
+  take over the tokens from the backup
 
-Namespace and instance name can differ, but the namespace and instance name from the backed up cluster is important.
+Namespace and instance name can differ, but the namespace and instance name from
+the backed up cluster is important.
 
-Additional to the backup parameters used in the installation for the first cluster, these new parameters are used:
-- RESTORE_FLAG: If true, an initContainer is created that restores a backup before the cluster is started
+Additional to the backup parameters used in the installation for the first
+cluster, these new parameters are used:
+
+- RESTORE_FLAG: If true, an initContainer is created that restores a backup
+  before the cluster is started
 - RESTORE_OLD_NAMESPACE: The Namespace of the cluster that was backed up
-- RESTORE_OLD_NAME: The instance name of the cluster that was backed up. Both parameters need to be set so the operator can identify the correct data to restore
+- RESTORE_OLD_NAME: The instance name of the cluster that was backed up. Both
+  parameters need to be set so the operator can identify the correct data to
+  restore
 - BACKUP_NAME: The name of the backup to restore
 
 ```bash
@@ -330,6 +368,7 @@ kubectl kudo install cassandra \
 ```
 
 Again, we should check if the plan is executed correctly and no ERRORS show up:
+
 ```bash
 kubectl kudo plan status --instance=$INSTANCE_NAME -n $NAMESPACE
 ```
@@ -353,7 +392,9 @@ Plan(s) for "cassandra" in namespace "default":
 
 ```
 
-We can look into the restore process that happens in the init container before the actual pod starts:
+We can look into the restore process that happens in the init container before
+the actual pod starts:
+
 ```bash
 kubectl logs $INSTANCE_NAME-node-0 -c medusa-restore --namespace $NAMESPACE
 ```
@@ -376,8 +417,9 @@ This step can take quite a while for bigger backups.
 
 ### Verify the backup
 
-As we have created a new cluster, and therefore a new service, we need to get the external DNS again:
-Save the DNS of the external service of the cluster:
+As we have created a new cluster, and therefore a new service, we need to get
+the external DNS again: Save the DNS of the external service of the cluster:
+
 ```bash
 CASSANDRA_CLUSTER=`kubectl get service --namespace $NAMESPACE --field-selector metadata.name=$INSTANCE_NAME-svc-external -o jsonpath='{.items[*].status.loadBalancer.ingress[*].hostname}'`
 
@@ -385,6 +427,7 @@ echo "Cassandra Cluster DNS: $CASSANDRA_CLUSTER"
 ```
 
 Now we can verify we get the same results as before the backup:
+
 ```bash
 cqlsh $CASSANDRA_CLUSTER -e "USE schema1; SELECT * FROM users;"
 ```
