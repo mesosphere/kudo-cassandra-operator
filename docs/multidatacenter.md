@@ -64,15 +64,25 @@ to be the same for all nodes used in the same datacenter.
 
 ### Service Account
 
-As there is currently no easy way to read node labels from inside a pod, the KUDO Cassandra operator uses an initContainer to read the rack of the deployed pod. This requires a service account with valid RBAC permissions. KUDO Cassandra provides an easy way to automatically create this service account for you:
+As there is currently no easy way to read node labels from inside a pod, the
+KUDO Cassandra operator uses an initContainer to read the rack of the deployed
+pod. This requires a service account with valid RBAC permissions. KUDO Cassandra
+provides an easy way to automatically create this service account for you:
 
 ```
 SERVICE_ACCOUNT_INSTALL=true
-``` 
+```
 
-If this parameter is enabled, the operator will create a service account, cluster role and cluster role binding. It uses the `NODE_RESOLVE_SERVICEACCOUNT` parameter as the name for the service account and derived names for the cluster role and cluster role binding. The created cluster role has the permissions to `get`, `watch` and `list` the `nodes` resource.
+If this parameter is enabled, the operator will create a service account,
+cluster role and cluster role binding. It uses the `NODE_RESOLVE_SERVICEACCOUNT`
+parameter as the name for the service account and derived names for the cluster
+role and cluster role binding. The created cluster role has the permissions to
+`get`, `watch` and `list` the `nodes` resource.
 
-If you prefer to manage this manually, please follow the [Kubernetes documentation](https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/) on how to create service accounts and set `NODE_RESOLVE_SERVICEACCOUNT` to the name of the created service account.
+If you prefer to manage this manually, please follow the
+[Kubernetes documentation](https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/)
+on how to create service accounts and set `NODE_RESOLVE_SERVICEACCOUNT` to the
+name of the created service account.
 
 ## Topology
 
