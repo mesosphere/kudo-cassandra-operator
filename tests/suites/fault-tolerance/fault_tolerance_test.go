@@ -216,10 +216,8 @@ var _ = AfterEach(func() {
 	Expect(err).NotTo(HaveOccurred())
 
 	deleteRBAC(client)
-})
 
-var _ = AfterSuite(func() {
-	err := kubernetes.DeleteNamespace(client, testNamespace)
+	err = kubernetes.DeleteNamespace(client, testNamespace)
 	Expect(err).NotTo(HaveOccurred())
 })
 
@@ -233,7 +231,7 @@ var _ = Describe("Fault tolerance tests", func() {
 
 			By("Setting up Namespace and RBAC")
 			err = kubernetes.CreateNamespace(client, testNamespace)
-			if !errors.IsAlreadyExists(err) {
+			if err != nil && !errors.IsAlreadyExists(err) {
 				Expect(err).NotTo(HaveOccurred())
 			}
 			deleteRBAC(client)
@@ -343,12 +341,12 @@ var _ = Describe("Fault tolerance tests", func() {
 
 			By("Setting up Namespace and RBAC")
 			err = kubernetes.CreateNamespace(client, testNamespace)
-			if !errors.IsAlreadyExists(err) {
+			if err != nil && !errors.IsAlreadyExists(err) {
 				Expect(err).NotTo(HaveOccurred())
 			}
 
 			err = kubernetes.CreateNamespace(client, dc2Namespace)
-			if !errors.IsAlreadyExists(err) {
+			if err != nil && !errors.IsAlreadyExists(err) {
 				Expect(err).NotTo(HaveOccurred())
 			}
 
