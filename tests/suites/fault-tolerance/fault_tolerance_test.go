@@ -212,14 +212,6 @@ var _ = BeforeEach(func() {
 
 var _ = AfterEach(func() {
 	debug.CollectArtifacts(client, afero.NewOsFs(), GinkgoWriter, testNamespace, kubectlPath)
-
-	err := operator.Uninstall()
-	Expect(err).NotTo(HaveOccurred())
-
-	deleteRBAC(client)
-
-	err = kubernetes.DeleteNamespace(client, testNamespace)
-	Expect(err).NotTo(HaveOccurred())
 })
 
 var _ = Describe("Fault tolerance tests", func() {
@@ -236,6 +228,13 @@ var _ = Describe("Fault tolerance tests", func() {
 				Expect(err).NotTo(HaveOccurred())
 			}
 			deleteRBAC(client)
+
+			defer func() {
+				err := kubernetes.DeleteNamespace(client, testNamespace)
+				Expect(err).NotTo(HaveOccurred())
+
+				deleteRBAC(client)
+			}()
 
 			By("Starting the test")
 
@@ -260,6 +259,11 @@ var _ = Describe("Fault tolerance tests", func() {
 				WithParameters(parameters).
 				Do(client)
 			Expect(err).NotTo(HaveOccurred())
+
+			defer func() {
+				err := operator.Uninstall()
+				Expect(err).NotTo(HaveOccurred())
+			}()
 
 			err = operator.Instance.WaitForPlanComplete("deploy", kudo.WaitTimeout(time.Minute*10))
 			Expect(err).NotTo(HaveOccurred())
@@ -342,15 +346,15 @@ var _ = Describe("Fault tolerance tests", func() {
 			var err error
 
 			By("Setting up Namespace and RBAC")
-			err = kubernetes.CreateNamespace(client, testNamespace)
-			if err != nil && !k8serrors.IsAlreadyExists(errors.Unwrap(err)) {
-				Expect(err).NotTo(HaveOccurred())
-			}
-
 			err = kubernetes.CreateNamespace(client, dc1Namespace)
 			if err != nil && !k8serrors.IsAlreadyExists(errors.Unwrap(err)) {
 				Expect(err).NotTo(HaveOccurred())
 			}
+
+			defer func() {
+				err := kubernetes.DeleteNamespace(client, dc1Namespace)
+				Expect(err).NotTo(HaveOccurred())
+			}()
 
 			err = kubernetes.CreateNamespace(client, dc2Namespace)
 			if err != nil && !k8serrors.IsAlreadyExists(errors.Unwrap(err)) {
