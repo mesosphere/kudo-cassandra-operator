@@ -62,12 +62,11 @@ func isBootstrapped() bool {
 	if os.IsNotExist(err) {
 		return false
 	}
-	if err == nil {
-		return true
-	} else {
+	if err != nil {
 		log.Errorf("bootstrap: error when checking for /var/lib/cassandra/data/system %v", err)
 		return false
 	}
+	return true
 }
 
 func (c *CassandraService) WriteReplaceIp(replaceIp string) error {
