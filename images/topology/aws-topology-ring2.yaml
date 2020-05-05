@@ -1,0 +1,19 @@
+PROMETHEUS_EXPORTER_ENABLED: false
+NODE_DOCKER_IMAGE: mesosphere/workloads-demo:cassandra-3.11.5
+ENDPOINT_SNITCH: GossipingPropertyFileSnitch
+NODE_MEM_MIB: 1024
+SERVICE_ACCOUNT_INSTALL: true
+RECOVERY_CONTROLLER: true
+NODE_TOPOLOGY:
+  - datacenter: ring2
+    datacenterLabels:
+      failure-domain.beta.kubernetes.io/zone: us-west-2c
+    nodes: 3
+    rackLabelKey: failure-domain.beta.kubernetes.io/zone
+    racks:
+      - rack: rack4
+        rackLabelValue: us-west-2c
+      - rack: rack5
+        rackLabelValue: us-west-2c
+      - rack: rack6
+        rackLabelValue: us-west-2c

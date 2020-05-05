@@ -21,7 +21,7 @@ spec:
         imagePullPolicy: Always
         env:
         - name: CONTACT_POINTS
-          value: cassandra-instance-ring1-node-1.cassandra-instance-svc.default.svc.cluster.local
+          value: cassandra-instance-svc.cassandra-ring1.svc.cluster.local
         - name: LOCAL_DATA_CENTER
           value: ring1
         - name: REMOTE_DATA_CENTER
@@ -68,7 +68,7 @@ spec:
         imagePullPolicy: Always
         env:
         - name: CONTACT_POINTS
-          value: cassandra-instance-ring2-node-0.cassandra-instance-svc.default.svc.cluster.local
+          value: cassandra-instance-svc.cassandra-ring2.svc.cluster.local
         - name: LOCAL_DATA_CENTER
           value: ring2
         - name: REMOTE_DATA_CENTER
