@@ -59,8 +59,8 @@ tasks:
     spec:
       parameter: RECOVERY_CONTROLLER
       resources:
-        - recovery-controller.yaml
         - recovery-controller-rbac.yaml
+        - recovery-controller.yaml
   - name: node-resolver-rbac
     kind: Toggle
     spec:
