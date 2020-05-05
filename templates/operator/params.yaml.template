@@ -205,6 +205,11 @@ parameters:
     description: "This flag can be set to true to automatic installation of a cluster role, service account and role binding"
     default: "false"
 
+  - name: EXTERNAL_SEED_NODES
+    description: "List of seed nodes external to this instance to add to the cluster. This allows clusters spanning multiple Kubernetes clusters."
+    default:
+    type: array
+
   ################################################################################
   ######################### Prometheus exporter settings #########################
   ################################################################################
