@@ -64,15 +64,25 @@ to be the same for all nodes used in the same datacenter.
 
 ### Service Account
 
-As there is currently no easy way to read node labels from inside a pod, the KUDO Cassandra operator uses an initContainer to read the rack of the deployed pod. This requires a service account with valid RBAC permissions. KUDO Cassandra provides an easy way to automatically create this service account for you:
+As there is currently no easy way to read node labels from inside a pod, the
+KUDO Cassandra operator uses an initContainer to read the rack of the deployed
+pod. This requires a service account with valid RBAC permissions. KUDO Cassandra
+provides an easy way to automatically create this service account for you:
 
 ```
 SERVICE_ACCOUNT_INSTALL=true
-``` 
+```
 
-If this parameter is enabled, the operator will create a service account, cluster role and cluster role binding. It uses the `NODE_RESOLVE_SERVICEACCOUNT` parameter as the name for the service account and derived names for the cluster role and cluster role binding. The created cluster role has the permissions to `get`, `watch` and `list` the `nodes` resource.
+If this parameter is enabled, the operator will create a service account,
+cluster role and cluster role binding. It uses the `NODE_RESOLVE_SERVICEACCOUNT`
+parameter as the name for the service account and derived names for the cluster
+role and cluster role binding. The created cluster role has the permissions to
+`get`, `watch` and `list` the `nodes` resource.
 
-If you prefer to manage this manually, please follow the [Kubernetes documentation](https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/) on how to create service accounts and set `NODE_RESOLVE_SERVICEACCOUNT` to the name of the created service account.
+If you prefer to manage this manually, please follow the
+[Kubernetes documentation](https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/)
+on how to create service accounts and set `NODE_RESOLVE_SERVICEACCOUNT` to the
+name of the created service account.
 
 ## Topology
 
@@ -141,6 +151,31 @@ Then the cassandra node distribution would probably end up similar to this:
 - 1x `us-west-2a`
 - 4x `us-west-2b`
 - 4x `us-west-2c`
+
+## Adding instances running in other Kubernetes clusters
+
+Datacenters can also span multiple Kubernetes clusters. To let an instance know
+about a datacenter running in another Kubernetes cluster, the
+`EXTERNAL_SEED_NODES` parameter has to be set. This parameter takes an array of
+DNS names or IP addresses that seed nodes outside of the cluster have. The
+clusters have to be set up so that the pods running Cassandra nodes can
+communicate with each other. Futhermore, the cluster names have to be the same
+across all datacenters. This is achieved by using the same instance name or
+setting the `OVERRIDE_CLUSTER_NAME` parameter across all datacenters.
+
+For example, if we have a Kubernetes cluster in the `us-west-2` region with 5
+nodes. When starting a new Cassandra instance on a Kubernetes cluster in the
+`us-east-2` region, we set `EXTERNAL_SEED_NODES` to the seed nodes of the
+cluster in `us-west-2`
+
+```
+EXTERNAL_SEED_NODES: [ <DNS of first seed node>, <DNS of second seed node>, <DNS of third seed node> ]
+```
+
+Once the Cassandra instance in `us-east-2` has been deployed, the Cassandra
+instances in `us-west-2` has to be updated to learn about the seed nodes of the
+cluster in `us-east2`. Once that is done, both datacenters are replicating with
+each other.
 
 ## Other parameters
 

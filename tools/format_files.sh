@@ -6,6 +6,7 @@
 # - goimports
 
 declare -a global_prettier_options
+cd "$(dirname "$0")/.."
 
 # YAML #########################################################################
 
