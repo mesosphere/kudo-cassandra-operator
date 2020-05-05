@@ -94,7 +94,9 @@ created by the KUDO Cassandra operator.
 
 ## Custom Configuration
 
-To use the custom [prometheus exporter configuration](https://github.com/criteo/cassandra_exporter#config-file-example), we need to create a configmap with the properties we want to override.
+To use the custom
+[prometheus exporter configuration](https://github.com/criteo/cassandra_exporter#config-file-example),
+we need to create a configmap with the properties we want to override.
 
 Example custom configuration:
 
@@ -127,7 +129,8 @@ kubectl kudo update \
 ```
 
 :warning: The following properties are configured internally by the operator and
-cannot be overridden using custom configuration: 
+cannot be overridden using custom configuration:
+
 - host
 - listenAddress
 - listenPort
