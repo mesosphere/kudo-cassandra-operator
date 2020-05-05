@@ -14,11 +14,11 @@ type ConfigMapLock struct {
 	kubernetes.Interface
 }
 
-func (c *ConfigMapLock) AcquireLock() bool {
+func (c *ConfigMapLock) AcquireLock() (*v1.ConfigMap, error) {
 	cfg, err := c.CoreV1().ConfigMaps(namespace).Get(configmap, meta_v1.GetOptions{})
 	if errors.IsNotFound(err) {
 		log.Warnf("bootstrap: configmap cassandra-topology configmap %s cannot be found...", configmap)
-		return false
+		return nil, err
 	}
 	if cfg.Annotations == nil {
 		cfg.Annotations = make(map[string]string)
@@ -27,55 +27,44 @@ func (c *ConfigMapLock) AcquireLock() bool {
 	if cfg.Annotations[annotationLock] == "" {
 		cfg.Annotations[annotationLock] = pod
 		log.Infof("bootstrap: acquiring annotationLock of configmap %s/%s", namespace, configmap)
-		_, err = c.CoreV1().ConfigMaps(namespace).Update(cfg)
-		return err == nil
+		return c.CoreV1().ConfigMaps(namespace).Update(cfg)
 	}
-	return false
+	return nil, fmt.Errorf("cannot acquire lock for %s. pod %s has the lock", configmap, cfg.Annotations[annotationLock])
 }
 
-func (c *ConfigMapLock) HasLock() bool {
+func (c *ConfigMapLock) HasLock() (*v1.ConfigMap, error) {
 	cfg, err := c.CoreV1().ConfigMaps(namespace).Get(configmap, meta_v1.GetOptions{})
 	if errors.IsNotFound(err) {
 		log.Warnf("bootstrap: configmap cassandra-topology configmap %s cannot be found...", configmap)
-		return false
+		return nil, err
 	}
 	if cfg.Annotations == nil {
-		return false
+		return nil, fmt.Errorf("configmap %s has no annotations", configmap)
 	}
-	return cfg.Annotations[annotationLock] == pod
+	if cfg.Annotations[annotationLock] == pod {
+		return cfg, nil
+	}
+	return nil, fmt.Errorf("%s doesn't have the lock", configmap)
 }
 
 func (c *ConfigMapLock) ReleaseLock() bool {
-	if c.HasLock() {
-		cfg, err := c.CoreV1().ConfigMaps(namespace).Get(configmap, meta_v1.GetOptions{})
-		if errors.IsNotFound(err) {
-			log.Warnf("bootstrap: configmap cassandra-topology configmap %s cannot be found...", configmap)
-		}
-		if cfg.Annotations == nil {
-			cfg.Annotations = make(map[string]string)
-		}
-		cfg.Annotations[annotationLock] = ""
-		_, err = c.CoreV1().ConfigMaps(namespace).Update(cfg)
-		return err == nil
+	cm, err := c.HasLock()
+	if err != nil {
+		return true
 	}
-	return false
+	cm.Annotations[annotationLock] = ""
+	_, err = c.CoreV1().ConfigMaps(namespace).Update(cm)
+	return err == nil
 }
 
 func (c *ConfigMapLock) UpdateCM() (bool, error) {
-	c.AcquireLock()
+	cm, err := c.AcquireLock()
 	defer c.ReleaseLock()
-	if !c.HasLock() {
-		return false, fmt.Errorf("pod %s doesn't have the annotationLock", pod)
-	}
-	cfg, err := c.GetConfigMap(namespace, configmap)
-	if errors.IsNotFound(err) {
-		log.Warnf("bootstrap: configmap cassandra-topology configmap %s cannot be found...", configmap)
-	}
-	_, err = c.UpdateConfigMap(namespace, cfg)
 	if err != nil {
 		return false, err
 	}
-	return true, err
+	_, err = c.UpdateConfigMap(namespace, cm)
+	return err == nil, err
 }
 
 func (c *ConfigMapLock) GetConfigMap(ns string, name string) (*v1.ConfigMap, error) {

@@ -38,19 +38,19 @@ func (c *CassandraService) SetReplaceIP() (bool, error) {
 		return false, err
 	}
 
-	nodeIp := cfg.Data[pod]
-	if nodeIp == "" {
+	oldIp := cfg.Data[pod]
+	if oldIp == "" {
 		// first time bootstrap
 		_, err = c.CMService.UpdateCM()
 		return false, err
-	} else if nodeIp != ipAddress {
+	} else if oldIp != ipAddress {
 		// new internal ip address
 		if isBootstrapped() {
 			// bootstrapped node needs no replace ip flag
 			return true, nil
 		} else {
 			// node not bootstrapped and has an old ip address
-			return true, c.WriteReplaceIp(nodeIp)
+			return true, c.WriteReplaceIp(oldIp)
 		}
 	}
 	return false, nil
@@ -89,18 +89,7 @@ func (c *CassandraService) WriteReplaceIp(replaceIp string) error {
 	log.Infof("bootstrap: replace ip address updated to %s with %s", replaceFile, replaceIp)
 	return nil
 }
-func (c *CassandraService) CreateFile() error {
-	_, err := os.Stat(replaceFile)
-	// create file if not exists
-	if os.IsNotExist(err) {
-		var file, err = os.Create(replaceFile)
-		if err != nil {
-			return err
-		}
-		defer file.Close()
-	}
-	return nil
-}
+
 func (c *CassandraService) WaitforReplacement(duration time.Duration) error {
 	timeout := time.After(duration)
 	tick := time.NewTicker(10 * time.Second)
@@ -115,6 +104,7 @@ func (c *CassandraService) WaitforReplacement(duration time.Duration) error {
 		}
 	}
 }
+
 func (c *CassandraService) NewIpRegistered() bool {
 	nodetool := NewNodetool()
 	status, err := nodetool.Status()
@@ -145,16 +135,15 @@ func (c *CassandraService) Wait() error {
 	if err != nil {
 		log.Errorf("bootstrap: error joining the cluster with replace ip: %v\n", err)
 		return err
-	} else {
-		success, err := c.CMService.UpdateCM()
-		if err != nil {
-			log.Errorf("bootstrap: error updating the configmap with replace ip: %v\n", err)
-			return err
-		}
-		if success {
-			log.Infoln("bootstrap: updating the configmap with replace ip")
-			return c.WriteReplaceIp("")
-		}
+	}
+	success, err := c.CMService.UpdateCM()
+	if err != nil {
+		log.Errorf("bootstrap: error updating the configmap with replace ip: %v\n", err)
+		return err
+	}
+	if success {
+		log.Infoln("bootstrap: updating the configmap with replace ip")
+		return c.WriteReplaceIp("")
 	}
 	return nil
 }
