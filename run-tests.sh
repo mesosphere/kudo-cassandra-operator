@@ -25,12 +25,6 @@ readonly container_operator_directory="${container_project_directory}/operator"
 readonly container_vendor_directory="${container_project_directory}/shared/vendor"
 readonly container_artifacts_directory="${container_project_directory}/artifacts"
 
-
-# Unit tests of any subprojects
-pushd images/bootstrap
-make test
-popd
-
 # Note: DS_KUDO_VERSION is used by the shared data-services-kudo tooling.
 
 docker run \
