@@ -125,3 +125,12 @@ kubectl kudo update \
   -p PROMETHEUS_EXPORTER_CUSTOM_CONFIG_CM_NAME=custom-exporter-configuration \
   --instance $instance_name -n $namespace_name
 ```
+
+:warning: The following properties are configured internally by the operator and
+cannot be overridden using custom configuration: 
+- host
+- listenAddress
+- listenPort
+- user
+- password
+- ssl
