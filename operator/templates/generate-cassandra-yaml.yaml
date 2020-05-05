@@ -492,12 +492,18 @@ data:
                         {{- if or $i $lastTopo -}}, {{- end -}}
                         {{ $.Name }}-{{ $dc.datacenter }}-node-{{ $node }}.{{ $.Name }}-svc.{{ $.Namespace }}.svc.cluster.local
                       {{- end -}}
+                    {{- end -}}
+                    {{- range $external := $.Params.EXTERNAL_SEED_NODES -}}
+                      , {{ . }}
                     {{- end -}}"
           {{- else }}
           # We have a simple setup and use the first 3 nodes as seed
           - seeds: "{{- range $i, $node := until (int (min 3 .Params.NODE_COUNT)) -}}
                       {{- if $i -}}, {{- end -}}
                       {{ $.Name }}-node-{{ $node }}.{{ $.Name }}-svc.{{ $.Namespace }}.svc.cluster.local
+                    {{- end -}}
+                    {{- range $external := $.Params.EXTERNAL_SEED_NODES -}}
+                      , {{ . }}
                     {{- end -}}"
           {{- end }}
 
