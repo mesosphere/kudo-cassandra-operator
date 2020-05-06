@@ -4,6 +4,11 @@
 readonly script_directory="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 readonly project_directory="$(readlink -f "${script_directory}/..")"
 
+if ! type envsubst >/dev/null 2>&1; then
+  echo "Program 'envsubst' not found. Install gettext-base or run under '${script_directory}/docker.sh'" >&2
+  exit 1
+fi
+
 # shellcheck source=../metadata.sh
 source "${project_directory}/metadata.sh"
 
