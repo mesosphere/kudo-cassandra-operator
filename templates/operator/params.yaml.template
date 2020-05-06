@@ -114,6 +114,14 @@ parameters:
     description: "Needs to be true for automatic failure recovery and node eviction"
     default: "false"
 
+  - name: RECOVERY_CONTROLLER_DOCKER_IMAGE
+    description: "Medusa backup Docker image."
+    default: "${RECOVERY_CONTROLLER_DOCKER_IMAGE}"
+
+  - name: RECOVERY_CONTROLLER_DOCKER_IMAGE_PULL_POLICY
+    description: "Medusa backup Docker image pull policy."
+    default: "Always"
+
   - name: MAX_UNAVAILABLE_NODES
     displayName: "Max number of nodes that can be unavailable"
     description: "Maximum number of nodes that are allowed to be down, either for restarts or from unscheduled outage. See PodDisruptionBudget"

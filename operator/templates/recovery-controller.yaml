@@ -20,8 +20,8 @@ spec:
       serviceAccount: {{ $.Name }}-recovery-controller
       containers:
         - name: recovery-controller
-          image: mesosphere/kudo-cassandra-recovery:0.0.1-0.1.2-SNAPSHOT
-          imagePullPolicy: Always
+          image: {{ $.Params.RECOVERY_CONTROLLER_DOCKER_IMAGE }}
+          imagePullPolicy: {{ $.Params.RECOVERY_CONTROLLER_DOCKER_IMAGE_PULL_POLICY }}
           env:
             - name: NAMESPACE
               valueFrom:
