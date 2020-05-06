@@ -31,6 +31,7 @@ readonly go_exit_code=$?
 # Markdown #####################################################################
 
 mapfile -t markdown_files < <(git ls-files -- ':!:shared' | grep -E '\.md$')
+echo "Using $(which prettier) $(prettier --version)" >&2
 prettier --parser markdown \
          --prose-wrap always \
          --write \
