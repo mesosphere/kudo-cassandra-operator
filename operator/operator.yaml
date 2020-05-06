@@ -43,13 +43,12 @@ tasks:
       parameter: BACKUP_RESTORE_ENABLED
       resources:
         - medusa-config-ini.yaml
-        - backup-job-rbac.yaml
   - name: backup-cleanup
     kind: Delete
     spec:
       resources:
         - backup-job.yaml
-  - name: backup
+  - name: backup-node
     kind: Apply
     spec:
       resources:
@@ -72,11 +71,20 @@ tasks:
       parameter: SERVICE_ACCOUNT_INSTALL
       resources:
         - node-resolver-rbac.yaml
-  - name: repair-pod
+  - name: node-rbac
     kind: Apply
     spec:
       resources:
-        - repair-job-rbac.yaml
+        - node-rbac.yaml
+  - name: repair-cleanup
+    kind: Delete
+    spec:
+      resources:
+        - repair-job.yaml
+  - name: repair-node
+    kind: Apply
+    spec:
+      resources:
         - repair-job.yaml
 plans:
   deploy:
@@ -85,8 +93,9 @@ plans:
       - name: rbac
         strategy: parallel
         steps:
-          - name: node-resolver
+          - name: rbac-deploy
             tasks:
+              - node-rbac
               - node-resolver-rbac
       - name: nodes
         strategy: parallel
@@ -97,15 +106,18 @@ plans:
               - ext-service
               - recovery-controller
               - backup-deploy
-  repair-pod:
+  repair:
     strategy: serial
     phases:
-      - name: nodes
-        strategy: parallel
+      - name: repair
+        strategy: serial
         steps:
+          - name: cleanup
+            tasks:
+              - repair-cleanup
           - name: repair
             tasks:
-              - repair-pod
+              - repair-node
   backup:
     strategy: serial
     phases:
@@ -117,4 +129,4 @@ plans:
              - backup-cleanup
           - name: backup
             tasks:
-             - backup
+             - backup-node

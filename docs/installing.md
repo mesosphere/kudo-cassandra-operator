@@ -159,3 +159,14 @@ Check out the
 for help with changing an existing operator instance's parameters and the
 [operating](./operating.md) page for help with managing Cassandra operators and
 their underlying Cassandra clusters.
+
+## Required Permissions
+
+KUDO Cassandra requires certain permissions in the cluster to operate. By
+default, it creates one service account, role and role binding in the same
+namespace as the installed instance. This service account has the permissions to
+execute commands in pods.
+
+If the operator is configured to use a `NODE_TOPOLOGY` for a
+[multi datacenter setup](multidatacenter.md), additional permissions are
+required and explained in the corresponding section.
