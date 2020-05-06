@@ -16,14 +16,25 @@ func main() {
 		log.Fatalf("Error initializing client: %+v", err)
 	}
 	cassandraService := service.NewCassandraService(client)
-	replaced, err := cassandraService.SetReplaceIP()
-	if err != nil {
-		log.Errorf("could not run the cassandra bootstrap: %v\n", err)
-		os.Exit(1)
-	}
 
-	if replaced && cassandraService.Wait() != nil {
-		os.Exit(1)
+	if len(os.Args) > 1 {
+		command := os.Args[1]
+		switch command {
+		case "wait":
+			if err := cassandraService.Wait(); err != nil {
+				log.Errorf("timeout waiting for UN/UJ for Cassandra node: %v\n", err)
+				os.Exit(1)
+			}
+		case "init":
+			// bootstrap to fetch the replace IP
+			if err := cassandraService.SetReplaceIPWithRetry(); err != nil {
+				log.Errorf("could not run the cassandra bootstrap: %v\n", err)
+				os.Exit(1)
+			}
+		default:
+			log.Errorf("unrecognized command for cassandra bootstrap")
+			os.Exit(1)
+		}
 	}
 	os.Exit(0)
 }

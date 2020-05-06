@@ -6,19 +6,25 @@ import (
 	"strings"
 	"time"
 
+	"github.com/avast/retry-go"
 	log "github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/kubernetes"
 )
 
+const (
+	ANNOTATION_LOCK = "cassandra.kudo.dev/annotationLock"
+	REPLACE_FILE    = "/var/lib/cassandra/replace.ip"
+	RETRY_DELAY     = 3 * time.Second
+	RETRY_ATTEMPTS  = 10
+)
+
 var (
-	namespace      string
-	pod            string
-	configmap      string
-	ipAddress      string
-	bootstrapWait  string
-	annotationLock = "cassandra.kudo.dev/annotationLock"
-	replaceFile    = "/var/lib/cassandra/replace.ip"
+	namespace     string
+	pod           string
+	configmap     string
+	ipAddress     string
+	bootstrapWait string
 )
 
 type CassandraService struct {
@@ -31,29 +37,28 @@ func NewCassandraService(client *kubernetes.Clientset) *CassandraService {
 	}
 }
 
-func (c *CassandraService) SetReplaceIP() (bool, error) {
+func (c *CassandraService) SetReplaceIPWithRetry() error {
+	return retry.Do(c.SetReplaceIP, retry.Delay(RETRY_DELAY), retry.Attempts(RETRY_ATTEMPTS))
+}
+
+func (c *CassandraService) SetReplaceIP() error {
 	cfg, err := c.CMService.GetConfigMap(namespace, configmap)
 	if errors.IsNotFound(err) {
 		log.Errorf("bootstrap: configmap cassandra-topology configmap %s could not be found\n", configmap)
-		return false, err
+		return err
 	}
-
 	oldIp := cfg.Data[pod]
-	if oldIp == "" {
-		// first time bootstrap
-		_, err = c.CMService.UpdateCM()
-		return false, err
-	} else if oldIp != ipAddress {
+	if oldIp != ipAddress {
 		// new internal ip address
 		if isBootstrapped() {
 			// bootstrapped node needs no replace ip flag
-			return true, nil
+			return nil
 		} else {
 			// node not bootstrapped and has an old ip address
-			return true, c.WriteReplaceIp(oldIp)
+			return c.WriteReplaceIp(oldIp)
 		}
 	}
-	return false, nil
+	return nil
 }
 
 func isBootstrapped() bool {
@@ -71,7 +76,7 @@ func isBootstrapped() bool {
 
 func (c *CassandraService) WriteReplaceIp(replaceIp string) error {
 	// open file using WRITE & CREATE permission
-	file, err := os.OpenFile(replaceFile, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+	file, err := os.OpenFile(REPLACE_FILE, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		return err
 	}
@@ -86,7 +91,7 @@ func (c *CassandraService) WriteReplaceIp(replaceIp string) error {
 	if err != nil {
 		return err
 	}
-	log.Infof("bootstrap: replace ip address updated to %s with %s", replaceFile, replaceIp)
+	log.Infof("bootstrap: replace ip address updated to %s with %s", REPLACE_FILE, replaceIp)
 	return nil
 }
 
@@ -136,16 +141,13 @@ func (c *CassandraService) Wait() error {
 		log.Errorf("bootstrap: error joining the cluster with replace ip: %v\n", err)
 		return err
 	}
-	success, err := c.CMService.UpdateCM()
-	if err != nil {
+
+	if err := retry.Do(c.CMService.UpdateCM, retry.Delay(RETRY_DELAY), retry.Attempts(RETRY_ATTEMPTS)); err != nil {
 		log.Errorf("bootstrap: error updating the configmap with replace ip: %v\n", err)
 		return err
 	}
-	if success {
-		log.Infoln("bootstrap: updating the configmap with replace ip")
-		return c.WriteReplaceIp("")
-	}
-	return nil
+	log.Infoln("bootstrap: updating the configmap with replace ip")
+	return c.WriteReplaceIp("")
 }
 
 func init() {

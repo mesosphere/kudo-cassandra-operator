@@ -24,12 +24,12 @@ func (c *ConfigMapLock) AcquireLock() (*v1.ConfigMap, error) {
 		cfg.Annotations = make(map[string]string)
 	}
 	cfg.Name = configmap
-	if cfg.Annotations[annotationLock] == "" {
-		cfg.Annotations[annotationLock] = pod
+	if cfg.Annotations[ANNOTATION_LOCK] == "" || cfg.Annotations[ANNOTATION_LOCK] == pod {
+		cfg.Annotations[ANNOTATION_LOCK] = pod
 		log.Infof("bootstrap: acquiring annotationLock of configmap %s/%s", namespace, configmap)
 		return c.CoreV1().ConfigMaps(namespace).Update(cfg)
 	}
-	return nil, fmt.Errorf("cannot acquire lock for %s. pod %s has the lock", configmap, cfg.Annotations[annotationLock])
+	return nil, fmt.Errorf("cannot acquire lock for %s. pod %s has the lock", configmap, cfg.Annotations[ANNOTATION_LOCK])
 }
 
 func (c *ConfigMapLock) HasLock() (*v1.ConfigMap, error) {
@@ -41,7 +41,7 @@ func (c *ConfigMapLock) HasLock() (*v1.ConfigMap, error) {
 	if cfg.Annotations == nil {
 		return nil, fmt.Errorf("configmap %s has no annotations", configmap)
 	}
-	if cfg.Annotations[annotationLock] == pod {
+	if cfg.Annotations[ANNOTATION_LOCK] == pod {
 		return cfg, nil
 	}
 	return nil, fmt.Errorf("%s doesn't have the lock", configmap)
@@ -52,19 +52,19 @@ func (c *ConfigMapLock) ReleaseLock() bool {
 	if err != nil {
 		return true
 	}
-	cm.Annotations[annotationLock] = ""
+	cm.Annotations[ANNOTATION_LOCK] = ""
 	_, err = c.CoreV1().ConfigMaps(namespace).Update(cm)
 	return err == nil
 }
 
-func (c *ConfigMapLock) UpdateCM() (bool, error) {
+func (c *ConfigMapLock) UpdateCM() error {
 	cm, err := c.AcquireLock()
 	defer c.ReleaseLock()
 	if err != nil {
-		return false, err
+		return err
 	}
 	_, err = c.UpdateConfigMap(namespace, cm)
-	return err == nil, err
+	return err
 }
 
 func (c *ConfigMapLock) GetConfigMap(ns string, name string) (*v1.ConfigMap, error) {

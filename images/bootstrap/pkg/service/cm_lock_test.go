@@ -29,9 +29,8 @@ func TestCMUpdate_success(t *testing.T) {
 	fakeClient := fake.NewSimpleClientset(cmLock)
 	cm := &ConfigMapLock{fakeClient}
 
-	updated, err := cm.UpdateCM()
+	err := cm.UpdateCM()
 	assert.Nil(t, err)
-	assert.True(t, updated)
 }
 
 func TestCMUpdate_no_CM_fail(t *testing.T) {
@@ -44,7 +43,6 @@ func TestCMUpdate_no_CM_fail(t *testing.T) {
 	fakeClient := fake.NewSimpleClientset()
 	cm := &ConfigMapLock{fakeClient}
 
-	updated, err := cm.UpdateCM()
+	err := cm.UpdateCM()
 	assert.NotNil(t, err)
-	assert.False(t, updated)
 }
