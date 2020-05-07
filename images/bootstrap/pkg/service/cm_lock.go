@@ -17,7 +17,7 @@ type ConfigMapLock struct {
 func (c *ConfigMapLock) AcquireLock() (*v1.ConfigMap, error) {
 	cfg, err := c.CoreV1().ConfigMaps(namespace).Get(configmap, meta_v1.GetOptions{})
 	if errors.IsNotFound(err) {
-		log.Warnf("bootstrap: configmap cassandra-topology configmap %s cannot be found...", configmap)
+		log.Warnf("bootstrap: cassandra-topology configmap %s cannot be found...", configmap)
 		return nil, err
 	}
 	if cfg.Annotations == nil {
@@ -44,7 +44,7 @@ func (c *ConfigMapLock) HasLock() (*v1.ConfigMap, error) {
 	if cfg.Annotations[ANNOTATION_LOCK] == pod {
 		return cfg, nil
 	}
-	return nil, fmt.Errorf("%s doesn't have the lock", configmap)
+	return nil, fmt.Errorf("%s doesn't have the lock in %s", pod, configmap)
 }
 
 func (c *ConfigMapLock) ReleaseLock() bool {

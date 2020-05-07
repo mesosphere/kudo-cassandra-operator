@@ -32,7 +32,7 @@ func main() {
 				os.Exit(1)
 			}
 		default:
-			log.Errorf("unrecognized command for cassandra bootstrap")
+			log.Errorf("unrecognized command '%s' for cassandra bootstrap", command)
 			os.Exit(1)
 		}
 	}

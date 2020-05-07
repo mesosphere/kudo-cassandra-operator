@@ -44,7 +44,7 @@ func (c *CassandraService) SetReplaceIPWithRetry() error {
 func (c *CassandraService) SetReplaceIP() error {
 	cfg, err := c.CMService.GetConfigMap(namespace, configmap)
 	if errors.IsNotFound(err) {
-		log.Errorf("bootstrap: configmap cassandra-topology configmap %s could not be found\n", configmap)
+		log.Errorf("bootstrap: cassandra-topology configmap %s could not be found\n", configmap)
 		return err
 	}
 	oldIp := cfg.Data[pod]
@@ -141,19 +141,19 @@ func (c *CassandraService) Wait() error {
 		log.Errorf("bootstrap: error joining the cluster with replace ip: %v\n", err)
 		return err
 	}
-
+    log.Infoln("bootstrap: updating the configmap with new node ip")
 	if err := retry.Do(c.CMService.UpdateCM, retry.Delay(RETRY_DELAY), retry.Attempts(RETRY_ATTEMPTS)); err != nil {
 		log.Errorf("bootstrap: error updating the configmap with replace ip: %v\n", err)
 		return err
 	}
-	log.Infoln("bootstrap: updating the configmap with replace ip")
+	log.Infoln("bootstrap: reset replace ip")
 	return c.WriteReplaceIp("")
 }
 
 func init() {
 	namespace = os.Getenv("POD_NAMESPACE")
-	pod = os.Getenv("POD_NAME")
-	ipAddress = os.Getenv("POD_IP")
-	configmap = os.Getenv("CASSANDRA_IP_LOCK_CM")
+	podName = os.Getenv("POD_NAME")
+	podIpAddress = os.Getenv("POD_IP")
+	configmapName = os.Getenv("CASSANDRA_IP_LOCK_CM")
 	bootstrapWait = os.Getenv("BOOTSTRAP_TIMEOUT")
 }
