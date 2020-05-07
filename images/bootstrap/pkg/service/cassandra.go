@@ -149,7 +149,7 @@ func (c *CassandraService) Wait() error {
 		log.Errorf("bootstrap: error joining the cluster with replace ip: %v\n", err)
 		return err
 	}
-    log.Infoln("bootstrap: updating the configmap with new node ip")
+	log.Infoln("bootstrap: updating the configmap with new node ip")
 	if err := retry.Do(c.CMService.UpdateCM, retry.Delay(RETRY_DELAY), retry.Attempts(RETRY_ATTEMPTS)); err != nil {
 		log.Errorf("bootstrap: error updating the configmap with replace ip: %v\n", err)
 		return err
@@ -157,5 +157,3 @@ func (c *CassandraService) Wait() error {
 	log.Infoln("bootstrap: reset replace ip")
 	return c.WriteReplaceIp("")
 }
-
-
