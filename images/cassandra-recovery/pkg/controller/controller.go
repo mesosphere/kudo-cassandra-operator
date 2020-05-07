@@ -50,6 +50,8 @@ func (c *Controller) Run(ctx context.Context) {
 	if instance != "" {
 		labelSelector = fmt.Sprintf("%s = %s", InstanceLabel, instance)
 		log.Infof("Acting only on pods with KUDO instance label %s", instance)
+	} else {
+		log.Infof("Acting on ALL pods in selected namespace")
 	}
 
 	stopCh := make(chan struct{})

@@ -11,7 +11,7 @@ import (
 
 func main() {
 
-	log.Printf("bootstrapping cassandra recovery POC...")
+	log.Printf("bootstrapping cassandra recovery controller...")
 
 	clientSet, err := client.GetKubeClient()
 	if err != nil {

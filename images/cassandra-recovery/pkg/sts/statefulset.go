@@ -28,6 +28,7 @@ func Process(client *kubernetes.Clientset, item interface{}) {
 	needsRecovery, err := detectRecoveryConditions(client, pod)
 	if err != nil {
 		log.Printf("ERROR: failed to detect recovery condition: %v", err)
+		return
 	}
 
 	if needsRecovery {
@@ -63,20 +64,21 @@ func detectRecoveryConditions(client *kubernetes.Clientset, pod *corev1.Pod) (bo
 
 	if isUnschedulable {
 		log.Printf("FailedScheduling detected for %s/%s.\n", pod.Namespace, pod.Name)
+		pvcDown, err := detectPVCDown(client, pod)
+		if err != nil {
+			return false, fmt.Errorf("failed to detect if pv for pod %s/%s is down: %v", pod.Namespace, pod.Name, err)
+		}
+		log.Printf("Detected PVC status for %s/%s: %v", pod.Namespace, pod.Name, pvcDown)
+		if pvcDown {
+			log.Printf("PVC for %s/%s is not available, assuming it is already deleted.\n", pod.Namespace, pod.Name)
+			return true, nil
+		}
 		nodeDown, err := detectNodeDown(client, pod)
 		if err != nil {
 			return false, fmt.Errorf("failed to detect if node for pod %s/%s is down: %v", pod.Namespace, pod.Name, err)
 		}
 		if nodeDown {
 			log.Printf("Node is down for %s/%s.\n", pod.Namespace, pod.Name)
-			return true, nil
-		}
-		pvcDown, err := detectPVCDown(client, pod)
-		if err != nil {
-			return false, fmt.Errorf("failed to detect if pv for pod %s/%s is down: %v", pod.Namespace, pod.Name, err)
-		}
-		if pvcDown {
-			log.Printf("PVC isn't still created for %s/%s.\n", pod.Namespace, pod.Name)
 			return true, nil
 		}
 	}
@@ -88,16 +90,19 @@ func detectPVCDown(client *kubernetes.Clientset, pod *corev1.Pod) (bool, error) 
 	// we need to check if PVC is still deleted
 	for _, vol := range pod.Spec.Volumes {
 		if vol.PersistentVolumeClaim != nil {
-			_, err := client.CoreV1().PersistentVolumeClaims(pod.Namespace).Get(vol.PersistentVolumeClaim.ClaimName, metav1.GetOptions{})
+			pvc, err := client.CoreV1().PersistentVolumeClaims(pod.Namespace).Get(vol.PersistentVolumeClaim.ClaimName, metav1.GetOptions{})
 			if errors.IsNotFound(err) {
 				return true, nil
 			}
 			if err != nil {
 				return false, fmt.Errorf("failed to retrieve pvc %s/%s: %v", pod.Namespace, vol.PersistentVolumeClaim.ClaimName, err)
 			}
+			if pvc.Spec.VolumeName == "" {
+				log.Printf("Volume Name for PVC %s/%s has no PV attached", pvc.Namespace, pvc.Name)
+				return true, nil
+			}
 		}
 	}
-
 	return false, nil
 }
 
@@ -114,7 +119,7 @@ func detectNodeDown(client *kubernetes.Clientset, pod *corev1.Pod) (bool, error)
 
 			pv, err := client.CoreV1().PersistentVolumes().Get(pvc.Spec.VolumeName, metav1.GetOptions{})
 			if err != nil {
-				return false, fmt.Errorf("failed to get PV %s: %v", pvc.Spec.VolumeName, err)
+				return false, fmt.Errorf("failed to get PV '%s': %v", pvc.Spec.VolumeName, err)
 			}
 
 			for _, node := range pv.Spec.NodeAffinity.Required.NodeSelectorTerms {
@@ -152,6 +157,7 @@ func cleanStartPod(client *kubernetes.Clientset, pod *corev1.Pod) error {
 	if err != nil {
 		return fmt.Errorf("failed to get PVCs from pod %s/%s: %v", pod.Namespace, pod.Name)
 	}
+	log.Printf("Found %d PVCs for pod %s/%s: ", len(pvcs), pod.Namespace, pod.Name)
 
 	// Detach PVCs from their PVs
 	for _, pvc := range pvcs {
@@ -163,6 +169,7 @@ func cleanStartPod(client *kubernetes.Clientset, pod *corev1.Pod) error {
 
 	// Delete PVCs
 	for _, pvc := range pvcs {
+		log.Printf("Delete PVC %s/%s for pod %s/%s", pvc.Namespace, pvc.Name, pod.Namespace, pod.Name)
 		err := client.CoreV1().PersistentVolumeClaims(pvc.Namespace).Delete(pvc.Name, &metav1.DeleteOptions{})
 		if err != nil {
 			return fmt.Errorf("failed to delete PVC %s/%s: %v", pvc.Namespace, pvc.Name, err)
@@ -170,6 +177,7 @@ func cleanStartPod(client *kubernetes.Clientset, pod *corev1.Pod) error {
 	}
 
 	// Delete pod to allow for rescheduling
+	log.Printf("Delete pod %s/%s for rescheduling", pod.Namespace, pod.Name)
 	err = client.CoreV1().Pods(pod.Namespace).Delete(pod.Name, &metav1.DeleteOptions{})
 	if err != nil {
 		return fmt.Errorf("failed to delete pod %s/%s for rescheduling: %s", pod.Namespace, pod.Name, err)
@@ -179,7 +187,7 @@ func cleanStartPod(client *kubernetes.Clientset, pod *corev1.Pod) error {
 }
 
 func getPVCs(client *kubernetes.Clientset, pod *corev1.Pod) ([]*corev1.PersistentVolumeClaim, error) {
-	pvcs := make([]*corev1.PersistentVolumeClaim, len(pod.Spec.Volumes))
+	pvcs := make([]*corev1.PersistentVolumeClaim, 0, len(pod.Spec.Volumes))
 	for _, vol := range pod.Spec.Volumes {
 		if vol.PersistentVolumeClaim != nil {
 			source := vol.PersistentVolumeClaim
@@ -200,10 +208,10 @@ func getPVCs(client *kubernetes.Clientset, pod *corev1.Pod) ([]*corev1.Persisten
 func detachPVCFromPV(client *kubernetes.Clientset, pvc *corev1.PersistentVolumeClaim) error {
 	pv, err := client.CoreV1().PersistentVolumes().Get(pvc.Spec.VolumeName, metav1.GetOptions{})
 	if err != nil {
-		return fmt.Errorf("failed to get PV %s: %v", pvc.Spec.VolumeName, err)
+		return fmt.Errorf("failed to get PV '%s': %v", pvc.Spec.VolumeName, err)
 	}
 
-	log.Printf("Deattach PVC %s/%s from PV %s: ", pvc.Namespace, pvc.Name, pv.Name)
+	log.Printf("Detach PVC %s/%s from PV '%s'", pvc.Namespace, pvc.Name, pv.Name)
 	pv.Spec.ClaimRef = nil
 
 	_, err = client.CoreV1().PersistentVolumes().Update(pv)
