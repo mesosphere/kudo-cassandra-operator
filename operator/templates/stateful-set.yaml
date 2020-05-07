@@ -40,7 +40,7 @@ spec:
         {{ end }}
         kudo.dev/instance: {{ $.Name }}
     spec:
-      serviceAccountName: {{ $.Params.NODE_RESOLVE_SERVICEACCOUNT }}
+      serviceAccountName: {{ .Name }}-sa
       {{ if $.Params.NODE_TOPOLOGY }}
       nodeSelector:
       {{ range $k, $v := $datacenter.datacenterLabels }}
