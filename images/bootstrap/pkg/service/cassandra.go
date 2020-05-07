@@ -21,14 +21,22 @@ const (
 
 var (
 	namespace     string
-	pod           string
-	configmap     string
-	ipAddress     string
+	podName       string
+	configmapName string
+	podIpAddress  string
 	bootstrapWait string
 )
 
 type CassandraService struct {
 	CMService *ConfigMapLock
+}
+
+func init() {
+	namespace = os.Getenv("POD_NAMESPACE")
+	podName = os.Getenv("POD_NAME")
+	podIpAddress = os.Getenv("POD_IP")
+	configmapName = os.Getenv("CASSANDRA_IP_LOCK_CM")
+	bootstrapWait = os.Getenv("BOOTSTRAP_TIMEOUT")
 }
 
 func NewCassandraService(client *kubernetes.Clientset) *CassandraService {
@@ -42,13 +50,13 @@ func (c *CassandraService) SetReplaceIPWithRetry() error {
 }
 
 func (c *CassandraService) SetReplaceIP() error {
-	cfg, err := c.CMService.GetConfigMap(namespace, configmap)
+	cfg, err := c.CMService.GetConfigMap(namespace, configmapName)
 	if errors.IsNotFound(err) {
-		log.Errorf("bootstrap: cassandra-topology configmap %s could not be found\n", configmap)
+		log.Errorf("bootstrap: cassandra-topology configmap %s could not be found\n", configmapName)
 		return err
 	}
-	oldIp := cfg.Data[pod]
-	if oldIp != ipAddress {
+	oldIp := cfg.Data[podName]
+	if oldIp != podIpAddress {
 		// new internal ip address
 		if isBootstrapped() {
 			// bootstrapped node needs no replace ip flag
@@ -101,7 +109,7 @@ func (c *CassandraService) WaitforReplacement(duration time.Duration) error {
 	for {
 		select {
 		case <-timeout:
-			return fmt.Errorf("timeout while waiting for %s to be registered", ipAddress)
+			return fmt.Errorf("timeout while waiting for %s to be registered", podIpAddress)
 		case <-tick.C:
 			if c.NewIpRegistered() {
 				return nil
@@ -119,7 +127,7 @@ func (c *CassandraService) NewIpRegistered() bool {
 	}
 	for _, dc := range status.Datacenters {
 		for _, node := range dc.Nodes {
-			if node.Address == ipAddress {
+			if node.Address == podIpAddress {
 				return strings.Contains(node.State, "U")
 			}
 		}
@@ -150,10 +158,4 @@ func (c *CassandraService) Wait() error {
 	return c.WriteReplaceIp("")
 }
 
-func init() {
-	namespace = os.Getenv("POD_NAMESPACE")
-	podName = os.Getenv("POD_NAME")
-	podIpAddress = os.Getenv("POD_IP")
-	configmapName = os.Getenv("CASSANDRA_IP_LOCK_CM")
-	bootstrapWait = os.Getenv("BOOTSTRAP_TIMEOUT")
-}
+

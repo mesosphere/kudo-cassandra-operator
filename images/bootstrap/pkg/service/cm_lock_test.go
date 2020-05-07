@@ -11,9 +11,9 @@ import (
 
 func TestCMUpdate_success(t *testing.T) {
 	namespace = v1.NamespaceDefault
-	pod = "cassandra-node-0"
-	ipAddress = "10.10.10.1"
-	configmap = "cassandra-topology-lock"
+	podName = "cassandra-node-0"
+	podIpAddress = "10.10.10.1"
+	configmapName = "cassandra-topology-lock"
 	bootstrapWait = "3m"
 	cmLock := &v1.ConfigMapList{
 		Items: []v1.ConfigMap{
@@ -35,9 +35,9 @@ func TestCMUpdate_success(t *testing.T) {
 
 func TestCMUpdate_no_CM_fail(t *testing.T) {
 	namespace = v1.NamespaceDefault
-	pod = "cassandra-node-0"
-	ipAddress = "10.10.10.1"
-	configmap = "cassandra-topology-lock"
+	podName = "cassandra-node-0"
+	podIpAddress = "10.10.10.1"
+	configmapName = "cassandra-topology-lock"
 	bootstrapWait = "3m"
 
 	fakeClient := fake.NewSimpleClientset()
