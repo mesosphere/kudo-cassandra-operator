@@ -29,7 +29,7 @@ var (
 	instanceName = fmt.Sprintf("%s-instance", operatorName)
 
 	// This label on the nodes is used to distinguish datacenters
-	nodeSelectorDatacenter = "failure-domain.beta.kubernetes.io/zone"
+	nodeSelectorDatacenter = "failure-domain.beta.kubernetes.io/region"
 
 	// This label on the nodes is used to distinguish racks (Not used on AWS)
 	//nodeSelectorRack  	   = "failure-domain.beta.kubernetes.io/region"
@@ -41,10 +41,11 @@ var (
 	rackLabelValue = "us-west-2"
 
 	// RBAC names for Role, RoleBinding and service account
-	nodeResolverServiceAccount = "node-resolver"
-	nodeResolverRole           = "node-resolver-role"
-	nodeResolverRoleBinding    = "node-resolver-rolebinding"
+	nodeResolverRole        = fmt.Sprintf("%s-%s-node-role", testNamespace, instanceName)
+	nodeResolverRoleBinding = fmt.Sprintf("%s-%s-node-role-binding", testNamespace, instanceName)
 )
+
+const testNamespace = "fault-tolerance"
 
 const createSchemaCQLTemplate = "CREATE SCHEMA schema1 WITH replication = { 'class' : 'NetworkTopologyStrategy', %s };"
 
@@ -79,7 +80,7 @@ func getTopology1DatacenterEach1Rack(datacenter, rack string) cassandra.NodeTopo
 		{
 			Datacenter: datacenter,
 			DatacenterLabels: map[string]string{
-				nodeSelectorDatacenter: "us-west-2a",
+				nodeSelectorDatacenter: "us-west-2",
 			},
 			Nodes:        1,
 			RackLabelKey: rackLabelKey,
@@ -98,7 +99,7 @@ func getTopology2DatacenterEach1Rack() cassandra.NodeTopology {
 		{
 			Datacenter: "dc1",
 			DatacenterLabels: map[string]string{
-				nodeSelectorDatacenter: "us-west-2a",
+				nodeSelectorDatacenter: "us-west-2",
 			},
 			Nodes:        2,
 			RackLabelKey: rackLabelKey,
@@ -112,7 +113,7 @@ func getTopology2DatacenterEach1Rack() cassandra.NodeTopology {
 		{
 			Datacenter: "dc2",
 			DatacenterLabels: map[string]string{
-				nodeSelectorDatacenter: "us-west-2b",
+				nodeSelectorDatacenter: "us-west-2",
 			},
 			Nodes:        2,
 			RackLabelKey: rackLabelKey,
@@ -131,7 +132,7 @@ func getTopology3DatacenterEach1Rack() cassandra.NodeTopology {
 		{
 			Datacenter: "dc1",
 			DatacenterLabels: map[string]string{
-				nodeSelectorDatacenter: "us-west-2a",
+				nodeSelectorDatacenter: "us-west-2",
 			},
 			Nodes:        2,
 			RackLabelKey: rackLabelKey,
@@ -145,7 +146,7 @@ func getTopology3DatacenterEach1Rack() cassandra.NodeTopology {
 		{
 			Datacenter: "dc2",
 			DatacenterLabels: map[string]string{
-				nodeSelectorDatacenter: "us-west-2b",
+				nodeSelectorDatacenter: "us-west-2",
 			},
 			Nodes:        2,
 			RackLabelKey: rackLabelKey,
@@ -159,7 +160,7 @@ func getTopology3DatacenterEach1Rack() cassandra.NodeTopology {
 		{
 			Datacenter: "dc3",
 			DatacenterLabels: map[string]string{
-				nodeSelectorDatacenter: "us-west-2c",
+				nodeSelectorDatacenter: "us-west-2",
 			},
 			Nodes:        2,
 			RackLabelKey: rackLabelKey,
@@ -189,14 +190,6 @@ func deleteRBAC(client testclient.Client, namespace string) {
 			fmt.Printf("Failed to delete ClusterRole: %v", err)
 		}
 	}
-
-	serviceAccount, err := kubernetes.GetServiceAccount(client, nodeResolverServiceAccount, namespace)
-	if err == nil {
-		err := serviceAccount.Delete()
-		if err != nil {
-			fmt.Printf("Failed to delete ServiceAccount: %v", err)
-		}
-	}
 }
 
 var _ = BeforeEach(func() {
@@ -208,9 +201,6 @@ var _ = BeforeEach(func() {
 
 var _ = Describe("Fault tolerance tests", func() {
 	Context("when configured with the 'GossipingPropertyFileSnitch' snitch", func() {
-		const (
-			testNamespace = "fault-tolerance"
-		)
 
 		BeforeEach(func() {
 			err := kubernetes.CreateNamespace(client, testNamespace)
