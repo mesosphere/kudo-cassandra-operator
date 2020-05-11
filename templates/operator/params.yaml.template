@@ -115,11 +115,11 @@ parameters:
     default: "false"
 
   - name: RECOVERY_CONTROLLER_DOCKER_IMAGE
-    description: "Medusa backup Docker image."
+    description: "Recovery controller Docker image."
     default: "${RECOVERY_CONTROLLER_DOCKER_IMAGE}"
 
   - name: RECOVERY_CONTROLLER_DOCKER_IMAGE_PULL_POLICY
-    description: "Medusa backup Docker image pull policy."
+    description: "Recovery controller Docker image pull policy."
     default: "Always"
 
   - name: MAX_UNAVAILABLE_NODES
