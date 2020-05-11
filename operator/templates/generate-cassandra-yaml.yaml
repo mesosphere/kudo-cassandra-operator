@@ -492,6 +492,7 @@ data:
                         {{- if or $i $lastTopo -}}, {{- end -}}
                         {{ $.Name }}-{{ $dc.datacenter }}-node-{{ $node }}.{{ $.Name }}-svc.{{ $.Namespace }}.svc.cluster.local
                       {{- end -}}
+                      {{- $lastTopo = 1 }}
                     {{- end -}}
                     {{- range $external := $.Params.EXTERNAL_SEED_NODES -}}
                       , {{ . }}
