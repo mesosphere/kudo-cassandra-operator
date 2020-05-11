@@ -1,7 +1,6 @@
 package faulttolerance
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"testing"
@@ -16,7 +15,6 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/spf13/afero"
 	"github.com/thoas/go-funk"
-	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 
 	"github.com/mesosphere/kudo-cassandra-operator/tests/cassandra"
 )
@@ -27,10 +25,8 @@ var (
 	operatorName      = os.Getenv("OPERATOR_NAME")
 	operatorDirectory = os.Getenv("OPERATOR_DIRECTORY")
 	client            testclient.Client
-	operator          kudo.Operator
 
-	instanceName  = fmt.Sprintf("%s-instance", operatorName)
-	testNamespace = "fault-tolerance"
+	instanceName = fmt.Sprintf("%s-instance", operatorName)
 
 	// This label on the nodes is used to distinguish datacenters
 	nodeSelectorDatacenter = "failure-domain.beta.kubernetes.io/zone"
@@ -177,7 +173,7 @@ func getTopology3DatacenterEach1Rack() cassandra.NodeTopology {
 	}
 }
 
-func deleteRBAC(client testclient.Client) {
+func deleteRBAC(client testclient.Client, namespace string) {
 	roleBinding, err := kubernetes.GetClusterRoleBinding(client, nodeResolverRoleBinding)
 	if err == nil {
 		err := roleBinding.Delete()
@@ -194,7 +190,7 @@ func deleteRBAC(client testclient.Client) {
 		}
 	}
 
-	serviceAccount, err := kubernetes.GetServiceAccount(client, nodeResolverServiceAccount, testNamespace)
+	serviceAccount, err := kubernetes.GetServiceAccount(client, nodeResolverServiceAccount, namespace)
 	if err == nil {
 		err := serviceAccount.Delete()
 		if err != nil {
@@ -210,40 +206,33 @@ var _ = BeforeEach(func() {
 	Expect(err).NotTo(HaveOccurred())
 })
 
-var _ = AfterEach(func() {
-	debug.CollectArtifacts(client, afero.NewOsFs(), GinkgoWriter, testNamespace, kubectlPath)
-})
-
 var _ = Describe("Fault tolerance tests", func() {
-
-	var parameters map[string]string
-
 	Context("when configured with the 'GossipingPropertyFileSnitch' snitch", func() {
+		const (
+			testNamespace = "fault-tolerance"
+		)
+
+		BeforeEach(func() {
+			err := kubernetes.CreateNamespace(client, testNamespace)
+			Expect(err).NotTo(HaveOccurred())
+		})
+
+		AfterEach(func() {
+			debug.CollectArtifacts(client, afero.NewOsFs(), GinkgoWriter, testNamespace, kubectlPath)
+
+			err := kubernetes.DeleteNamespace(client, testNamespace)
+			Expect(err).NotTo(HaveOccurred())
+
+			deleteRBAC(client, testNamespace)
+		})
+
 		It("should set up the datacenter and rack properties", func() {
-			var err error
-
-			By("Setting up Namespace and RBAC")
-			err = kubernetes.CreateNamespace(client, testNamespace)
-			if err != nil && !k8serrors.IsAlreadyExists(errors.Unwrap(err)) {
-				Expect(err).NotTo(HaveOccurred())
-			}
-			deleteRBAC(client)
-
-			defer func() {
-				err := kubernetes.DeleteNamespace(client, testNamespace)
-				Expect(err).NotTo(HaveOccurred())
-
-				deleteRBAC(client)
-			}()
-
-			By("Starting the test")
-
 			By("Installing the operator with a topology")
 			topology := getTopology2DatacenterEach1Rack()
 			topologyYaml, err := topology.ToYAML()
 			Expect(err).NotTo(HaveOccurred())
 
-			parameters = map[string]string{
+			parameters := map[string]string{
 				"NODE_COUNT":                           "1", // NODE_TOPOLOGY should override this value
 				"ENDPOINT_SNITCH":                      "GossipingPropertyFileSnitch",
 				"NODE_TOPOLOGY":                        topologyYaml,
@@ -253,7 +242,7 @@ var _ = Describe("Fault tolerance tests", func() {
 			}
 
 			By("Waiting for the operator to deploy")
-			operator, err = kudo.InstallOperator(operatorDirectory).
+			operator, err := kudo.InstallOperator(operatorDirectory).
 				WithNamespace(testNamespace).
 				WithInstance(instanceName).
 				WithParameters(parameters).
@@ -337,43 +326,37 @@ var _ = Describe("Fault tolerance tests", func() {
 	})
 
 	Context("when having two datacenters in different namespaces", func() {
-		var (
+		const (
 			dc1Namespace = "fault-tolerance-1"
 			dc2Namespace = "fault-tolerance-2"
 		)
 
-		It("is recognized by the respective clusters", func() {
-			var err error
-
-			By("Setting up Namespace and RBAC")
-			err = kubernetes.CreateNamespace(client, dc1Namespace)
-			if err != nil && !k8serrors.IsAlreadyExists(errors.Unwrap(err)) {
-				Expect(err).NotTo(HaveOccurred())
-			}
-
-			defer func() {
-				err := kubernetes.DeleteNamespace(client, dc1Namespace)
-				Expect(err).NotTo(HaveOccurred())
-			}()
+		BeforeEach(func() {
+			err := kubernetes.CreateNamespace(client, dc1Namespace)
+			Expect(err).NotTo(HaveOccurred())
 
 			err = kubernetes.CreateNamespace(client, dc2Namespace)
-			if err != nil && !k8serrors.IsAlreadyExists(errors.Unwrap(err)) {
-				Expect(err).NotTo(HaveOccurred())
-			}
+			Expect(err).NotTo(HaveOccurred())
+		})
 
-			defer func() {
-				err := kubernetes.DeleteNamespace(client, dc2Namespace)
-				Expect(err).NotTo(HaveOccurred())
-			}()
+		AfterEach(func() {
+			debug.CollectArtifacts(client, afero.NewOsFs(), GinkgoWriter, dc1Namespace, kubectlPath)
+			debug.CollectArtifacts(client, afero.NewOsFs(), GinkgoWriter, dc2Namespace, kubectlPath)
 
-			By("Starting the test")
+			err := kubernetes.DeleteNamespace(client, dc2Namespace)
+			Expect(err).NotTo(HaveOccurred())
 
+			err = kubernetes.DeleteNamespace(client, dc1Namespace)
+			Expect(err).NotTo(HaveOccurred())
+		})
+
+		It("is recognized by the respective clusters", func() {
 			By("Installing an operator in the first namespace")
 			topology := getTopology1DatacenterEach1Rack("dc1", "rac1")
 			topologyYaml, err := topology.ToYAML()
 			Expect(err).NotTo(HaveOccurred())
 
-			parameters = map[string]string{
+			parameters := map[string]string{
 				"NODE_COUNT":                           "1", // NODE_TOPOLOGY should override this value
 				"ENDPOINT_SNITCH":                      "GossipingPropertyFileSnitch",
 				"NODE_TOPOLOGY":                        topologyYaml,
@@ -382,14 +365,14 @@ var _ = Describe("Fault tolerance tests", func() {
 			}
 
 			By("Waiting for the operator to deploy")
-			operator, err = kudo.InstallOperator(operatorDirectory).
+			operator1, err := kudo.InstallOperator(operatorDirectory).
 				WithNamespace(dc1Namespace).
 				WithInstance(instanceName).
 				WithParameters(parameters).
 				Do(client)
 			Expect(err).NotTo(HaveOccurred())
 
-			err = operator.Instance.WaitForPlanComplete("deploy", kudo.WaitTimeout(time.Minute*10))
+			err = operator1.Instance.WaitForPlanComplete("deploy", kudo.WaitTimeout(time.Minute*10))
 			Expect(err).NotTo(HaveOccurred())
 
 			By("Installing an operator in the second namespace with external seed node from the first operator")
@@ -433,13 +416,13 @@ var _ = Describe("Fault tolerance tests", func() {
 				"EXTERNAL_SEED_NODES": dns,
 			}
 
-			err = operator.Instance.UpdateParameters(parameters)
+			err = operator1.Instance.UpdateParameters(parameters)
 			Expect(err).NotTo(HaveOccurred())
 
-			err = operator.Instance.WaitForPlanComplete("deploy", kudo.WaitTimeout(time.Minute*10))
+			err = operator1.Instance.WaitForPlanComplete("deploy", kudo.WaitTimeout(time.Minute*10))
 			Expect(err).NotTo(HaveOccurred())
 
-			nodes, err = cassandra.Nodes(client, operator.Instance)
+			nodes, err = cassandra.Nodes(client, operator1.Instance)
 			Expect(err).NotTo(HaveOccurred())
 
 			dcCounts = collectDataCenterCounts(nodes)
