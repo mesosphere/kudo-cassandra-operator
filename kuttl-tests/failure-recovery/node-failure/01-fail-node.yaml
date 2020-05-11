@@ -1,0 +1,5 @@
+apiVersion: kudo.dev/v1beta1
+kind: TestStep
+commands:
+  - command: ./delete-node-for-pod.sh cassandra-node-0
+    namespaced: true

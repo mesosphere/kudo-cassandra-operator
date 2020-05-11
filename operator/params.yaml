@@ -116,7 +116,7 @@ parameters:
 
   - name: RECOVERY_CONTROLLER_DOCKER_IMAGE
     description: "Medusa backup Docker image."
-    default: "mesosphere/kudo-cassandra-recovery:0.0.1-0.1.2-SNAPSHOT"
+    default: "mesosphere/kudo-cassandra-recovery:0.0.2-0.1.2-SNAPSHOT"
 
   - name: RECOVERY_CONTROLLER_DOCKER_IMAGE_PULL_POLICY
     description: "Medusa backup Docker image pull policy."

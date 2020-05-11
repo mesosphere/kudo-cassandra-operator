@@ -1,0 +1,15 @@
+apiVersion: kudo.dev/v1alpha1
+kind: TestSuite
+manifestDirs:
+  - ./manifests/
+commands:
+  - command: ./bin/kubectl-kudo init
+testDirs:
+  - ./failure-recovery
+startKIND: true
+kindConfig: ./failure-recovery/kind-config.yaml
+kindContainers:
+  - ${CASSANDRA_DOCKER_IMAGE}
+  - ${RECOVERY_CONTROLLER_DOCKER_IMAGE}
+timeout: 600
+parallel: 3
