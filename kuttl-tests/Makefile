@@ -48,9 +48,8 @@ install-kuttl: bin/kubectl-kuttl_$(KUTTL_VERSION) bin/kubectl-kudo_$(KUDO_VERSIO
 .PHONY: test
 kind-test:  dist/ install-kuttl render-test-templates
 	go get github.com/jstemmer/go-junit-report
-	#kubectl kuttl test --config=./kuttl-test.yaml --artifacts-dir=$(ARTIFACTS) 2>&1 |tee /dev/fd/2 | go-junit-report -set-exit-code > dist/addons-failure-recovery-junit.xml
+	kubectl kuttl test --config=./kuttl-test.yaml --artifacts-dir=$(ARTIFACTS) 2>&1 |tee /dev/fd/2 | go-junit-report -set-exit-code > dist/addons-test-junit.xml
 	kubectl kuttl test --config=./kuttl-failure-recovery.yaml --artifacts-dir=$(ARTIFACTS) 2>&1 |tee /dev/fd/2 | go-junit-report -set-exit-code > dist/addons-failure-recovery-junit.xml
-	kubectl kuttl test --config=./kuttl-test.yaml --kind-config=./kind/kubernetes-$(KUBERNETES_VERSION).yaml --artifacts-dir=$(ARTIFACTS) 2>&1 |tee /dev/fd/2 | go-junit-report -set-exit-code > dist/addons-test-junit.xml
 
 clean:
 	rm -rf ./bin ./dist ./kubeconfig

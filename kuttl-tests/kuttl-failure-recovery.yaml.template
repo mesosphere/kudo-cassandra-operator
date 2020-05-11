@@ -11,5 +11,5 @@ kindConfig: ./failure-recovery/kind-config.yaml
 kindContainers:
   - ${CASSANDRA_DOCKER_IMAGE}
   - ${RECOVERY_CONTROLLER_DOCKER_IMAGE}
-timeout: 600
+timeout: 300
 parallel: 3

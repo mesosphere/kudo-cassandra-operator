@@ -10,5 +10,7 @@ testDirs:
   - ./tests
 startKIND: true
 kindConfig: ./tests/kubernetes-1.17.2.yaml
+kindContainers:
+  - ${CASSANDRA_DOCKER_IMAGE}
 timeout: 300
 parallel: 3
