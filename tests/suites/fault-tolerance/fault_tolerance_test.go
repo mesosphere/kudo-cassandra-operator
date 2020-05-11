@@ -355,6 +355,7 @@ var _ = Describe("Fault tolerance tests", func() {
 				"NODE_READINESS_PROBE_INITIAL_DELAY_S": "10",
 				"SERVICE_ACCOUNT_INSTALL":              "true",
 			}
+			suites.SetSuitesParameters(parameters)
 
 			By("Waiting for the operator to deploy")
 			operator1, err := kudo.InstallOperator(operatorDirectory).
@@ -382,6 +383,7 @@ var _ = Describe("Fault tolerance tests", func() {
 				"SERVICE_ACCOUNT_INSTALL":              "true",
 				"EXTERNAL_SEED_NODES":                  dns,
 			}
+			suites.SetSuitesParameters(parameters)
 
 			By("Waiting for the second operator to deploy")
 			operator2, err := kudo.InstallOperator(operatorDirectory).
