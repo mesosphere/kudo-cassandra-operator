@@ -197,6 +197,10 @@ parameters:
     description: "The instance name from the operator that was used to create the backup"
     default: ""
 
+  - name: BOOTSTRAP_TIMEOUT
+    description: "Timeout for the bootstrap binary to join the cluster with the new IP. Valid time units are 'ns', 'us', 'ms', 's', 'm', 'h'."
+    default: "12h30m"
+
   ################################################################################
   ######################### Datacenter and Rack awareness ########################
   ################################################################################
@@ -209,10 +213,6 @@ parameters:
   - name: NODE_ANTI_AFFINITY
     description: "Ensure that every Cassandra node is deployed on separate hosts"
     default: "false"
-
-  - name: NODE_RESOLVE_SERVICEACCOUNT
-    description: "A service account that can list nodes in the cluster to read rack names for deployed pods"
-    default: "node-resolver"
 
   - name: SERVICE_ACCOUNT_INSTALL
     description: "This flag can be set to true to automatic installation of a cluster role, service account and role binding"

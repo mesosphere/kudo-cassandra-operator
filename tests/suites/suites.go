@@ -6,9 +6,12 @@ func IsLocalCluster() bool {
 	return os.Getenv("LOCAL_CLUSTER") == "true"
 }
 
-// SetLocalClusterParameters adds a set of common parameters used for local testing in a minikube or other restricted environments
-// This includes limited CPU and memory settings as well as disabling the Prometheus exporter
-func SetLocalClusterParameters(parameters map[string]string) {
+// SetSuitesParameters adds a set of common parameters
+// - parameters that should be set across all testing suites
+// - parameters for local testing in a minikube or other restricted environments
+// This includes limited CPU and memory settings as well as disabling the Prometheus exporter when running in local cluster
+func SetSuitesParameters(parameters map[string]string) {
+	parameters["NODE_DOCKER_IMAGE"] = os.Getenv("CASSANDRA_DOCKER_IMAGE")
 	if IsLocalCluster() {
 		parameters["NODE_MEM_MIB"] = "768"
 		parameters["NODE_MEM_LIMIT_MIB"] = "1024"

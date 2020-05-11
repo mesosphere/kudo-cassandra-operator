@@ -70,7 +70,7 @@ var _ = Describe("external service", func() {
 		parameters := map[string]string{
 			"NODE_COUNT": strconv.Itoa(NodeCount),
 		}
-		suites.SetLocalClusterParameters(parameters)
+		suites.SetSuitesParameters(parameters)
 
 		Operator, err = kudo.InstallOperator(OperatorDirectory).
 			WithNamespace(TestNamespace).
@@ -91,7 +91,7 @@ var _ = Describe("external service", func() {
 			"EXTERNAL_NATIVE_TRANSPORT":      "true",
 			"EXTERNAL_NATIVE_TRANSPORT_PORT": strconv.Itoa(nativeTransportPort),
 		}
-		suites.SetLocalClusterParameters(parameters)
+		suites.SetSuitesParameters(parameters)
 
 		err = Operator.Instance.UpdateParameters(parameters)
 		Expect(err).To(BeNil())
@@ -115,7 +115,7 @@ var _ = Describe("external service", func() {
 			"EXTERNAL_RPC":      "true",
 			"EXTERNAL_RPC_PORT": strconv.Itoa(rpcPort),
 		}
-		suites.SetLocalClusterParameters(parameters)
+		suites.SetSuitesParameters(parameters)
 
 		err = Operator.Instance.UpdateParameters(parameters)
 		Expect(err).To(BeNil())
@@ -141,7 +141,7 @@ var _ = Describe("external service", func() {
 			"EXTERNAL_RPC":              "false",
 			"EXTERNAL_NATIVE_TRANSPORT": "false",
 		}
-		suites.SetLocalClusterParameters(parameters)
+		suites.SetSuitesParameters(parameters)
 
 		err = Operator.Instance.UpdateParameters(parameters)
 		Expect(err).To(BeNil())

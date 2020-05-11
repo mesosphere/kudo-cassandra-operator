@@ -1,3 +1,10 @@
+FROM golang:1.14.2-stretch AS bootstrap-bin
+ADD ./bootstrap /bootstrap
+WORKDIR /bootstrap
+RUN  apt-get update && apt-get install ca-certificates
+ENV GO111MODULE=on
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o bootstrap
+
 FROM ${CASSANDRA_DOCKER_IMAGE_FROM}
 
 RUN set -eux; \
@@ -16,3 +23,4 @@ RUN set -eux; \
   setcap cap_sys_resource,cap_ipc_lock+eip $(readlink -f $(which java))
 
 USER cassandra
+COPY --from=bootstrap-bin /bootstrap/bootstrap /etc/cassandra-bootstrap/

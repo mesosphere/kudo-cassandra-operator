@@ -40,8 +40,8 @@ spec:
         {{ end }}
         kudo.dev/instance: {{ $.Name }}
     spec:
+      serviceAccountName: {{ $.Name }}-sa
       {{ if $.Params.NODE_TOPOLOGY }}
-      serviceAccountName: {{ $.Params.NODE_RESOLVE_SERVICEACCOUNT }}
       nodeSelector:
       {{ range $k, $v := $datacenter.datacenterLabels }}
         {{ $k }}: {{ $v }}
@@ -161,6 +161,7 @@ spec:
               {{ else }}
               /etc/cassandra/wait-for-node-zero.sh {{ $.Name }};
               {{ end }}
+              /etc/cassandra-bootstrap/bootstrap wait &
               cassandra -f
           # Comment the `command` above and uncomment the one below if pods are
           # crash-looping and you would like to investigate their state. This is
@@ -196,6 +197,10 @@ spec:
                   fieldPath: metadata.uid
             - name: PROMETHEUS_EXPORTER_ENABLED
               value: "{{ $.Params.PROMETHEUS_EXPORTER_ENABLED }}"
+            - name: CASSANDRA_IP_LOCK_CM
+              value: "{{ $.Name }}-topology-lock"
+            - name: BOOTSTRAP_TIMEOUT
+              value: "{{ $.Params.BOOTSTRAP_TIMEOUT }}"
           resources:
             requests:
               memory: "{{ $.Params.NODE_MEM_MIB }}Mi"
@@ -571,6 +576,44 @@ spec:
               readOnly: true
           {{ end }}
       {{ end }}
+        - name: bootstrap
+          image: {{ $.Params.NODE_DOCKER_IMAGE }}
+          imagePullPolicy: {{ $.Params.NODE_DOCKER_IMAGE_PULL_POLICY }}
+          command:
+            - bash
+            - -c
+            - /etc/cassandra-bootstrap/bootstrap
+          args:
+            - init
+          env:
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: CASSANDRA_IP_LOCK_CM
+              value: "{{ $.Name }}-topology-lock"
+            - name: BOOTSTRAP_TIMEOUT
+              value: "{{ $.Params.BOOTSTRAP_TIMEOUT }}"
+          volumeMounts:
+            - name: etc-cassandra
+              mountPath: /etc/cassandra/
+            - name: var-lib-cassandra
+              mountPath: /var/lib/cassandra/
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "200m"
       volumes:
         # Overwriting /etc/cassandra/ available in the Docker image.
         - name: etc-cassandra

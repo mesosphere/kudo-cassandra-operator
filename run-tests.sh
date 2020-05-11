@@ -4,7 +4,7 @@
 set -euxo pipefail
 
 readonly script_directory="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
-readonly project_directory="$(readlink -f "${script_directory}")"
+readonly project_directory="$(realpath -L $script_directory)"
 
 # shellcheck source=metadata.sh
 source "${project_directory}/metadata.sh"
@@ -34,6 +34,7 @@ docker run \
        -e "DS_KUDO_VERSION=v${KUDO_VERSION}" \
        -e "OPERATOR_DIRECTORY=${container_operator_directory}" \
        -e "VENDOR_DIRECTORY=${container_vendor_directory}" \
+       -e "IMAGE_DISAMBIGUATION_SUFFIX=${IMAGE_DISAMBIGUATION_SUFFIX}" \
        -e "TEST_ARTIFACTS_DIRECTORY=${container_artifacts_directory}" \
        -e "AWS_ACCESS_KEY_ID" \
        -e "AWS_SECRET_ACCESS_KEY" \

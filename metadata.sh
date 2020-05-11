@@ -6,7 +6,7 @@
 # "Shadowing" these two environment variables so that they don't affect
 # similarly named environment variables in other scripts loading this script.
 _script_directory="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
-_project_directory="$(readlink -f "${_script_directory}")"
+_project_directory="$(realpath -L "${_script_directory}")"
 
 ################################################################################
 ################################# Operator #####################################

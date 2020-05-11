@@ -17,6 +17,8 @@ tasks:
         - service.yaml
         - tls-store-credentials.yaml
         - generate-cassandra-yaml.yaml
+        - cassandra-topology.yaml
+        - cassandra-role-sa.yaml
         - cassandra-env-sh.yaml
         - jvm-options.yaml
         - cassandra-exporter-config-yml.yaml
@@ -49,18 +51,6 @@ tasks:
     spec:
       resources:
         - backup-job.yaml
-  - name: remove-stateful-set
-    kind: Delete
-    spec:
-      resources:
-        - stateful-set.yaml
-  - name: recovery-controller
-    kind: Toggle
-    spec:
-      parameter: RECOVERY_CONTROLLER
-      resources:
-        - recovery-controller-rbac.yaml
-        - recovery-controller.yaml
   - name: node-resolver-rbac
     kind: Toggle
     spec:
@@ -100,7 +90,6 @@ plans:
             tasks:
               - node
               - ext-service
-              - recovery-controller
               - backup-deploy
   repair:
     strategy: serial

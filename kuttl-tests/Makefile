@@ -1,3 +1,8 @@
+
+.PHONY: lint
+lint:
+	golangci-lint run
+
 KUDO_VERSION=0.12.0
 KUTTL_VERSION=0.2.0
 KUBERNETES_VERSION=1.17.2
@@ -45,6 +50,7 @@ kind-test:  dist/ install-kuttl render-test-templates
 	go get github.com/jstemmer/go-junit-report
 	#kubectl kuttl test --config=./kuttl-test.yaml --artifacts-dir=$(ARTIFACTS) 2>&1 |tee /dev/fd/2 | go-junit-report -set-exit-code > dist/addons-failure-recovery-junit.xml
 	kubectl kuttl test --config=./kuttl-failure-recovery.yaml --artifacts-dir=$(ARTIFACTS) 2>&1 |tee /dev/fd/2 | go-junit-report -set-exit-code > dist/addons-failure-recovery-junit.xml
+	kubectl kuttl test --config=./kuttl-test.yaml --kind-config=./kind/kubernetes-$(KUBERNETES_VERSION).yaml --artifacts-dir=$(ARTIFACTS) 2>&1 |tee /dev/fd/2 | go-junit-report -set-exit-code > dist/addons-test-junit.xml
 
 clean:
 	rm -rf ./bin ./dist ./kubeconfig
