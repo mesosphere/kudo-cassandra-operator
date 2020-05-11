@@ -17,6 +17,7 @@ import (
 	"github.com/thoas/go-funk"
 
 	"github.com/mesosphere/kudo-cassandra-operator/tests/cassandra"
+	"github.com/mesosphere/kudo-cassandra-operator/tests/suites"
 )
 
 var (
@@ -230,6 +231,7 @@ var _ = Describe("Fault tolerance tests", func() {
 				"NODE_READINESS_PROBE_INITIAL_DELAY_S": "10",
 				"SERVICE_ACCOUNT_INSTALL":              "true",
 			}
+			suites.SetSuitesParameters(parameters)
 
 			By("Waiting for the operator to deploy")
 			operator, err := kudo.InstallOperator(operatorDirectory).
