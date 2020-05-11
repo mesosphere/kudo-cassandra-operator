@@ -37,6 +37,7 @@ docker run \
   --rm \
   -v "${project_directory}:${project_directory}" \
   -w "${project_directory}"/kuttl-tests \
+  --env-file <(env | grep BUILD_VCS_NUMBER_) \
   --privileged --network host -v /var/run/docker.sock:/var/run/docker.sock \
   "${INTEGRATION_TESTS_DOCKER_IMAGE}" \
   bash -c "make kind-test"
