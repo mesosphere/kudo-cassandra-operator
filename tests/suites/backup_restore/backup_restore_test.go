@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/kudobuilder/test-tools/pkg/debug"
 	"github.com/spf13/afero"
 
@@ -37,7 +38,7 @@ var (
 	Operator  = kudo.Operator{}
 
 	BackupBucket = "kudo-cassandra-backup-test"
-	BackupPrefix = "localtest-aneumann"
+	BackupPrefix = uuid.New().String()
 	BackupName   = "first"
 )
 
@@ -70,11 +71,6 @@ const testCQLScriptOutput2 = `
 (2 rows)`
 
 var _ = BeforeSuite(func() {
-	buildNumber := os.Getenv("BUILD_NUMBER")
-	tcProject := os.Getenv("TEAMCITY_PROJECT_NAME")
-	if buildNumber != "" && tcProject != "" {
-		BackupPrefix = "TC-" + tcProject + "-" + buildNumber
-	}
 	fmt.Printf("Using backup prefix %s\n", BackupPrefix)
 
 	Client, _ = client.NewForConfig(KubeConfigPath)
