@@ -11,7 +11,7 @@ testDirs:
 startKIND: true
 kindConfig: ./tests/kubernetes-1.17.2.yaml
 {{- if not .IMAGE_DISAMBIGUATION_SUFFIX }}
-containerImages:
+kindContainers:
   - {{ .CASSANDRA_DOCKER_IMAGE }}
 {{- end }}
 timeout: 300

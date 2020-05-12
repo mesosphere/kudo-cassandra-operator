@@ -3,6 +3,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+go get github.com/schneidexe/tpl
 go build -o bin/tpl github.com/schneidexe/tpl
 source "$(dirname "$0")/../shared/teamcity/internal/common.sh"
 parse_options "" "$@"

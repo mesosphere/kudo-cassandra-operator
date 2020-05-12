@@ -6,7 +6,7 @@ require (
 	github.com/gogo/protobuf v1.3.1 // indirect
 	github.com/golang/protobuf v1.3.5 // indirect
 	github.com/google/gofuzz v1.1.0 // indirect
-	github.com/googleapis/gnostic v0.4.0
+	github.com/googleapis/gnostic v0.4.0 // indirect
 	github.com/imdario/mergo v0.3.8 // indirect
 	github.com/sirupsen/logrus v1.4.2
 	golang.org/x/crypto v0.0.0-20200320181102-891825fb96df // indirect

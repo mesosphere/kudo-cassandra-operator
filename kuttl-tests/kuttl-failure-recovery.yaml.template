@@ -9,7 +9,7 @@ testDirs:
 startKIND: true
 kindConfig: ./failure-recovery/kind-config.yaml
 {{- if not .IMAGE_DISAMBIGUATION_SUFFIX }}
-containerImages:
+kindContainers:
   - {{ .CASSANDRA_DOCKER_IMAGE }}
   - {{ .RECOVERY_CONTROLLER_DOCKER_IMAGE }}
 {{- end }}
