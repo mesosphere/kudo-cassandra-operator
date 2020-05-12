@@ -180,7 +180,7 @@ var _ = Describe("backup and restore", func() {
 			"BACKUP_AWS_S3_BUCKET_NAME":     BackupBucket,
 			"POD_MANAGEMENT_POLICY":         "Parallel",
 		}
-		suites.SetLocalClusterParameters(parameters)
+		suites.SetSuitesParameters(parameters)
 
 		By("Installing the operator from current directory")
 		Operator, err = kudo.InstallOperator(OperatorDirectory).
@@ -236,7 +236,7 @@ var _ = Describe("backup and restore", func() {
 			"RESTORE_OLD_NAME":              TestInstance,
 			"POD_MANAGEMENT_POLICY":         "Parallel",
 		}
-		suites.SetLocalClusterParameters(parameters)
+		suites.SetSuitesParameters(parameters)
 
 		Operator, err = kudo.InstallOperator(OperatorDirectory).
 			WithNamespace(TestNamespace).
@@ -266,7 +266,7 @@ var _ = Describe("backup and restore", func() {
 		parameters = map[string]string{
 			"NODE_READINESS_PROBE_INITIAL_DELAY_S": "10",
 		}
-		suites.SetLocalClusterParameters(parameters)
+		suites.SetSuitesParameters(parameters)
 
 		err = Operator.Instance.UpdateParameters(parameters)
 
@@ -308,7 +308,7 @@ var _ = Describe("backup and restore", func() {
 			"NODE_READINESS_PROBE_INITIAL_DELAY_S":   "15",
 			"NODE_LIVENESS_PROBE_INITIAL_DELAY_S":    "60",
 		}
-		suites.SetLocalClusterParameters(parameters)
+		suites.SetSuitesParameters(parameters)
 
 		By("Installing the operator from current directory")
 		Operator, err = kudo.InstallOperator(OperatorDirectory).
@@ -371,7 +371,7 @@ var _ = Describe("backup and restore", func() {
 			"BACKUP_MEDUSA_DOCKER_IMAGE":             "medusa-test:0.0.1",
 			"BACKUP_MEDUSA_DOCKER_IMAGE_PULL_POLICY": "IfNotPresent",
 		}
-		suites.SetLocalClusterParameters(parameters)
+		suites.SetSuitesParameters(parameters)
 
 		Operator, err = kudo.InstallOperator(OperatorDirectory).
 			WithNamespace(TestNamespace).

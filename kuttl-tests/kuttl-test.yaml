@@ -1,0 +1,13 @@
+apiVersion: kudo.dev/v1alpha1
+kind: TestSuite
+manifestDirs:
+  - ./manifests/
+commands:
+  - command: ./bin/kubectl-kudo init
+  - command:  kubectl create ns cassandra-install-test
+  - command: ./bin/kubectl-kudo install -n cassandra-install-test --skip-instance ../operator/
+testDirs:
+  - ./tests
+startKIND: true
+timeout: 300
+parallel: 3
