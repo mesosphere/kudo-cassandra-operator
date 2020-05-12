@@ -5,7 +5,7 @@ kubeconfig
 .kudo/
 **/.kudo/
 **/.kube/
-/kuttl-failure-recovery.yaml
-/kuttl-test.yaml
-/tests/install-test/params.yaml
-/failure-recovery/node-failure/params.yaml
+/suites/kuttl-failure-recovery.yaml
+/suites/kuttl-common.yaml
+/suites/common/install-test/params.yaml
+/suites/failure-recovery/node-failure/params.yaml

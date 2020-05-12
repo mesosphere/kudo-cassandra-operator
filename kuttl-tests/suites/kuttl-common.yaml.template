@@ -4,12 +4,12 @@ manifestDirs:
   - ./manifests/
 commands:
   - command: ./bin/kubectl-kudo init
-  - command:  kubectl create ns cassandra-install-test
+  - command: ./bin/kubectl create ns cassandra-install-test
   - command: ./bin/kubectl-kudo install -n cassandra-install-test --skip-instance ../operator/
 testDirs:
-  - ./tests
+  - ./suites/common
 startKIND: true
-kindConfig: ./tests/kubernetes-1.17.2.yaml
+kindConfig: ./suites/common/kind-config.yaml
 {{- if not .IMAGE_DISAMBIGUATION_SUFFIX }}
 kindContainers:
   - {{ .CASSANDRA_DOCKER_IMAGE }}
