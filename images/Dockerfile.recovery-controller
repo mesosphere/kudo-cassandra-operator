@@ -1,11 +1,11 @@
-FROM golang:alpine AS build-env
+FROM golang:1.14-alpine AS build-env
 ADD ./cassandra-recovery /cassandra-recovery
 WORKDIR /cassandra-recovery
-RUN apk add --no-cache gcc musl-dev git mercurial ca-certificates
+RUN apk add --no-cache git
 ENV GO111MODULE=on
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o cassandra-recovery
 
-FROM alpine:3.7
+FROM scratch
 COPY --from=build-env /cassandra-recovery /cassandra-recovery/
 
 CMD /cassandra-recovery/cassandra-recovery

@@ -39,5 +39,7 @@ kubectl label pod cassandra-node-0 kudo-cassandra/evict=true
 This will trigger the recovery controller to unlink the PV and remove the PVC,
 so the pod can be rescheduled to a different Kubernetes node.
 
+**WARNING** Unlinking a Persistent Volume from the PersistentVolumeClaim can lead to **permanent deletion** of the Persistent Volume and all stored data inside it! Cassandra normally stores replications of all data and will redistribute it after the node is relocated, but depending on your Cassandra configuration this may lead to data loss.
+
 After a while the old pod will be terminated and rescheduled on a different
 Kubernetes node.

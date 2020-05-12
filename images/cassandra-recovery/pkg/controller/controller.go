@@ -25,10 +25,11 @@ const (
 )
 
 type Controller struct {
-	client     *kubernetes.Clientset
-	queue      workqueue.RateLimitingInterface
-	informer   cache.SharedIndexInformer
-	maxRetries int
+	client        *kubernetes.Clientset
+	queue         workqueue.RateLimitingInterface
+	informer      cache.SharedIndexInformer
+	maxRetries    int
+	evictionLabel string
 }
 
 func NewController(client *kubernetes.Clientset) *Controller {
@@ -45,6 +46,13 @@ func (c *Controller) Run(ctx context.Context) {
 		namespace = metav1.NamespaceAll
 	}
 	log.Infof("Starting the controller for namespace %s...", namespace)
+
+	c.evictionLabel = os.Getenv("EVICTION_LABEL")
+	if c.evictionLabel == "" {
+		log.Info("No eviction label set, eviction is not supported")
+	} else {
+		log.Infof("Watching for eviction label '%s'", c.evictionLabel)
+	}
 
 	labelSelector := ""
 	if instance != "" {
@@ -146,6 +154,11 @@ func (c *Controller) processItem(key string) error {
 	if obj == nil {
 		return nil
 	}
-	sts.Process(c.client, obj)
+	ro, ok := obj.(runtime.Object)
+	if !ok {
+		return fmt.Errorf("object with key %s is not a runtime.Object", key)
+	}
+
+	sts.Process(c.client, c.evictionLabel, ro)
 	return nil
 }

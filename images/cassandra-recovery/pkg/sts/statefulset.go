@@ -2,18 +2,15 @@ package sts
 
 import (
 	"fmt"
-	"log"
-	"os"
-
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
+	"log"
 )
 
-var evictionLabel = os.Getenv("EVICTION_LABEL")
-
-func Process(client *kubernetes.Clientset, item interface{}) {
+func Process(client *kubernetes.Clientset, evictionLabel string, item runtime.Object) {
 	if item == nil {
 		// Event was deleted
 		return
@@ -33,17 +30,25 @@ func Process(client *kubernetes.Clientset, item interface{}) {
 
 	if needsRecovery {
 		log.Printf("the pod %s/%s meets the recovery conditions.\n", pod.Namespace, pod.Name)
-		err = cleanStartPod(client, pod)
-	} else if detectEvictionCondition(pod) {
+		if err = cleanStartPod(client, pod); err != nil {
+			log.Printf("ERROR: Failed to clean start pod: %v", err)
+		}
+		return
+	}
+
+	if detectEvictionCondition(evictionLabel, pod) {
 		log.Printf("the pod %s/%s meets the eviction conditions.\n", pod.Namespace, pod.Name)
-		err = cleanStartPod(client, pod)
+		if err = cleanStartPod(client, pod); err != nil {
+			log.Printf("ERROR: Failed to clean start pod: %v", err)
+		}
 	}
-	if err != nil {
-		log.Printf("ERROR: Failed to clean start pod: %v", err)
-	}
+
 }
 
-func detectEvictionCondition(pod *corev1.Pod) bool {
+func detectEvictionCondition(evictionLabel string, pod *corev1.Pod) bool {
+	if evictionLabel == "" {
+		return false
+	}
 	if val, ok := pod.Labels[evictionLabel]; ok {
 		if val == "true" {
 			log.Printf("Pod %s has eviction label set", pod.Name)
