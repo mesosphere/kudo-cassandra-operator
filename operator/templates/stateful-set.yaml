@@ -290,6 +290,7 @@ spec:
                 JVM_OPTS="${JVM_OPTS} $flag";
               done < /etc/cassandra/nodetool-ssl.properties;
               {{ end }}
+              bash -c /cassandra-exporter-config/setup.sh;
               JVM_OPTS="${JVM_OPTS}" /sbin/dumb-init /bin/bash /run.sh;
           env:
             - name: NODE_NAME
@@ -324,15 +325,20 @@ spec:
               memory: "{{ $.Params.PROMETHEUS_EXPORTER_MEM_LIMIT_MIB }}Mi"
               cpu: "{{ $.Params.PROMETHEUS_EXPORTER_CPU_LIMIT_MC }}m"
           volumeMounts:
+            - name: etc-cassandra-exporter
+              mountPath: /etc/cassandra_exporter/
             - name: cassandra-exporter-config-yml
-              mountPath: /etc/cassandra_exporter/config.yml
-              subPath: config.yml
+              mountPath: /cassandra-exporter-config/
           {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
             - name: etc-cassandra
               mountPath: /etc/cassandra/
             - name: generate-nodetool-ssl-properties
               mountPath: /etc/cassandra/generate-nodetool-ssl-properties.sh
               subPath: generate-nodetool-ssl-properties.sh
+          {{ end }}
+          {{ if $.Params.PROMETHEUS_EXPORTER_CUSTOM_CONFIG_CM_NAME }}
+            - name: custom-exporter-configuration
+              mountPath: /custom-configuration
           {{ end }}
         {{ end }}
         {{ if eq $.Params.BACKUP_RESTORE_ENABLED "true" }}
@@ -642,6 +648,14 @@ spec:
         - name: cassandra-exporter-config-yml
           configMap:
             name: {{ $.Name }}-cassandra-exporter-config-yml
+            defaultMode: 0755
+        - name: etc-cassandra-exporter
+          emptyDir: {}
+        {{ if $.Params.PROMETHEUS_EXPORTER_CUSTOM_CONFIG_CM_NAME }}
+        - name: custom-exporter-configuration
+          configMap:
+            name: {{ $.Params.PROMETHEUS_EXPORTER_CUSTOM_CONFIG_CM_NAME }}
+        {{ end }}
         {{ end }}
         {{ if eq $.Params.BACKUP_RESTORE_ENABLED "true" }}
         - name: etc-medusa
