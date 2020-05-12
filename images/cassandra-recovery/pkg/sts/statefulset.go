@@ -2,12 +2,13 @@ package sts
 
 import (
 	"fmt"
+	"log"
+
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
-	"log"
 )
 
 func Process(client *kubernetes.Clientset, evictionLabel string, item runtime.Object) {
@@ -160,7 +161,7 @@ func cleanStartPod(client *kubernetes.Clientset, pod *corev1.Pod) error {
 	// Get all PVCs from the pod
 	pvcs, err := getPVCs(client, pod)
 	if err != nil {
-		return fmt.Errorf("failed to get PVCs from pod %s/%s: %v", pod.Namespace, pod.Name)
+		return fmt.Errorf("failed to get PVCs from pod %s/%s: %v", pod.Namespace, pod.Name, err)
 	}
 	log.Printf("Found %d PVCs for pod %s/%s: ", len(pvcs), pod.Namespace, pod.Name)
 

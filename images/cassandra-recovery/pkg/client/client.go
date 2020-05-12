@@ -22,15 +22,6 @@ func buildKubeConfig(kubeconfig string) (*rest.Config, error) {
 	return rest.InClusterConfig()
 }
 
-func getKubernetesClient(kubeconfig *rest.Config) (*kubernetes.Clientset, error) {
-	clientSet, err := kubernetes.NewForConfig(kubeconfig)
-	if err != nil {
-		return nil, fmt.Errorf("error creating kubernetes client: %v", err)
-	}
-	log.Infof("kubernetes client configured.")
-	return clientSet, nil
-}
-
 func GetKubeConfig() (*rest.Config, error) {
 	kubeConfigPath := os.Getenv("KUBECONFIG")
 	return buildKubeConfig(kubeConfigPath)
