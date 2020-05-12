@@ -76,7 +76,7 @@ var _ = Describe("Authentication tests", func() {
 				"AUTHENTICATOR":              "PasswordAuthenticator",
 				"AUTHENTICATION_SECRET_NAME": secretName,
 			}
-			suites.SetLocalClusterParameters(parameters)
+			suites.SetSuitesParameters(parameters)
 
 			operator, err = kudo.InstallOperator(operatorDirectory).
 				WithNamespace(testNamespace).

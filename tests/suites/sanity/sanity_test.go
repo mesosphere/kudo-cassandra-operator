@@ -79,7 +79,7 @@ var _ = Describe(TestName, func() {
 		parameters := map[string]string{
 			"NODE_COUNT": strconv.Itoa(NodeCount),
 		}
-		suites.SetLocalClusterParameters(parameters)
+		suites.SetSuitesParameters(parameters)
 
 		Operator, err = kudo.InstallOperator(OperatorDirectory).
 			WithNamespace(TestNamespace).

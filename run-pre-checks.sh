@@ -19,5 +19,6 @@ if [ -n "$(git status --porcelain)" ]; then
   echo "Please make sure you follow the instructions in .github/pull_request_template.md" >&2
   echo "before sending a pull request." >&2
   git status --porcelain
+  git diff
   exit 1
 fi
