@@ -3,7 +3,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-go get github.com/a8m/envsubst/cmd/envsubst
+go build -o bin/tpl github.com/schneidexe/tpl
 source "$(dirname "$0")/../shared/teamcity/internal/common.sh"
 parse_options "" "$@"
 
@@ -15,5 +15,5 @@ env
 for FILE_TEMPLATE in `find . -name "*.template"`; do
     FILE_NAME="${FILE_TEMPLATE%.template}"
     echo "Render Template $FILE_TEMPLATE -> $FILE_NAME";
-    envsubst < ${FILE_TEMPLATE} > ${FILE_NAME}
+    ./bin/tpl -t ${FILE_TEMPLATE} > ${FILE_NAME}
 done
