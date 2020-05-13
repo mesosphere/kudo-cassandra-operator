@@ -1,6 +1,6 @@
 FROM golang:1.14-alpine AS build-env
-ADD ./cassandra-recovery /cassandra-recovery
-WORKDIR /cassandra-recovery
+ADD ./recovery /recovery
+WORKDIR /recovery
 RUN apk add --no-cache git
 ENV GO111MODULE=on
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o cassandra-recovery

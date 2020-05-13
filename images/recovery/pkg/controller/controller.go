@@ -25,20 +25,21 @@ const (
 )
 
 type Controller struct {
-	client        *kubernetes.Clientset
-	queue         workqueue.RateLimitingInterface
-	informer      cache.SharedIndexInformer
-	maxRetries    int
-	evictionLabel string
+	client     *kubernetes.Clientset
+	queue      workqueue.RateLimitingInterface
+	informer   cache.SharedIndexInformer
+	maxRetries int
+
+	options Options
 }
 
-func NewController(client *kubernetes.Clientset) *Controller {
-	return &Controller{
-		client: client,
-	}
+type Options struct {
+	namespace             string
+	evictionLabel         string
+	instanceLabelSelector string
 }
 
-func (c *Controller) Run(ctx context.Context) {
+func NewOptions() Options {
 	namespace := os.Getenv("NAMESPACE")
 	instance := os.Getenv("INSTANCE_NAME")
 
@@ -47,11 +48,11 @@ func (c *Controller) Run(ctx context.Context) {
 	}
 	log.Infof("Starting the controller for namespace %s...", namespace)
 
-	c.evictionLabel = os.Getenv("EVICTION_LABEL")
-	if c.evictionLabel == "" {
+	evictionLabel := os.Getenv("EVICTION_LABEL")
+	if evictionLabel == "" {
 		log.Info("No eviction label set, eviction is not supported")
 	} else {
-		log.Infof("Watching for eviction label '%s'", c.evictionLabel)
+		log.Infof("Watching for eviction label '%s'", evictionLabel)
 	}
 
 	labelSelector := ""
@@ -62,18 +63,34 @@ func (c *Controller) Run(ctx context.Context) {
 		log.Infof("Acting on ALL pods in selected namespace")
 	}
 
+	return Options{
+		instanceLabelSelector: labelSelector,
+		evictionLabel:         evictionLabel,
+		namespace:             namespace,
+	}
+}
+
+func NewController(client *kubernetes.Clientset, options Options) *Controller {
+	return &Controller{
+		client:  client,
+		options: options,
+	}
+}
+
+func (c *Controller) Run(ctx context.Context) {
+
 	stopCh := make(chan struct{})
 	defer close(stopCh)
 	c.queue = workqueue.NewRateLimitingQueue(workqueue.DefaultControllerRateLimiter())
 	c.informer = cache.NewSharedIndexInformer(
 		&cache.ListWatch{
 			ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
-				options.LabelSelector = labelSelector
-				return c.client.CoreV1().Pods(namespace).List(options)
+				options.LabelSelector = c.options.instanceLabelSelector
+				return c.client.CoreV1().Pods(c.options.namespace).List(options)
 			},
 			WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-				options.LabelSelector = labelSelector
-				return c.client.CoreV1().Pods(namespace).Watch(options)
+				options.LabelSelector = c.options.instanceLabelSelector
+				return c.client.CoreV1().Pods(c.options.namespace).Watch(options)
 			},
 		},
 		&corev1.Pod{},
@@ -159,6 +176,6 @@ func (c *Controller) processItem(key string) error {
 		return fmt.Errorf("object with key %s is not a runtime.Object", key)
 	}
 
-	sts.Process(c.client, c.evictionLabel, ro)
+	sts.Process(c.client, c.options.evictionLabel, ro)
 	return nil
 }

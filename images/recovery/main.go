@@ -19,6 +19,6 @@ func main() {
 		return
 	}
 
-	cont := controller.NewController(clientSet)
+	cont := controller.NewController(clientSet, controller.NewOptions())
 	cont.Run(context.Background())
 }
