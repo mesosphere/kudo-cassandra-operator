@@ -588,9 +588,8 @@ spec:
           command:
             - bash
             - -c
-            - /etc/cassandra-bootstrap/bootstrap init
           args:
-            - init
+            - /etc/cassandra-bootstrap/bootstrap init
           env:
             - name: POD_IP
               valueFrom:

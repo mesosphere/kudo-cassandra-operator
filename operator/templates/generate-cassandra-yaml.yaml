@@ -37,6 +37,13 @@ data:
               {{- end -}}"
     {{- end }}
 
+    if [ ! -d /var/lib/cassandra/data/system ]; then
+        echo "No system data directory found, we need to bootstrap and can't be a seed node at the moment";
+        HOSTNAME=${POD_NAME}.{{ .Name }}-svc.{{ .Namespace }}.svc.cluster.local
+        SEEDS=`echo $SEEDS | sed -E 's/'"$HOSTNAME"',?//'`
+        echo "Seedlist is now: $SEEDS"
+    fi;
+
     if [ -s /var/lib/cassandra/replace.ip ]; then
         echo "File replace.ip found, we are in replacement mode and have to remove our own host from seed list";
         HOSTNAME=${POD_NAME}.{{ .Name }}-svc.{{ .Namespace }}.svc.cluster.local
