@@ -588,7 +588,7 @@ spec:
           command:
             - bash
             - -c
-            - /etc/cassandra-bootstrap/bootstrap
+            - /etc/cassandra-bootstrap/bootstrap init
           args:
             - init
           env:
