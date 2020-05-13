@@ -18,38 +18,38 @@ ARTIFACTS=dist
 lint:
 	golangci-lint run
 
-bin/:
+bin/kubectl_$(KUBERNETES_VERSION):
 	mkdir -p bin/
-	mkdir -p dist/
+	curl -Lo bin/kubectl_$(KUBERNETES_VERSION) https://storage.googleapis.com/kubernetes-release/release/v$(KUBERNETES_VERSION)/bin/$(OS)/$(MACHINE)/kubectl
+	chmod +x bin/kubectl_$(KUBERNETES_VERSION)
 
 bin/kubectl: bin/kubectl_$(KUBERNETES_VERSION)
 	ln -sf ./kubectl_$(KUBERNETES_VERSION) ./bin/kubectl
 
+bin/kubectl-kuttl_$(KUTTL_VERSION):
+	mkdir -p bin/
+	curl -Lo bin/kubectl-kuttl_$(KUTTL_VERSION) https://github.com/kudobuilder/kuttl/releases/download/v$(KUTTL_VERSION)/kubectl-kuttl_$(KUTTL_VERSION)_$(OS)_$(KUDO_MACHINE)
+	chmod +x bin/kubectl-kuttl_$(KUTTL_VERSION)
+
 bin/kubectl-kuttl: bin/kubectl-kuttl_$(KUTTL_VERSION)
 	ln -sf ./kubectl-kuttl_$(KUTTL_VERSION) ./bin/kubectl-kuttl
 
+bin/kubectl-kudo_$(KUDO_VERSION):
+	mkdir -p bin/
+	curl -Lo bin/kubectl-kudo_$(KUDO_VERSION) https://github.com/kudobuilder/kudo/releases/download/v$(KUDO_VERSION)/kubectl-kudo_$(KUDO_VERSION)_$(OS)_$(KUDO_MACHINE)
+	chmod +x bin/kubectl-kudo_$(KUDO_VERSION)
+
 bin/kubectl-kudo: bin/kubectl-kudo_$(KUDO_VERSION)
 	ln -sf ./kubectl-kudo_$(KUDO_VERSION) ./bin/kubectl-kudo
-
-bin/kubectl_$(KUBERNETES_VERSION): bin/
-	curl -C - -Lo bin/kubectl_$(KUBERNETES_VERSION) https://storage.googleapis.com/kubernetes-release/release/v$(KUBERNETES_VERSION)/bin/$(OS)/$(MACHINE)/kubectl
-	chmod +x bin/kubectl_$(KUBERNETES_VERSION)
-
-bin/kubectl-kuttl_$(KUTTL_VERSION): bin/
-	curl -C - -Lo bin/kubectl-kuttl_$(KUTTL_VERSION) https://github.com/kudobuilder/kuttl/releases/download/v$(KUTTL_VERSION)/kubectl-kuttl_$(KUTTL_VERSION)_$(OS)_$(KUDO_MACHINE)
-	chmod +x bin/kubectl-kuttl_$(KUTTL_VERSION)
-
-bin/kubectl-kudo_$(KUDO_VERSION): bin/
-	curl -C - -Lo bin/kubectl-kudo_$(KUDO_VERSION) https://github.com/kudobuilder/kudo/releases/download/v$(KUDO_VERSION)/kubectl-kudo_$(KUDO_VERSION)_$(OS)_$(KUDO_MACHINE)
-	chmod +x bin/kubectl-kudo_$(KUDO_VERSION)
 
 .PHONY: install-kuttl
 install-kuttl: bin/kubectl-kuttl bin/kubectl-kudo bin/kubectl
 
 .PHONY: kind-test
 kind-test: install-kuttl render-test-templates
+	mkdir -p dist/
 	go get github.com/jstemmer/go-junit-report
-	#kubectl kuttl test --config=./suites/kuttl-common.yaml --artifacts-dir=$(ARTIFACTS) 2>&1 |tee /dev/fd/2 | go-junit-report -set-exit-code > dist/common-junit.xml
+	kubectl kuttl test --config=./suites/kuttl-common.yaml --artifacts-dir=$(ARTIFACTS) 2>&1 |tee /dev/fd/2 | go-junit-report -set-exit-code > dist/common-junit.xml
 	kubectl kuttl test --config=./suites/kuttl-failure-recovery.yaml --artifacts-dir=$(ARTIFACTS) 2>&1 |tee /dev/fd/2 | go-junit-report -set-exit-code > dist/failure-recovery-junit.xml
 
 .PHONY: clean
