@@ -258,6 +258,11 @@ parameters:
     description: "Prometheus exporter Docker image pull policy."
     default: "Always"
 
+  - name: PROMETHEUS_EXPORTER_CUSTOM_CONFIG_CM_NAME
+    displayName: "custom prometheus configuration configmap name"
+    description: "The properties present in this configmap will be appended to the prometheus configuration properties"
+    required: false
+
   ################################################################################
   ########################### Cassandra node settings ############################
   ################################################################################
