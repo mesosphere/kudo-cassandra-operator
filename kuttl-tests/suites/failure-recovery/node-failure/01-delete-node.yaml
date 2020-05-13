@@ -3,3 +3,5 @@ kind: TestStep
 commands:
   - command: ./delete-node-for-pod.sh cassandra-node-0
     namespaced: true
+  - command: ./assert-node-down.sh cassandra-node-1 1
+    namespaced: true
