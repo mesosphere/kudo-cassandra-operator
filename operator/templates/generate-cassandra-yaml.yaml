@@ -9,8 +9,56 @@ data:
 
     set -euxo pipefail
 
+    set +x
     readonly truststore_password=$(cat /etc/cassandra/truststore/truststore_password)
     readonly keystore_password=$(cat /etc/cassandra/truststore/keystore_password)
+    set -x
+
+    {{- if .Params.NODE_TOPOLOGY }}
+      {{- $lastTopo := 0 }}
+    SEEDS="{{- range $dc := $.Params.NODE_TOPOLOGY -}}
+      {{- range $i, $node := until (int (min 3 $dc.nodes)) -}}
+        {{- if or $i $lastTopo -}}, {{- end -}}
+          {{ $.Name }}-{{ $dc.datacenter }}-node-{{ $node }}.{{ $.Name }}-svc.{{ $.Namespace }}.svc.cluster.local
+        {{- end -}}
+        {{- $lastTopo = 1 }}
+      {{- end -}}
+      {{- range $external := $.Params.EXTERNAL_SEED_NODES -}}
+        , {{ . }}
+      {{- end -}}"
+    {{- else }}
+    # We have a simple setup and use the first 3 nodes as seed
+    SEEDS="{{- range $i, $node := until (int (min 3 .Params.NODE_COUNT)) -}}
+      {{- if $i -}}, {{- end -}}
+        {{ $.Name }}-node-{{ $node }}.{{ $.Name }}-svc.{{ $.Namespace }}.svc.cluster.local
+      {{- end -}}
+      {{- range $external := $.Params.EXTERNAL_SEED_NODES -}}
+        , {{ . }}
+      {{- end -}}"
+    {{- end }}
+
+    {{- if .Params.NODE_TOPOLOGY }}
+    NODE_ZERO={{ $.Name }}-{{ (index $.Params.NODE_TOPOLOGY 0).datacenter }}-node-0
+    {{- else }}
+    NODE_ZERO={{ $.Name }}-node-0
+    {{- end }}
+
+    HOSTNAME=${POD_NAME}.{{ .Name }}-svc.{{ .Namespace }}.svc.cluster.local
+
+    # On Cluster creation or when adding a node, every node except the very first one shouldn't be a seed node on startup
+    # This does not seem to work at the moment. We still need it for scale up, needs more work
+    #if [ "${POD_NAME}" != "${NODE_ZERO}" ] && [ ! -d /var/lib/cassandra/data/system ]; then
+    #    echo "No system data directory found, we need to bootstrap and can't be a seed node at the moment";
+    #    SEEDS=`echo $SEEDS | sed -E 's/'"$HOSTNAME"',?//'`
+    #fi;
+
+    # When replacing a node, the new node should not be a seed node either. This applies to the very first node as well
+    if [ -s /var/lib/cassandra/replace.ip ]; then
+        echo "File replace.ip found, we are in replacement mode and have to remove our own host from seed list";
+        SEEDS=`echo $SEEDS | sed -E 's/'"$HOSTNAME"',?//'`
+    fi;
+
+    echo "Seedlist is now: $SEEDS"
 
     cat <<EOF > /etc/cassandra/cassandra.yaml
     # Cassandra storage config YAML
@@ -485,28 +533,7 @@ data:
           # Here we follow the advice from DataStax and make the first 3
           # nodes in a DC the seed nodes.
           # https://docs.datastax.com/en/dse/6.0/dse-admin/datastax_enterprise/production/seedNodesForSingleDC.html
-          {{- if .Params.NODE_TOPOLOGY }}
-            {{- $lastTopo := 0 }}
-          - seeds: "{{- range $dc := $.Params.NODE_TOPOLOGY -}}
-                      {{- range $i, $node := until (int (min 3 $dc.nodes)) -}}
-                        {{- if or $i $lastTopo -}}, {{- end -}}
-                        {{ $.Name }}-{{ $dc.datacenter }}-node-{{ $node }}.{{ $.Name }}-svc.{{ $.Namespace }}.svc.cluster.local
-                      {{- end -}}
-                      {{- $lastTopo = 1 }}
-                    {{- end -}}
-                    {{- range $external := $.Params.EXTERNAL_SEED_NODES -}}
-                      , {{ . }}
-                    {{- end -}}"
-          {{- else }}
-          # We have a simple setup and use the first 3 nodes as seed
-          - seeds: "{{- range $i, $node := until (int (min 3 .Params.NODE_COUNT)) -}}
-                      {{- if $i -}}, {{- end -}}
-                      {{ $.Name }}-node-{{ $node }}.{{ $.Name }}-svc.{{ $.Namespace }}.svc.cluster.local
-                    {{- end -}}
-                    {{- range $external := $.Params.EXTERNAL_SEED_NODES -}}
-                      , {{ . }}
-                    {{- end -}}"
-          {{- end }}
+          - seeds: ${SEEDS}
 
     # For workloads with more data than can fit in memory, Cassandra's
     # bottleneck will be reads that need to fetch data from

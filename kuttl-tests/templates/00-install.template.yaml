@@ -1,5 +1,0 @@
-apiVersion: kudo.dev/v1beta1
-kind: TestStep
-commands:
-  - command: kubectl kudo install cassandra -n cassandra-install-test --operator-version=0.1.2 --instance cassandra -p PROMETHEUS_EXPORTER_ENABLED=false -p NODE_COUNT=1 -p NODE_CPU_MC=200 -p NODE_MEM_MIB=128 -p NODE_DISK_SIZE_GIB=1 -p NODE_DOCKER_IMAGE=${CASSANDRA_DOCKER_IMAGE} -p SERVICE_ACCOUNT_INSTALL=true
-    namespaced: true

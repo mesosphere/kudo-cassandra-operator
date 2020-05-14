@@ -1,5 +1,0 @@
-context: community
-repoVersion: v1
-repositories:
-- name: community
-  url: https://kudo-repository.storage.googleapis.com/0.10.0

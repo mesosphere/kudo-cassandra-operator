@@ -1,0 +1,6 @@
+apiVersion: kudo.dev/v1beta1
+kind: TestStep
+commands:
+  # Get the current node count from cassandra-node-1 and make sure it equals 2
+  - command: ./assert-node-count.sh cassandra-node-1 2
+    namespaced: true
