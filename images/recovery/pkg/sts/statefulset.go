@@ -2,8 +2,8 @@ package sts
 
 import (
 	"fmt"
-	"log"
 
+	log "github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -23,6 +23,13 @@ func Process(client *kubernetes.Clientset, evictionLabel string, item runtime.Ob
 		return
 	}
 
+	if detectEvictionCondition(evictionLabel, pod) {
+		log.Printf("the pod %s/%s meets the eviction conditions.\n", pod.Namespace, pod.Name)
+		if err := cleanStartPod(client, pod); err != nil {
+			log.Printf("ERROR: Failed to clean start pod: %v", err)
+		}
+	}
+
 	needsRecovery, err := detectRecoveryConditions(client, pod)
 	if err != nil {
 		log.Printf("ERROR: failed to detect recovery condition: %v", err)
@@ -36,14 +43,6 @@ func Process(client *kubernetes.Clientset, evictionLabel string, item runtime.Ob
 		}
 		return
 	}
-
-	if detectEvictionCondition(evictionLabel, pod) {
-		log.Printf("the pod %s/%s meets the eviction conditions.\n", pod.Namespace, pod.Name)
-		if err = cleanStartPod(client, pod); err != nil {
-			log.Printf("ERROR: Failed to clean start pod: %v", err)
-		}
-	}
-
 }
 
 func detectEvictionCondition(evictionLabel string, pod *corev1.Pod) bool {
@@ -62,7 +61,7 @@ func detectEvictionCondition(evictionLabel string, pod *corev1.Pod) bool {
 func detectRecoveryConditions(client *kubernetes.Clientset, pod *corev1.Pod) (bool, error) {
 	isUnschedulable := false
 	for _, condition := range pod.Status.Conditions {
-		if condition.Type == "PodScheduled" && condition.Reason == "Unschedulable" {
+		if condition.Type == corev1.PodScheduled && condition.Reason == corev1.PodReasonUnschedulable {
 			isUnschedulable = true
 			break
 		}

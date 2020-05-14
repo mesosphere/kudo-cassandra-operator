@@ -1,10 +1,6 @@
 
-.PHONY: goimports
-goimports:
-	goimports -d .
-
 .PHONY: lint
-lint: goimports
+lint:
 	golangci-lint run
 
 test:
