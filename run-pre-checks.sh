@@ -3,7 +3,7 @@
 set -euxo pipefail
 
 readonly script_directory="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
-readonly project_directory="$(readlink -f "${script_directory}")"
+readonly project_directory="$(realpath -L "${script_directory}")"
 
 # We need to ignore the suffix for the purpose of checking templates.
 IMAGE_DISAMBIGUATION_SUFFIX="" "${project_directory}/tools/compile_templates.sh" --check-only
@@ -12,6 +12,7 @@ IMAGE_DISAMBIGUATION_SUFFIX="" "${project_directory}/tools/compile_templates.sh"
 
 "${project_directory}/tools/docker.sh" "${project_directory}/tools/format_files.sh"
 
+source "${project_directory}/metadata.sh"
 cd "${project_directory}"
 set +x
 if [ -n "$(git status --porcelain)" ]; then
@@ -22,3 +23,21 @@ if [ -n "$(git status --porcelain)" ]; then
   git diff
   exit 1
 fi
+
+# run unit tests for bootstrap binary
+docker run \
+  --rm \
+  -v "${project_directory}:${project_directory}" \
+  -w "${project_directory}"/images/bootstrap \
+  "${INTEGRATION_TESTS_DOCKER_IMAGE}" \
+  bash -c "make test"
+
+# run KUTTL tests in ./kuttl-tests directory
+docker run \
+  --rm \
+  -v "${project_directory}:${project_directory}" \
+  -w "${project_directory}"/kuttl-tests \
+  --env-file <(env | grep BUILD_VCS_NUMBER_) \
+  --privileged --network host -v /var/run/docker.sock:/var/run/docker.sock \
+  "${INTEGRATION_TESTS_DOCKER_IMAGE}" \
+  bash -c "make kind-test"
