@@ -16,9 +16,9 @@ data:
     {{ end }}
   node-readiness-probe.sh: |
     {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
-    nodetool {{ $auth_params }} --ssl status -p {{ .Params.JMX_PORT }} | grep -q "UN  ${POD_IP}"
+    nodetool {{ $auth_params }} --ssl status -p {{ .Params.JMX_PORT }} | grep -q "U[NJ]  ${POD_IP}"
     {{ else }}
-    nodetool {{ $auth_params }} status -p {{ .Params.JMX_PORT }} | grep -q "UN  ${POD_IP}"
+    nodetool {{ $auth_params }} status -p {{ .Params.JMX_PORT }} | grep -q "U[NJ]  ${POD_IP}"
     {{ end }}
   node-liveness-probe.sh: |
     {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}

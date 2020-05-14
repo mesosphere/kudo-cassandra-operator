@@ -1,0 +1,9 @@
+apiVersion: kudo.dev/v1beta1
+kind: TestStep
+commands:
+    # Delete the KIND node where cassandra-node-0 lives on
+  - command: ./delete-node-for-pod.sh cassandra-node-0
+    namespaced: true
+    # Wait for at least 1 cassandra Node to be marked "down"
+  - command: ./assert-node-down.sh cassandra-node-1 1
+    namespaced: true
