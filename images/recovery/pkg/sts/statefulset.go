@@ -24,7 +24,7 @@ func Process(client *kubernetes.Clientset, evictionLabel string, item runtime.Ob
 	}
 
 	if detectEvictionCondition(evictionLabel, pod) {
-		log.Printf("the pod %s/%s meets the eviction conditions.\n", pod.Namespace, pod.Name)
+		log.Printf("the pod %s/%s meets the eviction conditions.", pod.Namespace, pod.Name)
 		if err := cleanStartPod(client, pod); err != nil {
 			log.Printf("ERROR: Failed to clean start pod: %v", err)
 		}
@@ -37,7 +37,7 @@ func Process(client *kubernetes.Clientset, evictionLabel string, item runtime.Ob
 	}
 
 	if needsRecovery {
-		log.Printf("the pod %s/%s meets the recovery conditions.\n", pod.Namespace, pod.Name)
+		log.Printf("the pod %s/%s meets the recovery conditions.", pod.Namespace, pod.Name)
 		if err = cleanStartPod(client, pod); err != nil {
 			log.Printf("ERROR: Failed to clean start pod: %v", err)
 		}
@@ -68,14 +68,14 @@ func detectRecoveryConditions(client *kubernetes.Clientset, pod *corev1.Pod) (bo
 	}
 
 	if isUnschedulable {
-		log.Printf("FailedScheduling detected for %s/%s.\n", pod.Namespace, pod.Name)
+		log.Printf("FailedScheduling detected for %s/%s.", pod.Namespace, pod.Name)
 		pvcDown, err := detectPVCDown(client, pod)
 		if err != nil {
 			return false, fmt.Errorf("failed to detect if pv for pod %s/%s is down: %v", pod.Namespace, pod.Name, err)
 		}
 		log.Printf("Detected PVC status for %s/%s: %v", pod.Namespace, pod.Name, pvcDown)
 		if pvcDown {
-			log.Printf("PVC for %s/%s is not available, assuming it is already deleted.\n", pod.Namespace, pod.Name)
+			log.Printf("PVC for %s/%s is not available, assuming it is already deleted.", pod.Namespace, pod.Name)
 			return true, nil
 		}
 		nodeDown, err := detectNodeDown(client, pod)
@@ -83,7 +83,7 @@ func detectRecoveryConditions(client *kubernetes.Clientset, pod *corev1.Pod) (bo
 			return false, fmt.Errorf("failed to detect if node for pod %s/%s is down: %v", pod.Namespace, pod.Name, err)
 		}
 		if nodeDown {
-			log.Printf("Node is down for %s/%s.\n", pod.Namespace, pod.Name)
+			log.Printf("Node is down for %s/%s.", pod.Namespace, pod.Name)
 			return true, nil
 		}
 	}
@@ -162,7 +162,7 @@ func cleanStartPod(client *kubernetes.Clientset, pod *corev1.Pod) error {
 	if err != nil {
 		return fmt.Errorf("failed to get PVCs from pod %s/%s: %v", pod.Namespace, pod.Name, err)
 	}
-	log.Printf("Found %d PVCs for pod %s/%s: ", len(pvcs), pod.Namespace, pod.Name)
+	log.Printf("Found %d PVCs for pod %s/%s", len(pvcs), pod.Namespace, pod.Name)
 
 	// Detach PVCs from their PVs
 	for _, pvc := range pvcs {
