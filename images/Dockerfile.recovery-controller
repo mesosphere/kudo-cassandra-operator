@@ -6,6 +6,6 @@ ENV GO111MODULE=on
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o cassandra-recovery
 
 FROM debian:buster-20200422-slim
-COPY --from=build-env /cassandra-recovery /cassandra-recovery/
+COPY --from=build-env /recovery /cassandra-recovery/
 
 CMD /cassandra-recovery/cassandra-recovery
