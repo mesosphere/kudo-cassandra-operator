@@ -17,24 +17,24 @@ data:
     {{- if .Params.NODE_TOPOLOGY }}
       {{- $lastTopo := 0 }}
     SEEDS="{{- range $dc := $.Params.NODE_TOPOLOGY -}}
-                {{- range $i, $node := until (int (min 3 $dc.nodes)) -}}
-                  {{- if or $i $lastTopo -}}, {{- end -}}
-                  {{ $.Name }}-{{ $dc.datacenter }}-node-{{ $node }}.{{ $.Name }}-svc.{{ $.Namespace }}.svc.cluster.local
-                {{- end -}}
-                {{- $lastTopo = 1 }}
-              {{- end -}}
-              {{- range $external := $.Params.EXTERNAL_SEED_NODES -}}
-                , {{ . }}
-              {{- end -}}"
+      {{- range $i, $node := until (int (min 3 $dc.nodes)) -}}
+        {{- if or $i $lastTopo -}}, {{- end -}}
+          {{ $.Name }}-{{ $dc.datacenter }}-node-{{ $node }}.{{ $.Name }}-svc.{{ $.Namespace }}.svc.cluster.local
+        {{- end -}}
+        {{- $lastTopo = 1 }}
+      {{- end -}}
+      {{- range $external := $.Params.EXTERNAL_SEED_NODES -}}
+        , {{ . }}
+      {{- end -}}"
     {{- else }}
     # We have a simple setup and use the first 3 nodes as seed
     SEEDS="{{- range $i, $node := until (int (min 3 .Params.NODE_COUNT)) -}}
-                {{- if $i -}}, {{- end -}}
-                {{ $.Name }}-node-{{ $node }}.{{ $.Name }}-svc.{{ $.Namespace }}.svc.cluster.local
-              {{- end -}}
-              {{- range $external := $.Params.EXTERNAL_SEED_NODES -}}
-                , {{ . }}
-              {{- end -}}"
+      {{- if $i -}}, {{- end -}}
+        {{ $.Name }}-node-{{ $node }}.{{ $.Name }}-svc.{{ $.Namespace }}.svc.cluster.local
+      {{- end -}}
+      {{- range $external := $.Params.EXTERNAL_SEED_NODES -}}
+        , {{ . }}
+      {{- end -}}"
     {{- end }}
 
     {{- if .Params.NODE_TOPOLOGY }}
@@ -46,10 +46,11 @@ data:
     HOSTNAME=${POD_NAME}.{{ .Name }}-svc.{{ .Namespace }}.svc.cluster.local
 
     # On Cluster creation or when adding a node, every node except the very first one shouldn't be a seed node on startup
-    if [ "${POD_NAME}" != "${NODE_ZERO}" ] && [ ! -d /var/lib/cassandra/data/system ]; then
-        echo "No system data directory found, we need to bootstrap and can't be a seed node at the moment";
-        SEEDS=`echo $SEEDS | sed -E 's/'"$HOSTNAME"',?//'`
-    fi;
+    # This does not seem to work at the moment. We still need it for scale up, needs more work
+    #if [ "${POD_NAME}" != "${NODE_ZERO}" ] && [ ! -d /var/lib/cassandra/data/system ]; then
+    #    echo "No system data directory found, we need to bootstrap and can't be a seed node at the moment";
+    #    SEEDS=`echo $SEEDS | sed -E 's/'"$HOSTNAME"',?//'`
+    #fi;
 
     # When replacing a node, the new node should not be a seed node either. This applies to the very first node as well
     if [ -s /var/lib/cassandra/replace.ip ]; then
