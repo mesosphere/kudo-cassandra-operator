@@ -6,6 +6,8 @@ readonly script_directory="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1
 readonly project_directory="$(realpath -L "${script_directory}")"
 readonly artifacts_directory="${DS_TEST_ARTIFACTS_DIRECTORY:-${project_directory}/kuttl-tests/kuttl-dist}"
 
+mkdir -p "${artifacts_directory}"
+
 # We need to ignore the suffix for the purpose of checking templates.
 IMAGE_DISAMBIGUATION_SUFFIX="" "${project_directory}/tools/compile_templates.sh" --check-only
 
