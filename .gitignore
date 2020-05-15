@@ -1,5 +1,4 @@
 *-junit.xml
 tests/.idea/
-.idea/
-.DS_Store
-benchmarks/.DS_Store
+.idea
+**/.DS_Store
