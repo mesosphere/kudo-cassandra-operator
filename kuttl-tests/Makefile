@@ -32,6 +32,7 @@ bin/kubectl-kuttl_$(KUTTL_VERSION)_$(OS):
 	chmod +x bin/kubectl-kuttl_$(KUTTL_VERSION)_$(OS)
 
 bin/kubectl-kuttl: bin/kubectl-kuttl_$(KUTTL_VERSION)_$(OS)
+    echo "Linking kubectl-kuttl_$(KUTTL_VERSION)_$(OS)"
 	ln -sf ./kubectl-kuttl_$(KUTTL_VERSION)_$(OS) ./bin/kubectl-kuttl
 
 bin/kubectl-kudo_$(KUDO_VERSION)_$(OS):
