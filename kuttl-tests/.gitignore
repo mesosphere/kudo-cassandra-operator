@@ -1,4 +1,5 @@
 dist/
+kuttl-dist/
 bin/kubectl
 bin/kubectl-kuttl
 bin/kubectl_*
