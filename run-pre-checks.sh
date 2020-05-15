@@ -46,7 +46,7 @@ ls -la ${artifacts_directory}/kuttl-dist/
 docker run \
   --rm \
   -v "${project_directory}:${project_directory}" \
-  -v "${artifacts_directory}/kuttl-dist:/kuttl-tests/kuttl-dist" \
+  -v "${artifacts_directory}/kuttl-dist:${project_directory}/kuttl-tests/kuttl-dist" \
   -w "${project_directory}"/kuttl-tests \
   --env-file <(env | grep BUILD_VCS_NUMBER_) \
   --privileged --network host -v /var/run/docker.sock:/var/run/docker.sock \
