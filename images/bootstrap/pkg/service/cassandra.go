@@ -56,21 +56,17 @@ func (c *CassandraService) SetReplaceIP() error {
 		return err
 	}
 	oldIp := cfg.Data[podName]
-	log.Infof("bootstrap: Got old IP %s for pod %s, current IP is %s", oldIp, podName, podIpAddress)
-	if oldIp == podIpAddress {
-		return nil
+	if oldIp != podIpAddress {
+		// new internal ip address
+		if isBootstrapped() {
+			// bootstrapped node needs no replace ip flag
+			return nil
+		} else {
+			// node not bootstrapped and has an old ip address
+			return c.WriteReplaceIp(oldIp)
+		}
 	}
-
-	// new internal ip address
-	if isBootstrapped() {
-		log.Infof("bootstrap: Node is already  bootstrapped, no need for replace IP")
-		// bootstrapped node needs no replace ip flag
-		return nil
-	}
-
-	log.Infof("bootstrap: Node is not bootstrapped, add replace ip to startup")
-	// node not bootstrapped and has an old ip address
-	return c.WriteReplaceIp(oldIp)
+	return nil
 }
 
 func isBootstrapped() bool {

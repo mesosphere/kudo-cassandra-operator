@@ -15,10 +15,8 @@ data:
     readonly certificate="tls.crt"
     readonly private_key="tls.key"
 
-    set +x
     readonly truststore_password=$(cat /etc/cassandra/truststore/truststore_password)
     readonly keystore_password=$(cat /etc/cassandra/truststore/keystore_password)
-    set -x
 
     # In days.
     readonly validity=900

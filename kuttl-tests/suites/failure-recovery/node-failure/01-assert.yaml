@@ -1,5 +1,0 @@
-apiVersion: v1
-kind: Event
-reason: FailedScheduling
-involvedObject:
-  name: cassandra-node-0

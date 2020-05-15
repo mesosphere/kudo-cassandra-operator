@@ -51,13 +51,6 @@ tasks:
     spec:
       resources:
         - backup-job.yaml
-  - name: recovery-controller
-    kind: Toggle
-    spec:
-      parameter: RECOVERY_CONTROLLER
-      resources:
-        - recovery-controller-rbac.yaml
-        - recovery-controller.yaml
   - name: node-resolver-rbac
     kind: Toggle
     spec:
@@ -97,7 +90,6 @@ plans:
             tasks:
               - node
               - ext-service
-              - recovery-controller
               - backup-deploy
   repair:
     strategy: serial

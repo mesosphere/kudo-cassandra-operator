@@ -261,10 +261,8 @@ data:
       # turn on JMX authentication. See below for further options
       JVM_OPTS="$JVM_OPTS -Dcom.sun.management.jmxremote.authenticate=false"
 
-      set +x
       readonly truststore_password=$(cat /etc/cassandra/truststore/truststore_password)
       readonly keystore_password=$(cat /etc/cassandra/truststore/keystore_password)
-      set -x
 
       # jmx ssl options
       JVM_OPTS="$JVM_OPTS -Dcom.sun.management.jmxremote.ssl=true"
@@ -319,9 +317,3 @@ data:
         INITIAL_TOKENS=`cat /var/lib/cassandra/token_map`
         JVM_OPTS="$JVM_OPTS -Dcassandra.initial_token=$INITIAL_TOKENS"
     fi
-
-    if [ -s /var/lib/cassandra/replace.ip ]; then
-        replace_ip=$(cat /var/lib/cassandra/replace.ip);
-        echo "File replace.ip found with IP:${replace_ip}";
-        JVM_OPTS="$JVM_OPTS -Dcassandra.replace_address=${replace_ip}"
-    fi;
