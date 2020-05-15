@@ -1,5 +1,9 @@
 dist/
-bin/
+bin/kubectl
+bin/kubectl-kuttl
+bin/kubectl_*
+bin/kubectl-kudo*
+bin/tpl
 kubeconfig
 .kube/
 .kudo/

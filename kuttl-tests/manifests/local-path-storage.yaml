@@ -9,9 +9,7 @@ metadata:
   annotations:
     storageclass.beta.kubernetes.io/is-default-class: "false"
     storageclass.kubernetes.io/is-default-class: "false"
-provisioner: kubernetes.io/host-path
 reclaimPolicy: Delete
-volumeBindingMode: Immediate
 ---
 apiVersion: v1
 kind: Namespace
