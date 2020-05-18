@@ -13,6 +13,10 @@ for i in {1..15}; do
 
     echo "Expected Down Node count: $EXPECTED_DOWN_NODE_COUNT, Actual Node count: $DOWN_NODE_COUNT (Try $i)"
 
+    DOWN_NODE_COUNT_ZERO=`kubectl exec -n ${NAMESPACE} cassandra-node-0 -- ${CMD} | grep -E "^DN\s+.*$" | wc -l`
+
+    echo "Same output from Node-0: $DOWN_NODE_COUNT_ZERO"
+
     if [[ ${EXPECTED_DOWN_NODE_COUNT} == ${DOWN_NODE_COUNT} ]]; then
         echo "Found matching down node count"
         exit 0
