@@ -102,8 +102,13 @@ func detectPVCDown(client *kubernetes.Clientset, pod *corev1.Pod) (bool, error) 
 			if err != nil {
 				return false, fmt.Errorf("failed to retrieve pvc %s/%s: %v", pod.Namespace, vol.PersistentVolumeClaim.ClaimName, err)
 			}
+			log.Printf(" Volume Claim Status: %s", pvc.Status.Phase)
 			if pvc.Spec.VolumeName == "" {
 				log.Printf("Volume Name for PVC %s/%s has no PV attached", pvc.Namespace, pvc.Name)
+				if pvc.Status.Phase == corev1.ClaimPending {
+					log.Printf("PVC is still in phase Pending, it's not down")
+					return false, nil
+				}
 				return true, nil
 			}
 		}
