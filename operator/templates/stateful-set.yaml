@@ -148,9 +148,6 @@ spec:
             - -c
           args:
             - /etc/cassandra/generate-cassandra-yaml.sh;
-              {{ if or (eq $.Params.TRANSPORT_ENCRYPTION_ENABLED "true") (eq $.Params.TRANSPORT_ENCRYPTION_CLIENT_ENABLED "true") (ne $.Params.JMX_LOCAL_ONLY "true") }}
-              /etc/tls/bin/generate-tls-artifacts.sh;
-              {{ end }}
               {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
               /etc/cassandra/generate-nodetool-ssl-properties.sh &&
               cp /etc/cassandra/nodetool-ssl.properties /home/cassandra/.cassandra/nodetool-ssl.properties;
@@ -599,6 +596,9 @@ spec:
             - -c
           args:
             - /etc/cassandra/generate-cassandra-yaml.sh;
+              {{ if or (eq $.Params.TRANSPORT_ENCRYPTION_ENABLED "true") (eq $.Params.TRANSPORT_ENCRYPTION_CLIENT_ENABLED "true") (ne $.Params.JMX_LOCAL_ONLY "true") }}
+              /etc/tls/bin/generate-tls-artifacts.sh;
+              {{ end }}
               {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
               /etc/cassandra/generate-nodetool-ssl-properties.sh &&
               cp /etc/cassandra/nodetool-ssl.properties /home/cassandra/.cassandra/nodetool-ssl.properties;
@@ -639,6 +639,12 @@ spec:
             - name: jvm-options
               mountPath: /etc/cassandra/jvm.options
               subPath: jvm.options
+          {{ if or (eq $.Params.TRANSPORT_ENCRYPTION_ENABLED "true") (eq $.Params.TRANSPORT_ENCRYPTION_CLIENT_ENABLED "true") (ne $.Params.JMX_LOCAL_ONLY "true") }}
+            - name: {{ $.Params.TLS_SECRET_NAME }}
+              mountPath: /etc/tls/certs
+            - name: generate-tls-artifacts
+              mountPath: /etc/tls/bin
+          {{ end }}
           {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
             - name: generate-nodetool-ssl-properties
               mountPath: /etc/cassandra/generate-nodetool-ssl-properties.sh
