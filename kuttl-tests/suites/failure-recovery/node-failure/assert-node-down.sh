@@ -5,11 +5,11 @@ EXPECTED_DOWN_NODE_COUNT=$2
 # $3 is "--namespace"
 NAMESPACE=$4
 
-CMD='nodetool -u $(cat /etc/cassandra/authentication/username) -pwf <(paste -d " " /etc/cassandra/authentication/username /etc/cassandra/authentication/password) --ssl status'
+CMD='nodetool --ssl status'
 
 for i in {1..15}; do
     # Fetch the list of current nodes from cassandra and parse lines with UN/DN/... etc from the output
-    DOWN_NODE_COUNT=`kubectl exec -n ${NAMESPACE} ${NODE_NAME} ${CMD} | grep -E "^DN\s+.*$" | wc -l`
+    DOWN_NODE_COUNT=`kubectl exec -n ${NAMESPACE} ${NODE_NAME} -- ${CMD} | grep -E "^DN\s+.*$" | wc -l`
 
     echo "Expected Down Node count: $EXPECTED_DOWN_NODE_COUNT, Actual Node count: $DOWN_NODE_COUNT (Try $i)"
 
