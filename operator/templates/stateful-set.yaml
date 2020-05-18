@@ -198,6 +198,14 @@ spec:
               value: "{{ $.Name }}-topology-lock"
             - name: BOOTSTRAP_TIMEOUT
               value: "{{ $.Params.BOOTSTRAP_TIMEOUT }}"
+            - name: JMX_PORT
+              value: "{{ $.Params.JMX_PORT }}"
+            - name: USE_SSL
+              {{ if eq $.Params.JMX_LOCAL_ONLY "true" }}
+              value: false
+              {{ else }}
+              value: true
+              {{ end }}
           resources:
             requests:
               memory: "{{ $.Params.NODE_MEM_MIB }}Mi"
@@ -617,12 +625,18 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
-            - name: JMX_PORT
-              value: "{{ $.Params.JMX_PORT }}"
             - name: CASSANDRA_IP_LOCK_CM
               value: "{{ $.Name }}-topology-lock"
             - name: BOOTSTRAP_TIMEOUT
               value: "{{ $.Params.BOOTSTRAP_TIMEOUT }}"
+            - name: JMX_PORT
+              value: "{{ $.Params.JMX_PORT }}"
+            - name: USE_SSL
+              {{ if eq $.Params.JMX_LOCAL_ONLY "true" }}
+              value: false
+              {{ else }}
+              value: true
+              {{ end }}
           volumeMounts:
             - name: etc-cassandra
               mountPath: /etc/cassandra/
