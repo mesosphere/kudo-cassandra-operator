@@ -36,11 +36,7 @@ docker run \
   bash -c "make test"
 
 mkdir -p "${artifacts_directory}"/kuttl-dist
-
 echo "Saving KUTTL artifacts to ${artifacts_directory}/kuttl-dist"
-touch ${artifacts_directory}/kuttl-dist/marker
-
-ls -la ${artifacts_directory}/kuttl-dist/
 
 # run KUTTL tests in ./kuttl-tests directory
 docker run \

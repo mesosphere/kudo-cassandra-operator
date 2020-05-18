@@ -7,11 +7,13 @@ import (
 	"time"
 
 	testclient "github.com/kudobuilder/test-tools/pkg/client"
+	"github.com/kudobuilder/test-tools/pkg/debug"
 	"github.com/kudobuilder/test-tools/pkg/kubernetes"
 	"github.com/kudobuilder/test-tools/pkg/kudo"
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/reporters"
 	. "github.com/onsi/gomega"
+	"github.com/spf13/afero"
 	"k8s.io/apimachinery/pkg/api/errors"
 
 	"github.com/mesosphere/kudo-cassandra-operator/tests/cassandra"
@@ -22,6 +24,7 @@ var (
 	kubeConfigPath    = os.Getenv("KUBECONFIG")
 	operatorName      = os.Getenv("OPERATOR_NAME")
 	operatorDirectory = os.Getenv("OPERATOR_DIRECTORY")
+	kubectlPath       = os.Getenv("KUBECTL_PATH")
 
 	instanceName  = fmt.Sprintf("%s-instance", operatorName)
 	testNamespace = "authentication"
@@ -34,7 +37,22 @@ var _ = Describe("Authentication tests", func() {
 		operator    kudo.Operator
 	)
 
+	BeforeEach(func() {
+		var err error
+
+		client, err = testclient.NewForConfig(kubeConfigPath)
+		Expect(err).NotTo(HaveOccurred())
+
+		By("Setting up namespace")
+		err = kubernetes.CreateNamespace(client, testNamespace)
+		if !errors.IsAlreadyExists(err) {
+			Expect(err).NotTo(HaveOccurred())
+		}
+	})
+
 	AfterEach(func() {
+		_ = debug.CollectArtifacts(client, afero.NewOsFs(), GinkgoWriter, testNamespace, kubectlPath)
+
 		err := operator.Uninstall()
 		Expect(err).NotTo(HaveOccurred())
 
@@ -48,15 +66,6 @@ var _ = Describe("Authentication tests", func() {
 	Context("when using the 'PasswordAuthenticator'", func() {
 		It("should authenticate 'nodetool' calls", func() {
 			var err error
-
-			client, err = testclient.NewForConfig(kubeConfigPath)
-			Expect(err).NotTo(HaveOccurred())
-
-			By("Setting up namespace")
-			err = kubernetes.CreateNamespace(client, testNamespace)
-			if !errors.IsAlreadyExists(err) {
-				Expect(err).NotTo(HaveOccurred())
-			}
 
 			By("Adding a secret containing the default user credentials")
 			const secretName = "authn-credentials" ////nolint:gosec
