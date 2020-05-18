@@ -216,6 +216,11 @@ func getPVCs(client *kubernetes.Clientset, pod *corev1.Pod) ([]*corev1.Persisten
 }
 
 func detachPVCFromPV(client *kubernetes.Clientset, pvc *corev1.PersistentVolumeClaim) error {
+	if pvc.Spec.VolumeName == "" {
+		log.Infof("Unable to detach PV from PVC %s/%s, volume name from PVC is already empty", pvc.Namespace, pvc.Name)
+		return nil
+	}
+
 	pv, err := client.CoreV1().PersistentVolumes().Get(pvc.Spec.VolumeName, metav1.GetOptions{})
 	if err != nil {
 		return fmt.Errorf("failed to get PV '%s': %v", pvc.Spec.VolumeName, err)

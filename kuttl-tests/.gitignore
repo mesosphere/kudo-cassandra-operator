@@ -1,4 +1,4 @@
-dist/
+kuttl-dist/
 bin/
 kubeconfig
 .kube/

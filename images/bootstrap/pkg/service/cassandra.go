@@ -26,6 +26,7 @@ var (
 	podIpAddress  string
 	bootstrapWait string
 	jmxPort       string
+	useSSL        bool
 )
 
 type CassandraService struct {
@@ -39,6 +40,7 @@ func init() {
 	configmapName = os.Getenv("CASSANDRA_IP_LOCK_CM")
 	bootstrapWait = os.Getenv("BOOTSTRAP_TIMEOUT")
 	jmxPort = os.Getenv("JMX_PORT")
+	useSSL = os.Getenv("USE_SSL") == "true"
 }
 
 func NewCassandraService(client *kubernetes.Clientset) *CassandraService {
@@ -82,7 +84,7 @@ func (c *CassandraService) SetReplaceIP() error {
 // tryOldNodeShutdown tries to connect to the old node and shut it down. Returns true if it was possible to
 // connect and false if the old node was not reachable
 func tryOldNodeShutdown(oldIp string) bool {
-	nt := NewRemoteNodetool(oldIp, jmxPort)
+	nt := NewRemoteNodetool(oldIp, jmxPort, useSSL)
 	status, err := nt.Status()
 	log.Infof("Old Node Status: %v (%v)", status, err)
 	if err != nil {
@@ -152,7 +154,7 @@ func (c *CassandraService) WaitforReplacement(duration time.Duration) error {
 }
 
 func (c *CassandraService) NewIpRegistered() bool {
-	nodetool := NewNodetool()
+	nodetool := NewNodetool(useSSL)
 	status, err := nodetool.Status()
 	if err != nil {
 		log.Infof("bootstrap: nodetool error: %+v\n", err)

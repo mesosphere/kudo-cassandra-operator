@@ -76,20 +76,20 @@ type nodetool struct {
 }
 
 // New returns nodetool instance.
-func NewNodetool() Nodetool {
-	return &nodetool{}
+func NewNodetool(useSSL bool) Nodetool {
+	return &nodetool{
+		SSL: useSSL,
+	}
 }
 
-func NewRemoteNodetool(ip string, port string) Nodetool {
+func NewRemoteNodetool(ip string, port string, useSSL bool) Nodetool {
 	userfile := "/etc/cassandra/authentication/username"
 	pwfile := "/etc/cassandra/authentication/password"
 
 	user := ""
 	pwf := ""
-	ssl := false
 	if fileExists(userfile) && fileExists(pwfile) {
-		ssl = true
-		log.Infof("User & PW file exist, assuming SSL connection")
+		log.Infof("User & PW file exist, reading values")
 		user, err := ioutil.ReadFile(userfile)
 		if err != nil {
 			log.Fatalf("failed to read user file: %v", err)
@@ -115,7 +115,7 @@ func NewRemoteNodetool(ip string, port string) Nodetool {
 		Port: port,
 		User: user,
 		PWF:  pwf,
-		SSL:  ssl,
+		SSL:  useSSL,
 	}
 }
 
