@@ -630,6 +630,9 @@ spec:
               mountPath: /var/lib/cassandra/
             - name: dot-cassandra
               mountPath: /home/cassandra/.cassandra/
+            - name: truststore-credentials
+              mountPath: /etc/cassandra/truststore
+              readOnly: yes
             - name: generate-cassandra-yaml
               mountPath: /etc/cassandra/generate-cassandra-yaml.sh
               subPath: generate-cassandra-yaml.sh
