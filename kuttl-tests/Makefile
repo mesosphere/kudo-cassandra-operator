@@ -1,5 +1,5 @@
 KUDO_VERSION=0.12.0
-KUTTL_VERSION=0.2.0
+KUTTL_VERSION=0.1.0
 KUBERNETES_VERSION=1.17.2
 
 OS=$(shell uname -s | tr '[:upper:]' '[:lower:]')
@@ -12,7 +12,7 @@ endif
 export PATH := $(shell pwd)/bin:$(PATH)
 export ROOT_DIR=$(realpath -L ./..)
 
-ARTIFACTS=dist
+ARTIFACTS=kuttl-dist
 
 .PHONY: lint
 lint:
@@ -47,14 +47,14 @@ install-kuttl: bin/kubectl-kuttl bin/kubectl-kudo bin/kubectl
 
 .PHONY: kind-test
 kind-test: install-kuttl render-test-templates
-	mkdir -p dist/
+	mkdir -p kuttl-dist/
 	go get github.com/jstemmer/go-junit-report
-	kubectl kuttl test --config=./suites/kuttl-common.yaml --artifacts-dir=$(ARTIFACTS) 2>&1 |tee /dev/fd/2 | go-junit-report -set-exit-code > dist/common-junit.xml
-	kubectl kuttl test --config=./suites/kuttl-failure-recovery.yaml --artifacts-dir=$(ARTIFACTS) 2>&1 |tee /dev/fd/2 | go-junit-report -set-exit-code > dist/failure-recovery-junit.xml
+	kubectl kuttl test --config=./suites/kuttl-common.yaml --artifacts-dir=$(ARTIFACTS) 2>&1 |tee /dev/fd/2 | go-junit-report -set-exit-code > kuttl-dist/common-junit.xml
+	kubectl kuttl test --config=./suites/kuttl-failure-recovery.yaml --artifacts-dir=$(ARTIFACTS) 2>&1 |tee /dev/fd/2 | go-junit-report -set-exit-code > kuttl-dist/failure-recovery-junit.xml
 
 .PHONY: clean
 clean:
-	rm -rf ./bin ./dist ./kubeconfig
+	rm -rf ./bin ./kuttl-dist ./kubeconfig
 
 .PHONY: render-test-templates
 render-test-templates:
