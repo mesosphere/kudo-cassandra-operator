@@ -589,6 +589,10 @@ spec:
             - bash
             - -c
           args:
+              {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
+              /etc/cassandra/generate-nodetool-ssl-properties.sh &&
+              cp /etc/cassandra/nodetool-ssl.properties /home/cassandra/.cassandra/nodetool-ssl.properties;
+              {{ end }}
             - /etc/cassandra-bootstrap/bootstrap init
           env:
             - name: POD_IP
@@ -607,6 +611,13 @@ spec:
               value: "{{ $.Name }}-topology-lock"
             - name: BOOTSTRAP_TIMEOUT
               value: "{{ $.Params.BOOTSTRAP_TIMEOUT }}"
+          {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
+            - name: dot-cassandra
+              mountPath: /home/cassandra/.cassandra/
+            - name: generate-nodetool-ssl-properties
+              mountPath: /etc/cassandra/generate-nodetool-ssl-properties.sh
+              subPath: generate-nodetool-ssl-properties.sh
+          {{ end }}
           volumeMounts:
             - name: etc-cassandra
               mountPath: /etc/cassandra/
