@@ -621,6 +621,10 @@ spec:
               value: "{{ $.Name }}-topology-lock"
             - name: BOOTSTRAP_TIMEOUT
               value: "{{ $.Params.BOOTSTRAP_TIMEOUT }}"
+            - name: etc-cassandra
+              mountPath: /etc/cassandra/
+            - name: dot-cassandra
+              mountPath: /home/cassandra/.cassandra/
             - name: generate-cassandra-yaml
               mountPath: /etc/cassandra/generate-cassandra-yaml.sh
               subPath: generate-cassandra-yaml.sh
