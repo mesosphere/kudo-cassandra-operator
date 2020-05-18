@@ -264,7 +264,6 @@ data:
       set +x
       readonly truststore_password=$(cat /etc/cassandra/truststore/truststore_password)
       readonly keystore_password=$(cat /etc/cassandra/truststore/keystore_password)
-      set -x
 
       # jmx ssl options
       JVM_OPTS="$JVM_OPTS -Dcom.sun.management.jmxremote.ssl=true"

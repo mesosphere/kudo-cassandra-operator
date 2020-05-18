@@ -12,7 +12,6 @@ data:
     set +x
     readonly truststore_password=$(cat /etc/cassandra/truststore/truststore_password)
     readonly keystore_password=$(cat /etc/cassandra/truststore/keystore_password)
-    set -x
 
     {{- if .Params.NODE_TOPOLOGY }}
       {{- $lastTopo := 0 }}
