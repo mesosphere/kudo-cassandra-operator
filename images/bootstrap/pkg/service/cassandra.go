@@ -81,13 +81,19 @@ func (c *CassandraService) SetReplaceIP() error {
 // connect and false if the old node was not reachable
 func tryOldNodeShutdown(oldIp string) bool {
 	nt := NewRemoteNodetool(oldIp, "")
-	_, err := nt.Status()
+	status, err := nt.Status()
+	log.Infof("Old Node Status: %v (%v)", status, err)
 	if err != nil {
+		log.Info("Old node seems to be not reachable anymore")
 		return false
 	}
+
+	log.Infof("Try to drain old node...")
 	if err = nt.Drain(); err != nil {
 		log.Errorf("Nodetool drain on remote host failed:%v", err)
 	}
+
+	log.Infof("Try to stop old node...")
 	if err = nt.StopDaemon(); err != nil {
 		log.Errorf("Nodetool stopdaemon on remote host failed:%v", err)
 	}

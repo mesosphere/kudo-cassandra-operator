@@ -127,17 +127,6 @@ func fileExists(filename string) bool {
 	return !info.IsDir()
 }
 
-func (n *nodetool) RemoteStatus(ip string) (*Status, error) {
-	cmd := exec.Command("nodetool", "-h", ip, "status")
-	cmd.Env = os.Environ()
-	data, err := cmd.CombinedOutput()
-	if err != nil {
-		return nil, err
-	}
-	return ParseNodetoolStatus(string(data)), nil
-
-}
-
 func (n *nodetool) Drain() error {
 	cmd := exec.Command("nodetool", n.nodeToolArgs("drain")...)
 	cmd.Env = os.Environ()
