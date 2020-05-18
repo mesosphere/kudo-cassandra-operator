@@ -57,8 +57,12 @@ func (c *CassandraService) SetReplaceIP() error {
 	}
 	oldIp := cfg.Data[podName]
 	log.Infof("bootstrap: Got old IP %s for pod %s, current IP is %s", oldIp, podName, podIpAddress)
-	if oldIp == podIpAddress {
+	if oldIp == podIpAddress || oldIp == "" {
 		return nil
+	}
+
+	if tryOldNodeShutdown(oldIp) {
+		return fmt.Errorf("old node %s was still reachable. Initiated shutdown and wait for retry", oldIp)
 	}
 
 	// new internal ip address
@@ -71,6 +75,23 @@ func (c *CassandraService) SetReplaceIP() error {
 	log.Infof("bootstrap: Node is not bootstrapped, add replace ip to startup")
 	// node not bootstrapped and has an old ip address
 	return c.WriteReplaceIp(oldIp)
+}
+
+// tryOldNodeShutdown tries to connect to the old node and shut it down. Returns true if it was possible to
+// connect and false if the old node was not reachable
+func tryOldNodeShutdown(oldIp string) bool {
+	nt := NewRemoteNodetool(oldIp, "")
+	_, err := nt.Status()
+	if err != nil {
+		return false
+	}
+	if err = nt.Drain(); err != nil {
+		log.Errorf("Nodetool drain on remote host failed:%v", err)
+	}
+	if err = nt.StopDaemon(); err != nil {
+		log.Errorf("Nodetool stopdaemon on remote host failed:%v", err)
+	}
+	return true
 }
 
 func isBootstrapped() bool {
