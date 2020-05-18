@@ -46,11 +46,10 @@ data:
     HOSTNAME=${POD_NAME}.{{ .Name }}-svc.{{ .Namespace }}.svc.cluster.local
 
     # On Cluster creation or when adding a node, every node except the very first one shouldn't be a seed node on startup
-    # This does not seem to work at the moment. We still need it for scale up, needs more work
-    #if [ "${POD_NAME}" != "${NODE_ZERO}" ] && [ ! -d /var/lib/cassandra/data/system ]; then
-    #    echo "No system data directory found, we need to bootstrap and can't be a seed node at the moment";
-    #    SEEDS=`echo $SEEDS | sed -E 's/'"$HOSTNAME"',?//'`
-    #fi;
+    if [ "${POD_NAME}" != "${NODE_ZERO}" ] && [ ! -d /var/lib/cassandra/data ]; then
+        echo "No system data directory found, we need to bootstrap and can't be a seed node at the moment";
+        SEEDS=`echo $SEEDS | sed -E 's/'"$HOSTNAME"',?//'`
+    fi;
 
     # When replacing a node, the new node should not be a seed node either. This applies to the very first node as well
     if [ -s /var/lib/cassandra/replace.ip ]; then
