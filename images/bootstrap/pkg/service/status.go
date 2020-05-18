@@ -153,31 +153,32 @@ func (n *nodetool) Status() (*Status, error) {
 	cmd := exec.Command("nodetool", n.nodeToolArgs("status")...)
 	cmd.Env = os.Environ()
 	data, err := cmd.CombinedOutput()
+	log.Infof("Status output:\n%s", data)
 	if err != nil {
 		return nil, err
 	}
 	return ParseNodetoolStatus(string(data)), nil
 }
 
-func (n *nodetool) nodeToolArgs(args ...string) []string {
-	cmd := []string{}
+func (n *nodetool) nodeToolArgs(additionalArgs ...string) []string {
+	args := []string{}
 	if n.Host != "" {
-		cmd = append(cmd, "-h", n.Host)
+		args = append(args, "-h", n.Host)
 	}
 	if n.Port != "" {
-		cmd = append(cmd, "-p", n.Port)
+		args = append(args, "-p", n.Port)
 	}
 	if n.User != "" {
-		cmd = append(cmd, "-u", n.User)
+		args = append(args, "-u", n.User)
 	}
 	if n.PWF != "" {
-		cmd = append(cmd, "-pwf", n.PWF)
+		args = append(args, "-pwf", n.PWF)
 	}
 	if n.SSL {
-		cmd = append(cmd, "--ssl")
+		args = append(args, "--ssl")
 	}
 
-	cmd = append(cmd, args...)
-
-	return cmd
+	args = append(args, additionalArgs...)
+	log.Infof("Nodetool args: %v", args)
+	return args
 }
