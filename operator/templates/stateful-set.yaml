@@ -585,11 +585,25 @@ spec:
         - name: bootstrap
           image: {{ $.Params.NODE_DOCKER_IMAGE }}
           imagePullPolicy: {{ $.Params.NODE_DOCKER_IMAGE_PULL_POLICY }}
+          securityContext:
+            capabilities:
+              add:
+                # TODO(mpereira): add an operator parameter for "memory lock" so
+                # that this capability and a respective Docker image with
+                # `setcap`ed binaries are conditionally used.
+                - IPC_LOCK
+                # FIXME(mpereira): might not be necessary given DCOS-59219.
+                - SYS_RESOURCE
           command:
             - bash
             - -c
           args:
-            - /etc/cassandra-bootstrap/bootstrap init
+            - /etc/cassandra/generate-cassandra-yaml.sh;
+              {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
+              /etc/cassandra/generate-nodetool-ssl-properties.sh &&
+              cp /etc/cassandra/nodetool-ssl.properties /home/cassandra/.cassandra/nodetool-ssl.properties;
+              {{ end }}
+              /etc/cassandra-bootstrap/bootstrap init
           env:
             - name: POD_IP
               valueFrom:
@@ -603,6 +617,8 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
+            - name: JMX_PORT
+              value: "{{ $.Params.JMX_PORT }}"
             - name: CASSANDRA_IP_LOCK_CM
               value: "{{ $.Name }}-topology-lock"
             - name: BOOTSTRAP_TIMEOUT
@@ -612,6 +628,27 @@ spec:
               mountPath: /etc/cassandra/
             - name: var-lib-cassandra
               mountPath: /var/lib/cassandra/
+            - name: dot-cassandra
+              mountPath: /home/cassandra/.cassandra/
+            - name: generate-cassandra-yaml
+              mountPath: /etc/cassandra/generate-cassandra-yaml.sh
+              subPath: generate-cassandra-yaml.sh
+            - name: cassandra-env-sh
+              mountPath: /etc/cassandra/cassandra-env.sh
+              subPath: cassandra-env.sh
+            - name: jvm-options
+              mountPath: /etc/cassandra/jvm.options
+              subPath: jvm.options
+          {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
+            - name: generate-nodetool-ssl-properties
+              mountPath: /etc/cassandra/generate-nodetool-ssl-properties.sh
+              subPath: generate-nodetool-ssl-properties.sh
+          {{ end }}
+          {{ if $.Params.AUTHENTICATION_SECRET_NAME }}
+            - name: authentication-secret
+              mountPath: /etc/cassandra/authentication
+              readOnly: true
+          {{ end }}
           resources:
             requests:
               memory: "128Mi"
