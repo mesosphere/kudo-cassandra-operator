@@ -202,9 +202,9 @@ spec:
               value: "{{ $.Params.JMX_PORT }}"
             - name: USE_SSL
               {{ if eq $.Params.JMX_LOCAL_ONLY "true" }}
-              value: false
+              value: "false"
               {{ else }}
-              value: true
+              value: "true"
               {{ end }}
           resources:
             requests:
@@ -633,9 +633,9 @@ spec:
               value: "{{ $.Params.JMX_PORT }}"
             - name: USE_SSL
               {{ if eq $.Params.JMX_LOCAL_ONLY "true" }}
-              value: false
+              value: "false"
               {{ else }}
-              value: true
+              value: "true"
               {{ end }}
           volumeMounts:
             - name: etc-cassandra
