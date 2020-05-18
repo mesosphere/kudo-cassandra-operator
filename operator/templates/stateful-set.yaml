@@ -598,11 +598,12 @@ spec:
             - bash
             - -c
           args:
+            - /etc/cassandra/generate-cassandra-yaml.sh;
               {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
               /etc/cassandra/generate-nodetool-ssl-properties.sh &&
               cp /etc/cassandra/nodetool-ssl.properties /home/cassandra/.cassandra/nodetool-ssl.properties;
               {{ end }}
-            - /etc/cassandra-bootstrap/bootstrap init
+              /etc/cassandra-bootstrap/bootstrap init
           env:
             - name: POD_IP
               valueFrom:
@@ -620,12 +621,24 @@ spec:
               value: "{{ $.Name }}-topology-lock"
             - name: BOOTSTRAP_TIMEOUT
               value: "{{ $.Params.BOOTSTRAP_TIMEOUT }}"
+            - name: generate-cassandra-yaml
+              mountPath: /etc/cassandra/generate-cassandra-yaml.sh
+              subPath: generate-cassandra-yaml.sh
+            - name: cassandra-env-sh
+              mountPath: /etc/cassandra/cassandra-env.sh
+              subPath: cassandra-env.sh
+            - name: jvm-options
+              mountPath: /etc/cassandra/jvm.options
+              subPath: jvm.options
           {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
-            - name: dot-cassandra
-              mountPath: /home/cassandra/.cassandra/
             - name: generate-nodetool-ssl-properties
               mountPath: /etc/cassandra/generate-nodetool-ssl-properties.sh
               subPath: generate-nodetool-ssl-properties.sh
+          {{ end }}
+          {{ if $.Params.AUTHENTICATION_SECRET_NAME }}
+            - name: authentication-secret
+              mountPath: /etc/cassandra/authentication
+              readOnly: true
           {{ end }}
           volumeMounts:
             - name: etc-cassandra

@@ -164,16 +164,16 @@ func (n *nodetool) Status() (*Status, error) {
 func (n *nodetool) nodeToolArgs(additionalArgs ...string) []string {
 	args := []string{}
 	if n.Host != "" {
-		args = append(args, "-h", n.Host)
+		args = append(args, "--host", n.Host)
 	}
 	if n.Port != "" {
-		args = append(args, "-p", n.Port)
+		args = append(args, "--port", n.Port)
 	}
 	if n.User != "" {
-		args = append(args, "-u", n.User)
+		args = append(args, "--username", n.User)
 	}
 	if n.PWF != "" {
-		args = append(args, "-pwf", n.PWF)
+		args = append(args, "--password-file", n.PWF)
 	}
 	if n.SSL {
 		args = append(args, "--ssl")
