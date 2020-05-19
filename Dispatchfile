@@ -15,7 +15,7 @@ dindTask("checks", inputs=["kudo-cassandra-operator"], outputs=["artifacts"], st
   command=[
     "/entrypoint.sh",
     "bash", "-c",
-    "set -xe; if ! kind -v 9 create cluster --retain --image mesoporridge/kindest-node:0.0.6; then docker ps -a; id=$(docker ps -l --format '{{.ID}}');docker logs $id; kind export logs $(resources.outputs.artifacts.path); exit 1;fi"
+    "set -xe; if ! kind -v 9 create cluster --retain --image mesoporridge/kindest-node:0.0.7; then docker ps -a; id=$(docker ps -l --format '{{.ID}}');docker logs $id; kind export logs $(resources.outputs.artifacts.path); exit 1;fi"
   ],
   workingDir="/workspace",
   resources=k8s.corev1.ResourceRequirements(
