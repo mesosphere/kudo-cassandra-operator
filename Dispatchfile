@@ -1,0 +1,35 @@
+#!mesosphere/dispatch-starlark:v0.5
+
+load("github.com/mesosphere/dispatch-catalog/starlark/stable/pipeline@0.0.4", "gitResource")
+
+gitResource("kudo-cassandra-operator", url="$(context.git.url)", revision="$(context.git.commit)")
+
+load("github.com/mesosphere/dispatch-catalog/starlark/stable/docker@0.0.4", "dindTask")
+load("github.com/mesosphere/dispatch-catalog/starlark/stable/pipeline@0.0.4", "storageResource")
+
+storageResource("artifacts")
+
+dindTask("checks", inputs=["kudo-cassandra-operator"], outputs=["artifacts"], steps=[k8s.corev1.Container(
+  name="dind",
+  image="mesoporridge/dispatch-dind:0.0.7",
+  command=[
+    "/entrypoint.sh",
+    "bash", "-c",
+    "kind", "create", "cluster"
+  ],
+  workingDir="/workspace",
+  resources=k8s.corev1.ResourceRequirements(
+    limits={
+      "cpu": k8s.resource_quantity("2000m"),
+      "memory": k8s.resource_quantity("7.5Gi")
+    },
+    requests={
+      "cpu": k8s.resource_quantity("2000m"),
+      "memory": k8s.resource_quantity("7.5Gi")
+    }
+  )
+)
+])
+
+load("github.com/mesosphere/dispatch-catalog/starlark/stable/pipeline@0.0.4", "push")
+action(tasks=["checks"], on=push())
