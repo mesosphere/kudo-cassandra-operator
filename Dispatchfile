@@ -15,7 +15,7 @@ dindTask("checks", inputs=["kudo-cassandra-operator"], outputs=["artifacts"], st
   command=[
     "/entrypoint.sh",
     "bash", "-c",
-    "set -xe; if ! kind --loglevel trace create cluster --retain; then kind export logs $(resources.outputs.artifacts.path); exit 1;fi"
+    "set -xe; if ! kind --loglevel trace create cluster --retain --image mesoporridge/kindest-node:0.0.1; then kind export logs $(resources.outputs.artifacts.path); exit 1;fi"
   ],
   workingDir="/workspace",
   resources=k8s.corev1.ResourceRequirements(
