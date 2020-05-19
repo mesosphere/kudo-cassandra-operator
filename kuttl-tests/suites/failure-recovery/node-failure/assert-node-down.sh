@@ -17,6 +17,7 @@ for i in {1..15}; do
         echo "Found matching down node count"
         exit 0
     fi
+
     sleep 10
 done
 

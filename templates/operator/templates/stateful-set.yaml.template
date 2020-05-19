@@ -603,8 +603,7 @@ spec:
             - bash
             - -c
           args:
-            - /etc/cassandra/generate-cassandra-yaml.sh;
-              {{ if or (eq $.Params.TRANSPORT_ENCRYPTION_ENABLED "true") (eq $.Params.TRANSPORT_ENCRYPTION_CLIENT_ENABLED "true") (ne $.Params.JMX_LOCAL_ONLY "true") }}
+            - {{ if or (eq $.Params.TRANSPORT_ENCRYPTION_ENABLED "true") (eq $.Params.TRANSPORT_ENCRYPTION_CLIENT_ENABLED "true") (ne $.Params.JMX_LOCAL_ONLY "true") }}
               /etc/tls/bin/generate-tls-artifacts.sh;
               {{ end }}
               {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
@@ -647,15 +646,6 @@ spec:
             - name: truststore-credentials
               mountPath: /etc/cassandra/truststore
               readOnly: yes
-            - name: generate-cassandra-yaml
-              mountPath: /etc/cassandra/generate-cassandra-yaml.sh
-              subPath: generate-cassandra-yaml.sh
-            - name: cassandra-env-sh
-              mountPath: /etc/cassandra/cassandra-env.sh
-              subPath: cassandra-env.sh
-            - name: jvm-options
-              mountPath: /etc/cassandra/jvm.options
-              subPath: jvm.options
           {{ if or (eq $.Params.TRANSPORT_ENCRYPTION_ENABLED "true") (eq $.Params.TRANSPORT_ENCRYPTION_CLIENT_ENABLED "true") (ne $.Params.JMX_LOCAL_ONLY "true") }}
             - name: {{ $.Params.TLS_SECRET_NAME }}
               mountPath: /etc/tls/certs

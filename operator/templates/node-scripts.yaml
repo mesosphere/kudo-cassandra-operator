@@ -76,5 +76,5 @@ data:
     # With parallel startup of all nodes, we still need to make sure that the first node is reachable for all others, otherwise
     # we may end up with separate clusters. So every node except node-0 waits for node-0 to be reachable
     if [ "$POD_NAME" != "$1-node-0" ]; then
-      while :; do cqlsh $1-node-0.{{ $.Name }}-svc.{{ $.Namespace }}.svc.cluster.local -e "SELECT uuid() FROM system.local" 2>&1 && break; echo "Waiting for '$1-node-0.{{ $.Name }}-svc.{{ $.Namespace }}.svc.cluster.local' to be available..."; sleep 5; done;
+      while :; do cqlsh $1-node-0.{{ $.Name }}-svc.{{ $.Namespace }}.svc.cluster.local -e "SELECT uuid() FROM system.local" > /dev/null 2>&1 && break; echo "Waiting for '$1-node-0.{{ $.Name }}-svc.{{ $.Namespace }}.svc.cluster.local' to be available..."; sleep 5; done;
     fi;
