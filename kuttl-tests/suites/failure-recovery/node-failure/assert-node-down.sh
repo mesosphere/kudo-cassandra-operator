@@ -18,18 +18,7 @@ for i in {1..15}; do
         exit 0
     fi
 
-    NODE_IPS=`kubectl exec -n ${NAMESPACE} ${NODE_NAME} -- ${CMD} | sed -nE 's/^UN[[:space:]]+([0-9.]+).*/\1/p'`
-    echo "Node IPS: $NODE_IPS"
-    for IP in ${NODE_IPS}; do
-        echo "==> Try Status on $IP from node-0 bootstrap"
-        kubectl exec -n ${NAMESPACE} cassandra-node-0 --container bootstrap -- nodetool --ssl --host ${IP} --port 7199 status
-        echo "==> Try Status on $IP from node-0 cassandra"
-        kubectl exec -n ${NAMESPACE} cassandra-node-0 --container bootstrap -- nodetool --ssl --host ${IP} --port 7199 status
-        echo "==> Try Status on $IP from node-1 cassandra"
-        kubectl exec -n ${NAMESPACE} cassandra-node-1 --container bootstrap -- nodetool --ssl --host ${IP} --port 7199 status
-    done
-
-    sleep 5
+    sleep 10
 done
 
 # Return corresponding exit code
