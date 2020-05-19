@@ -15,7 +15,7 @@ dindTask("checks", inputs=["kudo-cassandra-operator"], outputs=["artifacts"], st
   command=[
     "/entrypoint.sh",
     "bash", "-c",
-    "kind", "create", "cluster"
+    "set -xe; kind create cluster"
   ],
   workingDir="/workspace",
   resources=k8s.corev1.ResourceRequirements(
