@@ -56,6 +56,9 @@ data:
         SEEDS=`echo $SEEDS | sed -E 's/'"$HOSTNAME"',?//'`
     fi;
 
+    # Remove trailing comma if there is one
+    SEEDS=`echo $SEEDS | sed -E 's/,?$//'`
+
     echo "Seedlist is now: $SEEDS"
 
     cat <<EOF > /etc/cassandra/cassandra.yaml
