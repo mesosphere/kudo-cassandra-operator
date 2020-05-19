@@ -11,7 +11,7 @@ storageResource("artifacts")
 
 dindTask("checks", inputs=["kudo-cassandra-operator"], outputs=["artifacts"], steps=[k8s.corev1.Container(
   name="dind",
-  image="mesoporridge/dispatch-dind:0.0.7",
+  image="mesoporridge/dispatch-dind:0.0.8",
   command=[
     "/entrypoint.sh",
     "bash", "-c",
