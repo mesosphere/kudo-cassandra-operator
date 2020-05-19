@@ -7,8 +7,8 @@ NAMESPACE=$3
 NODE_NAME=`kubectl get pod ${POD_NAME} -n ${NAMESPACE} -o=custom-columns=NODE:.spec.nodeName --no-headers`
 
 
-echo "Drain node $NODE_NAME"
-kubectl drain --force --delete-local-data --timeout 30s --ignore-daemonsets ${NODE_NAME}
+echo "Killing docker node $NODE_NAME"
+docker kill ${NODE_NAME}
 
 echo "Delete node $NODE_NAME"
 kubectl delete node ${NODE_NAME}
