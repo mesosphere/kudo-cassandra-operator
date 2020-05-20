@@ -8,7 +8,7 @@ NODE_NAME=`kubectl get pod ${POD_NAME} -n ${NAMESPACE} -o=custom-columns=NODE:.s
 
 
 echo "Drain node $NODE_NAME"
-kubectl drain node --disable-eviction --force --timeout 30s --ignore-daemonsets ${NODE_NAME}
+kubectl drain node --disable-eviction --delete-local-data --force --timeout 30s --ignore-daemonsets ${NODE_NAME}
 
 echo "Delete node $NODE_NAME"
 kubectl delete node ${NODE_NAME}
