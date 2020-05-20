@@ -12,8 +12,9 @@ import (
 )
 
 var (
-	datacenterPat = regexp.MustCompile(`^\s*Datacenter: (.+)$`)
-	nodePat       = regexp.MustCompile(`^\s*([UD][NLJM])\s+([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)\s+([0-9]+\.[0-9]+ [PGMK]iB)\s+([0-9]+)\s+([0-9\?\.\%]+)\s+([a-zA-Z0-9\-]+)\s+(.+)$`)
+	datacenterPat    = regexp.MustCompile(`^\s*Datacenter: (.+)$`)
+	nodePat          = regexp.MustCompile(`^\s*([UD][NLJM])\s+([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)\s+([0-9]+\.[0-9]+ [PGMK]iB)\s+([0-9]+)\s+([0-9\?\.\%]+)\s+([a-zA-Z0-9\-]+)\s+(.+)$`)
+	infoGossipStatus = regexp.MustCompile(`^\s*Gossip active\s+:\s+(true|false)\s*$`)
 )
 
 type Node struct {
@@ -60,10 +61,26 @@ func ParseNodetoolStatus(rawStatus string) *Status {
 	return &Status{Datacenters: datacenters}
 }
 
+func (s *Status) FindNodeWithIP(ip string) *Node {
+	for _, dc := range s.Datacenters {
+		for _, n := range dc.Nodes {
+			if n.Address == ip {
+				return &n
+			}
+		}
+	}
+	return nil
+}
+
+func (s *Status) HasUpNode(ip string) bool {
+	n := s.FindNodeWithIP(ip)
+	return n != nil && n.State == "UN"
+}
+
 type Nodetool interface {
 	Status() (*Status, error)
-	Drain() error
-	StopDaemon() error
+	RunCommand(cmd string) (string, error)
+	HasActiveGossip() (bool, error)
 }
 
 type nodetool struct {
@@ -127,26 +144,33 @@ func fileExists(filename string) bool {
 	return !info.IsDir()
 }
 
-func (n *nodetool) Drain() error {
-	cmd := exec.Command("nodetool", n.nodeToolArgs("drain")...)
+func (n *nodetool) RunCommand(nodetoolCmd string) (string, error) {
+	cmd := exec.Command("nodetool", n.nodeToolArgs(nodetoolCmd)...)
 	cmd.Env = os.Environ()
 	out, err := cmd.CombinedOutput()
-	log.Infof("Drain output:\n%s", out)
+	log.Infof("%s output:\n%s", nodetoolCmd, out)
 	if err != nil {
-		return err
+		return "", err
 	}
-	return nil
+	return string(out), nil
 }
 
-func (n *nodetool) StopDaemon() error {
-	cmd := exec.Command("nodetool", n.nodeToolArgs("stopdaemon")...)
-	cmd.Env = os.Environ()
-	out, err := cmd.CombinedOutput()
-	log.Infof("StopDaemon output:\n%s", out)
+func (n *nodetool) HasActiveGossip() (bool, error) {
+	info, err := n.RunCommand("info")
 	if err != nil {
-		return err
+		return false, err
 	}
-	return nil
+	return parseInfoGossipStatus(info)
+}
+
+func parseInfoGossipStatus(infoContent string) (bool, error) {
+	for _, line := range strings.Split(infoContent, "\n") {
+		gossipState := infoGossipStatus.FindStringSubmatch(line)
+		if gossipState != nil {
+			return gossipState[1] == "true", nil
+		}
+	}
+	return false, fmt.Errorf("failed to find gossip state in info output %s", infoContent)
 }
 
 func (n *nodetool) Status() (*Status, error) {

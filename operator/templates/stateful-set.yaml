@@ -625,6 +625,8 @@ spec:
               value: "{{ $.Name }}-topology-lock"
             - name: BOOTSTRAP_TIMEOUT
               value: "{{ $.Params.BOOTSTRAP_TIMEOUT }}"
+            - name: SHUTDOWN_OLD_REACHABLE_NODE
+              value: "{{ $.Params.SHUTDOWN_OLD_REACHABLE_NODE }}"
             - name: JMX_PORT
               value: "{{ $.Params.JMX_PORT }}"
             - name: USE_SSL
