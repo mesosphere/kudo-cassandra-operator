@@ -12,6 +12,7 @@ endif
 
 export PATH := $(shell pwd)/bin:$(PATH)
 export ROOT_DIR=$(realpath -L ./..)
+export DOCKER_API_VERSION=1.39
 
 ARTIFACTS=kuttl-dist
 
