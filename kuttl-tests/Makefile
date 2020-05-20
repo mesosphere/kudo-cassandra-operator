@@ -1,6 +1,7 @@
 KUDO_VERSION=0.12.0
 KUTTL_VERSION=0.2.1
 KUBERNETES_VERSION=1.17.2
+KIND_VERSION=0.8.1
 
 OS=$(shell uname -s | tr '[:upper:]' '[:lower:]')
 KUDO_MACHINE=$(shell uname -m)
@@ -43,8 +44,16 @@ bin/kubectl-kudo_$(KUDO_VERSION)_$(OS):
 bin/kubectl-kudo: bin/kubectl-kudo_$(KUDO_VERSION)_$(OS)
 	ln -sf ./kubectl-kudo_$(KUDO_VERSION)_$(OS) ./bin/kubectl-kudo
 
+bin/kind_$(KIND_VERSION)_$(OS):
+	mkdir -p bin/
+	curl -Lo bin/kind_$(KIND_VERSION)_$(OS) https://github.com/kubernetes-sigs/kind/releases/download/v$(KIND_VERSION)/kind-$(OS)-$(MACHINE)
+	chmod +x bin/kind_$(KIND_VERSION)_$(OS)
+
+bin/kind: bin/kind_$(KIND_VERSION)_$(OS)
+	ln -sf ./kind_$(KIND_VERSION)_$(OS) ./bin/kind
+
 .PHONY: install-kuttl
-install-kuttl: bin/kubectl-kuttl bin/kubectl-kudo bin/kubectl
+install-kuttl: bin/kubectl-kuttl bin/kubectl-kudo bin/kubectl bin/kind
 
 .PHONY: kind-test
 kind-test: install-kuttl render-test-templates
