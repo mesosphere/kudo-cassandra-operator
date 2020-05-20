@@ -1,6 +1,6 @@
 KUDO_VERSION=0.12.0
 KUTTL_VERSION=local
-KUBERNETES_VERSION=1.17.2
+KUBERNETES_VERSION=1.18.2
 
 OS=$(shell uname -s | tr '[:upper:]' '[:lower:]')
 KUDO_MACHINE=$(shell uname -m)
