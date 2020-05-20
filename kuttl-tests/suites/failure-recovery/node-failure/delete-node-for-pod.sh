@@ -10,7 +10,7 @@ echo "Cordon node $NODE_NAME"
 kubectl cordon ${NODE_NAME}
 
 echo "Deleting pod {$POD_NAME}"
-kubectl delete pod ${POD_NAME}
+kubectl delete pod ${POD_NAME} -n ${NAMESPACE}
 
 echo "Delete node $NODE_NAME"
 kubectl delete node ${NODE_NAME}
