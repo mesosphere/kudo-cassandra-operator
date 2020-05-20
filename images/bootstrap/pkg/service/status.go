@@ -62,6 +62,8 @@ func ParseNodetoolStatus(rawStatus string) *Status {
 
 type Nodetool interface {
 	Status() (*Status, error)
+	Drain() error
+	StopDaemon() error
 }
 
 type nodetool struct {
@@ -125,11 +127,34 @@ func fileExists(filename string) bool {
 	return !info.IsDir()
 }
 
+func (n *nodetool) Drain() error {
+	cmd := exec.Command("nodetool", n.nodeToolArgs("drain")...)
+	cmd.Env = os.Environ()
+	out, err := cmd.CombinedOutput()
+	log.Infof("Drain output:\n%s", out)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (n *nodetool) StopDaemon() error {
+	cmd := exec.Command("nodetool", n.nodeToolArgs("stopdaemon")...)
+	cmd.Env = os.Environ()
+	out, err := cmd.CombinedOutput()
+	log.Infof("StopDaemon output:\n%s", out)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (n *nodetool) Status() (*Status, error) {
 	cmd := exec.Command("nodetool", n.nodeToolArgs("status")...)
 	cmd.Env = os.Environ()
 	log.Infof("Run '%s'", cmd.String())
 	data, err := cmd.CombinedOutput()
+	log.Infof("Status output:\n%s", data)
 	if err != nil {
 		return nil, err
 	}
