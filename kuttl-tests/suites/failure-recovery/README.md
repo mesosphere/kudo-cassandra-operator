@@ -1,0 +1,1 @@
+This test ensures that the recovery controller works correctly
