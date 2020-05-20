@@ -50,6 +50,7 @@ install-kuttl: bin/kubectl-kuttl bin/kubectl-kudo bin/kubectl
 kind-test: install-kuttl render-test-templates
 	mkdir -p kuttl-dist/
 	go get github.com/jstemmer/go-junit-report
+	docker pull kindest/node:v1.18.2@sha256:7b27a6d0f2517ff88ba444025beae41491b016bc6af573ba467b70c5e8e0d85f
 	kubectl kuttl test --config=./suites/kuttl-common.yaml --artifacts-dir=$(ARTIFACTS) 2>&1 |tee /dev/fd/2 | go-junit-report -set-exit-code > kuttl-dist/common-junit.xml
 	kubectl kuttl test --config=./suites/kuttl-failure-recovery.yaml --artifacts-dir=$(ARTIFACTS) 2>&1 |tee /dev/fd/2 | go-junit-report -set-exit-code > kuttl-dist/failure-recovery-junit.xml
 
