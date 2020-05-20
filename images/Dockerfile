@@ -8,7 +8,6 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o bootstrap
 FROM cassandra:3.11.6
 
 RUN set -eux; \
-  rm /etc/apt/sources.list.d/cassandra.list; \
   apt-get update; \
   apt-get install -y --no-install-recommends libcap2-bin; \
   # Setting this capability will cause running the Java binary to not be
