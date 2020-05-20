@@ -1,6 +1,9 @@
 apiVersion: kudo.dev/v1beta1
 kind: TestStep
 commands:
+    # Make sure cassandra-node-1 has finished joining the cluster
+  - command: ./assert-node-up.sh cassandra-node-1 2
+    namespaced: true
     # Delete the KIND node where cassandra-node-0 lives on
   - command: ./delete-node-for-pod.sh cassandra-node-0
     namespaced: true

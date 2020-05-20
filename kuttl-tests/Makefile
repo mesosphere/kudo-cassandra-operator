@@ -1,6 +1,7 @@
 KUDO_VERSION=0.12.0
 KUTTL_VERSION=local
 KUBERNETES_VERSION=1.18.2
+KIND_VERSION=0.8.1
 
 OS=$(shell uname -s | tr '[:upper:]' '[:lower:]')
 KUDO_MACHINE=$(shell uname -m)
@@ -44,14 +45,22 @@ bin/kubectl-kudo_$(KUDO_VERSION)_$(OS):
 bin/kubectl-kudo: bin/kubectl-kudo_$(KUDO_VERSION)_$(OS)
 	ln -sf ./kubectl-kudo_$(KUDO_VERSION)_$(OS) ./bin/kubectl-kudo
 
+bin/kind_$(KIND_VERSION)_$(OS):
+	mkdir -p bin/
+	curl -Lo bin/kind_$(KIND_VERSION)_$(OS) https://github.com/kubernetes-sigs/kind/releases/download/v$(KIND_VERSION)/kind-$(OS)-$(MACHINE)
+	chmod +x bin/kind_$(KIND_VERSION)_$(OS)
+
+bin/kind: bin/kind_$(KIND_VERSION)_$(OS)
+	ln -sf ./kind_$(KIND_VERSION)_$(OS) ./bin/kind
+
 .PHONY: install-kuttl
-install-kuttl: bin/kubectl-kuttl bin/kubectl-kudo bin/kubectl
+install-kuttl: bin/kubectl-kuttl bin/kubectl-kudo bin/kubectl bin/kind
 
 .PHONY: kind-test
 kind-test: install-kuttl render-test-templates
 	mkdir -p kuttl-dist/
 	go get github.com/jstemmer/go-junit-report
-	docker pull kindest/node:v1.18.2@sha256:7b27a6d0f2517ff88ba444025beae41491b016bc6af573ba467b70c5e8e0d85f
+	kind delete cluster
 	kubectl kuttl test --config=./suites/kuttl-common.yaml --artifacts-dir=$(ARTIFACTS) 2>&1 |tee /dev/fd/2 | go-junit-report -set-exit-code > kuttl-dist/common-junit.xml
 	kubectl kuttl test --config=./suites/kuttl-failure-recovery.yaml --artifacts-dir=$(ARTIFACTS) 2>&1 |tee /dev/fd/2 | go-junit-report -set-exit-code > kuttl-dist/failure-recovery-junit.xml
 

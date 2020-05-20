@@ -12,6 +12,7 @@ data:
     set +x
     readonly truststore_password=$(cat /etc/cassandra/truststore/truststore_password)
     readonly keystore_password=$(cat /etc/cassandra/truststore/keystore_password)
+    set -x
 
     {{- if .Params.NODE_TOPOLOGY }}
       {{- $lastTopo := 0 }}
@@ -55,6 +56,10 @@ data:
         echo "File replace.ip found, we are in replacement mode and have to remove our own host from seed list";
         SEEDS=`echo $SEEDS | sed -E 's/'"$HOSTNAME"',?//'`
     fi;
+    set +x
+
+    # Remove trailing comma if there is one
+    SEEDS=`echo $SEEDS | sed -E 's/,?$//'`
 
     echo "Seedlist is now: $SEEDS"
 
