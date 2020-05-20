@@ -8,8 +8,8 @@ NODE_NAME=`kubectl get pod ${POD_NAME} -n ${NAMESPACE} -o=custom-columns=NODE:.s
 
 
 echo "Killing docker node $NODE_NAME"
-export DOCKER_API_VERSION=1.39
-docker kill ${NODE_NAME}
+# export DOCKER_API_VERSION=1.39
+# docker kill ${NODE_NAME}
 
 echo "Delete node $NODE_NAME"
 kubectl delete node ${NODE_NAME}
