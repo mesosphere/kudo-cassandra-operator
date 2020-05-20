@@ -13,5 +13,5 @@ kindContainers:
   - {{ .CASSANDRA_DOCKER_IMAGE }}
   - {{ .RECOVERY_CONTROLLER_DOCKER_IMAGE }}
 {{- end }}
-timeout: 300
+timeout: 360
 parallel: 3

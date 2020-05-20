@@ -6,6 +6,13 @@ Things to keep in mind:
   not enough, especially with only 2 nodes Otherwise the restarting node-0 can't
   find the old IP in the gossip
 
+- Liveness and Readiness Probes: Before the node has executed the replace
+  bootstrap, it's new IP will not show up in `nodetool status`, therefore the
+  new node will not be in mode UN or UJ, but not available at all. The replace
+  bootstrap contains a 30 second timeout before a node joins the ring
+  (.Params.JVM_OPT_RING_DELAY_MS) Make sure that (readiness initial delay) \*
+  (number of nodes) is quite a bit less than the kuttl test step timeout
+
 Failed approaches:
 
 - Use `docker kill <node-with-cassandra-pod>` This fails because kind blocks on
