@@ -1,5 +1,11 @@
 This test ensures that the recovery controller works correctly
 
+Things to keep in mind:
+
+- Before a k8s node can be killed, all C\* nodes have to be in UN state, UJ is
+  not enough, especially with only 2 nodes Otherwise the restarting node-0 can't
+  find the old IP in the gossip
+
 Failed approaches:
 
 - Use `docker kill <node-with-cassandra-pod>` This fails because kind blocks on
