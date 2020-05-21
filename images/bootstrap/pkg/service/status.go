@@ -1,12 +1,14 @@
 package service
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"regexp"
 	"strings"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -150,11 +152,17 @@ func (n *nodetool) StopDaemon() error {
 }
 
 func (n *nodetool) Status() (*Status, error) {
-	cmd := exec.Command("nodetool", n.nodeToolArgs("status")...)
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, "nodetool", n.nodeToolArgs("status")...)
 	cmd.Env = os.Environ()
 	log.Infof("Run '%s'", cmd.String())
 	data, err := cmd.CombinedOutput()
 	log.Infof("Status output:\n%s", data)
+	if ctx.Err() == context.DeadlineExceeded {
+		fmt.Println("nodetool status timed out")
+		return nil, ctx.Err()
+	}
 	if err != nil {
 		return nil, err
 	}

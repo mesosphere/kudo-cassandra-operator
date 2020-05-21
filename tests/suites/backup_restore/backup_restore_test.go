@@ -178,7 +178,7 @@ var _ = Describe("backup and restore", func() {
 			"BACKUP_PREFIX":                 BackupPrefix,
 			"BACKUP_NAME":                   BackupName,
 			"BACKUP_AWS_S3_BUCKET_NAME":     BackupBucket,
-			"POD_MANAGEMENT_POLICY":         "Parallel",
+			"POD_MANAGEMENT_POLICY":         "OrderedReady",
 		}
 		suites.SetSuitesParameters(parameters)
 
