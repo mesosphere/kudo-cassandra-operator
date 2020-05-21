@@ -6,10 +6,6 @@ set -euxo pipefail
 readonly script_directory="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 readonly project_directory="$(realpath -L $script_directory/..)"
 
-if [[ "${BUILD_BRANCH}" = "master" ]]; then
-  IMAGE_DISAMBIGUATION_SUFFIX=""
-fi
-
 # shellcheck source=../metadata.sh
 source "${project_directory}/metadata.sh"
 
