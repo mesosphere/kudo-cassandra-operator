@@ -87,12 +87,12 @@ var _ = BeforeSuite(func() {
 })
 
 var _ = AfterSuite(func() {
-	//if err := Operator.Uninstall(); err != nil {
-	//	fmt.Printf("Failed to uninstall operator: %v\n", err)
-	//}
-	//if err := kubernetes.DeleteNamespace(Client, TestNamespace); err != nil {
-	//	fmt.Printf("Failed to delete namespace: %v\n", err)
-	//}
+	if err := Operator.Uninstall(); err != nil {
+		fmt.Printf("Failed to uninstall operator: %v\n", err)
+	}
+	if err := kubernetes.DeleteNamespace(Client, TestNamespace); err != nil {
+		fmt.Printf("Failed to delete namespace: %v\n", err)
+	}
 
 	if Secret != nil {
 		if err := Secret.Delete(); err != nil {
@@ -410,8 +410,8 @@ var _ = Describe("backup and restore", func() {
 		Expect(output).To(ContainSubstring(testCQLScriptOutput))
 	})
 
-	//It("Uninstalls the operator", func() {
-	//	err := cassandra.Uninstall(Client, Operator)
-	//	Expect(err).To(BeNil())
-	//})
+	It("Uninstalls the operator", func() {
+		err := cassandra.Uninstall(Client, Operator)
+		Expect(err).To(BeNil())
+	})
 })

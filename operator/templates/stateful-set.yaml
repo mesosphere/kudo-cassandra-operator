@@ -152,7 +152,6 @@ spec:
               /etc/cassandra/generate-nodetool-ssl-properties.sh &&
               cp /etc/cassandra/nodetool-ssl.properties /home/cassandra/.cassandra/nodetool-ssl.properties;
               {{ end }}
-              /etc/cassandra/generate-cqlshrc.sh;
               /etc/cassandra-bootstrap/bootstrap wait &
               cassandra -f
           # Comment the `command` above and uncomment the one below if pods are
@@ -254,9 +253,6 @@ spec:
               subPath: node-token-save.sh
             - name: dot-cassandra
               mountPath: /home/cassandra/.cassandra/
-            - name: generate-cqlshrc-sh
-              mountPath: /etc/cassandra/generate-cqlshrc.sh
-              subPath: generate-cqlshrc.sh
           {{ if or (eq $.Params.TRANSPORT_ENCRYPTION_ENABLED "true") (eq $.Params.TRANSPORT_ENCRYPTION_CLIENT_ENABLED "true") (ne $.Params.JMX_LOCAL_ONLY "true") }}
             - name: {{ $.Params.TLS_SECRET_NAME }}
               mountPath: /etc/tls/certs
@@ -602,6 +598,7 @@ spec:
               /etc/cassandra/generate-nodetool-ssl-properties.sh &&
               cp /etc/cassandra/nodetool-ssl.properties /home/cassandra/.cassandra/nodetool-ssl.properties;
               {{ end }}
+              /etc/cassandra/generate-cqlshrc.sh;
               {{ if $.Params.NODE_TOPOLOGY }}
               /etc/cassandra/wait-for-node-zero.sh {{ $.Name }}-{{ $datacenter.datacenter }};
               {{ else }}
@@ -645,6 +642,9 @@ spec:
             - name: truststore-credentials
               mountPath: /etc/cassandra/truststore
               readOnly: yes
+            - name: generate-cqlshrc-sh
+              mountPath: /etc/cassandra/generate-cqlshrc.sh
+              subPath: generate-cqlshrc.sh
             - name: node-scripts
               mountPath: /etc/cassandra/wait-for-node-zero.sh
               subPath: wait-for-node-zero.sh
