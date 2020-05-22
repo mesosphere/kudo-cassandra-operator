@@ -1,0 +1,18 @@
+#!mesosphere/dispatch-starlark:v0.5
+
+load("github.com/mesosphere/dispatch-catalog/starlark/stable/pipeline@0.0.4", "gitResource")
+
+gitResource("kudo-cassandra-operator", url="$(context.git.url)", revision="$(context.git.commit)")
+gitResource("operators", url="git@github.com:kudobuilder/operators.git", revision="master")
+
+task("dump", inputs=["kudo-cassandra-operator", "operators"], steps=[k8s.corev1.Container(
+  name="dump",
+  command=[
+    "bash", "-c",
+    "echo build.name=$(context.build.name) git.url=$(context.git.url) git.commit=$(context.git.commit) git.branch=$(context.git.branch) git.tag=$(context.git.tag) chatop.command=$(context.chatop.command)"
+  ],
+)
+])
+
+load("github.com/mesosphere/dispatch-catalog/starlark/stable/pipeline@0.0.4", "push")
+action(tasks=["checks"], on=push())
