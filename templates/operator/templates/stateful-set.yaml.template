@@ -595,8 +595,7 @@ spec:
             - bash
             - -c
           args:
-            - /etc/cassandra/generate-cqlshrc.sh;
-              {{ if or (eq $.Params.TRANSPORT_ENCRYPTION_ENABLED "true") (eq $.Params.TRANSPORT_ENCRYPTION_CLIENT_ENABLED "true") (ne $.Params.JMX_LOCAL_ONLY "true") }}
+            - {{ if or (eq $.Params.TRANSPORT_ENCRYPTION_ENABLED "true") (eq $.Params.TRANSPORT_ENCRYPTION_CLIENT_ENABLED "true") (ne $.Params.JMX_LOCAL_ONLY "true") }}
               /etc/tls/bin/generate-tls-artifacts.sh;
               {{ end }}
               {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
@@ -626,6 +625,8 @@ spec:
               value: "{{ $.Name }}-topology-lock"
             - name: BOOTSTRAP_TIMEOUT
               value: "{{ $.Params.BOOTSTRAP_TIMEOUT }}"
+            - name: SHUTDOWN_OLD_REACHABLE_NODE
+              value: "{{ $.Params.SHUTDOWN_OLD_REACHABLE_NODE }}"
             - name: JMX_PORT
               value: "{{ $.Params.JMX_PORT }}"
             - name: USE_SSL
@@ -644,9 +645,6 @@ spec:
             - name: truststore-credentials
               mountPath: /etc/cassandra/truststore
               readOnly: yes
-            - name: generate-cqlshrc-sh
-              mountPath: /etc/cassandra/generate-cqlshrc.sh
-              subPath: generate-cqlshrc.sh
             - name: node-scripts
               mountPath: /etc/cassandra/wait-for-node-zero.sh
               subPath: wait-for-node-zero.sh

@@ -23,6 +23,11 @@ import (
 	. "github.com/onsi/gomega"
 )
 
+// To run this test locally you need to have the AWS credentials in the env:
+// maws
+// source ../scripts/export_maws.sh
+// ./run.sh backup_restore
+
 var (
 	TestName          = "backup-restore-test"
 	OperatorName      = os.Getenv("OPERATOR_NAME")
@@ -40,6 +45,8 @@ var (
 	BackupBucket = "kudo-cassandra-backup-test"
 	BackupPrefix = uuid.New().String()
 	BackupName   = "first"
+
+	Secret *kubernetes.Secret
 )
 
 const createSchema = "CREATE SCHEMA schema1 WITH replication = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 };"
@@ -80,11 +87,17 @@ var _ = BeforeSuite(func() {
 })
 
 var _ = AfterSuite(func() {
-	if err := Operator.Uninstall(); err != nil {
-		fmt.Printf("Failed to uninstall operator: %v\n", err)
-	}
-	if err := kubernetes.DeleteNamespace(Client, TestNamespace); err != nil {
-		fmt.Printf("Failed to delete namespace: %v\n", err)
+	//if err := Operator.Uninstall(); err != nil {
+	//	fmt.Printf("Failed to uninstall operator: %v\n", err)
+	//}
+	//if err := kubernetes.DeleteNamespace(Client, TestNamespace); err != nil {
+	//	fmt.Printf("Failed to delete namespace: %v\n", err)
+	//}
+
+	if Secret != nil {
+		if err := Secret.Delete(); err != nil {
+			fmt.Printf("Error while deleting AWS secret")
+		}
 	}
 
 	if err := aws.DeleteFolderInS3(BackupBucket, BackupPrefix); err != nil {
@@ -156,9 +169,13 @@ func createAwsCredentials() string {
 	}
 
 	By("Creating a aws-credentials secret")
-	_, _ = kubernetes.CreateSecret(awsSecretName).
+	awsSecret, err := kubernetes.CreateSecret(awsSecretName).
 		WithNamespace(TestNamespace).
 		WithStringData(awsCredentials).Do(Client)
+
+	Secret = &awsSecret
+
+	Expect(err).NotTo(HaveOccurred())
 
 	return awsSecretName
 }
@@ -393,8 +410,8 @@ var _ = Describe("backup and restore", func() {
 		Expect(output).To(ContainSubstring(testCQLScriptOutput))
 	})
 
-	It("Uninstalls the operator", func() {
-		err := cassandra.Uninstall(Client, Operator)
-		Expect(err).To(BeNil())
-	})
+	//It("Uninstalls the operator", func() {
+	//	err := cassandra.Uninstall(Client, Operator)
+	//	Expect(err).To(BeNil())
+	//})
 })

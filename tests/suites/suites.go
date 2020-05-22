@@ -18,5 +18,7 @@ func SetSuitesParameters(parameters map[string]string) {
 		parameters["NODE_CPU_MC"] = "1000"
 		parameters["NODE_CPU_LIMIT_MC"] = "1500"
 		parameters["PROMETHEUS_EXPORTER_ENABLED"] = "false"
+		parameters["NODE_DOCKER_IMAGE_PULL_POLICY"] = "IfNotPresent"
+		parameters["BACKUP_MEDUSA_DOCKER_IMAGE_PULL_POLICY"] = "IfNotPresent"
 	}
 }

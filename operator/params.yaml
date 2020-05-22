@@ -127,6 +127,14 @@ parameters:
     description: "Maximum number of nodes that are allowed to be down, either for restarts or from unscheduled outage. See PodDisruptionBudget"
     default: 1
 
+  - name: BOOTSTRAP_TIMEOUT
+    description: "Timeout for the bootstrap binary to join the cluster with the new IP. Valid time units are 'ns', 'us', 'ms', 's', 'm', 'h'."
+    default: "12h30m"
+
+  - name: SHUTDOWN_OLD_REACHABLE_NODE
+    description: "When a node replace is done, try to connect to the old node and shut it down before starting up the old node"
+    default: false
+
   ################################################################################
   ########################## Backup and Restore settings #########################
   ################################################################################
@@ -196,10 +204,6 @@ parameters:
   - name: RESTORE_OLD_NAME
     description: "The instance name from the operator that was used to create the backup"
     default: ""
-
-  - name: BOOTSTRAP_TIMEOUT
-    description: "Timeout for the bootstrap binary to join the cluster with the new IP. Valid time units are 'ns', 'us', 'ms', 's', 'm', 'h'."
-    default: "12h30m"
 
   ################################################################################
   ######################### Datacenter and Rack awareness ########################
