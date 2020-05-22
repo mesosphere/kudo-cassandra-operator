@@ -7,6 +7,7 @@ gitResource("operators", url="git@github.com:kudobuilder/operators.git", revisio
 
 task("dump", inputs=["kudo-cassandra-operator", "operators"], steps=[k8s.corev1.Container(
   name="dump",
+  image="debian",
   command=[
     "bash", "-c",
     "echo build.name=$(context.build.name) git.url=$(context.git.url) git.commit=$(context.git.commit) git.branch=$(context.git.branch) git.tag=$(context.git.tag) chatop.command=$(context.chatop.command)"
