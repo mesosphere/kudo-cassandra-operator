@@ -599,11 +599,7 @@ spec:
               cp /etc/cassandra/nodetool-ssl.properties /home/cassandra/.cassandra/nodetool-ssl.properties;
               {{ end }}
               /etc/cassandra/generate-cqlshrc.sh;
-              {{ if $.Params.NODE_TOPOLOGY }}
-              /etc/cassandra/wait-for-node-zero.sh {{ $.Name }}-{{ $datacenter.datacenter }};
-              {{ else }}
-              /etc/cassandra/wait-for-node-zero.sh {{ $.Name }};
-              {{ end }}
+              /etc/cassandra/wait-for-node-zero.sh;
               /etc/cassandra-bootstrap/bootstrap init
           env:
             - name: POD_IP
