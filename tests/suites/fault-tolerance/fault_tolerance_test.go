@@ -289,13 +289,17 @@ var _ = Describe("Fault tolerance tests", func() {
 
 			By("Ensuring that all nodes are up")
 
-			nodes, err = cassandra.Nodes(client, operator.Instance)
-			Expect(err).NotTo(HaveOccurred())
-
-			dcCounts = collectDataCenterCounts(nodes)
+			expectedDcCounts := map[string]int{}
 			for _, dc := range topology {
-				Expect(dcCounts[dc.Datacenter]).To(Equal(dc.Nodes))
+				expectedDcCounts[dc.Datacenter] = dc.Nodes
 			}
+
+			Eventually(func() map[string]int {
+				nodes, err = cassandra.Nodes(client, operator.Instance)
+				Expect(err).NotTo(HaveOccurred())
+
+				return collectDataCenterCounts(nodes)
+			}, 5*time.Minute, 15*time.Second).Should(Equal(expectedDcCounts))
 
 			By("Reading data from the cluster")
 			output, err = cassandra.Cqlsh(client, operator.Instance, testCQLOutputScript)
