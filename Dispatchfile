@@ -15,5 +15,5 @@ task("dump", inputs=["kudo-cassandra-operator", "operators"], steps=[k8s.corev1.
 )
 ])
 
-load("github.com/mesosphere/dispatch-catalog/starlark/stable/pipeline@0.0.4", "push")
-action(tasks=["dump"], on=push())
+load("github.com/mesosphere/dispatch-catalog/starlark/stable/pipeline@0.0.4", "pullRequest")
+action(tasks=["dump"], on=pullRequest())
