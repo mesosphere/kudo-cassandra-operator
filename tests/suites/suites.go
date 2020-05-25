@@ -1,6 +1,24 @@
 package suites
 
-import "os"
+import (
+	"os"
+	"time"
+
+	"github.com/kudobuilder/test-tools/pkg/client"
+	"github.com/kudobuilder/test-tools/pkg/kudo"
+	. "github.com/onsi/gomega"
+
+	"github.com/mesosphere/kudo-cassandra-operator/tests/cassandra"
+)
+
+func AssertNumberOfCassandraNodes(client client.Client, op kudo.Operator, nodeCount int) {
+	Eventually(func() int {
+		nodes, err := cassandra.Nodes(client, op.Instance)
+		Expect(err).To(BeNil())
+
+		return len(nodes)
+	}, 5*time.Minute, 15*time.Second).Should(Equal(nodeCount))
+}
 
 func IsLocalCluster() bool {
 	return os.Getenv("LOCAL_CLUSTER") == "true"

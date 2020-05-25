@@ -117,14 +117,6 @@ func TestService(t *testing.T) {
 	RunSpecsWithDefaultAndCustomReporters(t, TestName, []Reporter{junitReporter})
 }
 
-func assertNumberOfCassandraNodes(nodeCount int) {
-	Eventually(func() int {
-		nodes, err := cassandra.Nodes(Client, Operator.Instance)
-		Expect(err).To(BeNil())
-		return len(nodes)
-	}, "60s", "2s").Should(Equal(nodeCount))
-}
-
 func createTlsSecret() string {
 	const secretName = "cassandra-tls"
 	_, err := tls.CreateCertSecret(secretName).
@@ -211,7 +203,7 @@ var _ = Describe("backup and restore", func() {
 		err = Operator.Instance.WaitForPlanComplete("deploy")
 		Expect(err).To(BeNil())
 
-		assertNumberOfCassandraNodes(NodeCount)
+		suites.AssertNumberOfCassandraNodes(Client, Operator, NodeCount)
 
 		By("Writing Data to the cassandra cluster")
 		output, err := cassandra.Cqlsh(Client, Operator.Instance, testCQLScript)
@@ -267,7 +259,7 @@ var _ = Describe("backup and restore", func() {
 		err = Operator.Instance.WaitForPlanComplete("deploy", kudo.WaitTimeout(time.Minute*10))
 		Expect(err).To(BeNil())
 
-		assertNumberOfCassandraNodes(NodeCount)
+		suites.AssertNumberOfCassandraNodes(Client, Operator, NodeCount)
 
 		By("Reading Data from the cassandra cluster")
 		output, err = cassandra.Cqlsh(Client, Operator.Instance, confirmCQLScript)
@@ -292,7 +284,7 @@ var _ = Describe("backup and restore", func() {
 		By("Waiting for the plan to complete")
 		err = Operator.Instance.WaitForPlanComplete("deploy")
 		Expect(err).To(BeNil())
-		assertNumberOfCassandraNodes(NodeCount)
+		suites.AssertNumberOfCassandraNodes(Client, Operator, NodeCount)
 
 		By("Reading Data from the cassandra cluster again")
 		output, err = cassandra.Cqlsh(Client, Operator.Instance, confirmCQLScript)
@@ -339,7 +331,7 @@ var _ = Describe("backup and restore", func() {
 		err = Operator.Instance.WaitForPlanComplete("deploy")
 		Expect(err).To(BeNil())
 
-		assertNumberOfCassandraNodes(NodeCount)
+		suites.AssertNumberOfCassandraNodes(Client, Operator, NodeCount)
 
 		By("Writing Data to the cassandra cluster")
 		output, err := cassandra.Cqlsh(Client, Operator.Instance, testCQLScript)
@@ -402,7 +394,7 @@ var _ = Describe("backup and restore", func() {
 		err = Operator.Instance.WaitForPlanComplete("deploy", kudo.WaitTimeout(time.Minute*10))
 		Expect(err).To(BeNil())
 
-		assertNumberOfCassandraNodes(NodeCount)
+		suites.AssertNumberOfCassandraNodes(Client, Operator, NodeCount)
 
 		By("Reading Data from the cassandra cluster")
 		output, err = cassandra.Cqlsh(Client, Operator.Instance, confirmCQLScript)
