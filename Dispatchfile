@@ -10,7 +10,7 @@ task("dump", inputs=["kudo-cassandra-operator", "operators"], steps=[k8s.corev1.
   image="debian",
   command=[
     "bash", "-c",
-    "echo build.name=$(context.build.name) git.url=$(context.git.url) git.commit=$(context.git.commit) git.branch=$(context.git.branch) git.tag=$(context.git.tag) chatop.command=$(context.chatop.command) ALL=$(context)"
+    "echo build.name=$(context.build.name) git.url=$(context.git.url) git.commit=$(context.git.commit) git.branch=$(context.git.branch) git.tag=$(context.git.tag) chatop.command=$(context.chatop.command) build.name=$(context.build.name)"
   ],
 )
 ])
