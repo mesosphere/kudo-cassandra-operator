@@ -20,11 +20,14 @@ const (
 )
 
 var (
-	namespace     string
-	podName       string
-	configmapName string
-	podIpAddress  string
-	bootstrapWait string
+	namespace                string
+	podName                  string
+	configmapName            string
+	podIpAddress             string
+	bootstrapWait            string
+	jmxPort                  string
+	useSSL                   bool
+	shutdownOldReachableNode bool
 )
 
 type CassandraService struct {
@@ -37,6 +40,9 @@ func init() {
 	podIpAddress = os.Getenv("POD_IP")
 	configmapName = os.Getenv("CASSANDRA_IP_LOCK_CM")
 	bootstrapWait = os.Getenv("BOOTSTRAP_TIMEOUT")
+	jmxPort = os.Getenv("JMX_PORT")
+	useSSL = os.Getenv("USE_SSL") == "true"
+	shutdownOldReachableNode = os.Getenv("SHUTDOWN_OLD_REACHABLE_NODE") == "true"
 }
 
 func NewCassandraService(client *kubernetes.Clientset) *CassandraService {
@@ -57,13 +63,22 @@ func (c *CassandraService) SetReplaceIP() error {
 	}
 	oldIp := cfg.Data[podName]
 	log.Infof("bootstrap: Got old IP %s for pod %s, current IP is %s", oldIp, podName, podIpAddress)
-	if oldIp == podIpAddress {
+	if oldIp == podIpAddress || oldIp == "" {
 		return nil
+	}
+
+	if shutdownOldReachableNode {
+		// This is guarded by a feature flag, as this call can have quite a timeout and delay node startup
+		if isOldNodeReachableAndUp(oldIp) {
+			log.Infof("old node %s is still reachable and marked as UP. Try to shutdown old node now", oldIp)
+			tryOldNodeShutdown(oldIp)
+			return fmt.Errorf("tried to shutdown old node %s, wait for retry", oldIp)
+		}
 	}
 
 	// new internal ip address
 	if isBootstrapped() {
-		log.Infof("bootstrap: Node is already  bootstrapped, no need for replace IP")
+		log.Infof("bootstrap: Node is already bootstrapped, no need for replace IP")
 		// bootstrapped node needs no replace ip flag
 		return nil
 	}
@@ -71,6 +86,42 @@ func (c *CassandraService) SetReplaceIP() error {
 	log.Infof("bootstrap: Node is not bootstrapped, add replace ip to startup")
 	// node not bootstrapped and has an old ip address
 	return c.WriteReplaceIp(oldIp)
+}
+
+func isOldNodeReachableAndUp(oldIP string) bool {
+	nt := NewRemoteNodetool(oldIP, jmxPort, useSSL)
+	status, err := nt.Status()
+	log.Infof("Old Node Status: %v (%v)", status, err)
+	if err != nil {
+		log.Info("Old node seems to be not reachable anymore")
+		return false
+	}
+	if !status.HasUpNode(oldIP) {
+		log.Info("Could connect to old node, but the node is not marked as UP anymore.")
+		return false
+	}
+	gossipActive, err := nt.HasActiveGossip()
+	if err != nil {
+		log.Infof("Failed to get Gossip State: %v", err)
+	}
+	return gossipActive
+}
+
+// tryOldNodeShutdown tries to connect to the old node and shut it down. Returns true if it was possible to
+// connect and false if the old node was not reachable
+func tryOldNodeShutdown(oldIp string) {
+	nt := NewRemoteNodetool(oldIp, jmxPort, useSSL)
+
+	log.Infof("Try to drain old node...")
+	if _, err := nt.RunCommand("drain"); err != nil {
+		log.Errorf("Nodetool drain on remote host failed:%v", err)
+	}
+
+	// We actually would like to do "stopdaemon", which currently throws an exception. "disablegossip" works as well to remove the node from the cluster
+	log.Infof("Try to stop old node...")
+	if _, err := nt.RunCommand("disablegossip"); err != nil {
+		log.Errorf("Nodetool disablegossip on remote host failed:%v", err)
+	}
 }
 
 func isBootstrapped() bool {
@@ -123,7 +174,7 @@ func (c *CassandraService) WaitforReplacement(duration time.Duration) error {
 }
 
 func (c *CassandraService) NewIpRegistered() bool {
-	nodetool := NewNodetool()
+	nodetool := NewNodetool(useSSL)
 	status, err := nodetool.Status()
 	if err != nil {
 		log.Infof("bootstrap: nodetool error: %+v\n", err)

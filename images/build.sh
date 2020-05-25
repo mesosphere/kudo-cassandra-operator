@@ -77,3 +77,11 @@ if [[ "${1:-}" == "push" ]]; then
   docker push "${integration_tests_docker_image}"
   docker push "${recovery_controller_docker_image}"
 fi
+
+if [[ "${1:-}" == "kind-load" ]]; then
+  kind load docker-image "${cassandra_docker_image}"
+  kind load docker-image "${prometheus_exporter_docker_image}"
+  kind load docker-image "${medusa_backup_docker_image}"
+  kind load docker-image "${integration_tests_docker_image}"
+  kind load docker-image "${recovery_controller_docker_image}"
+fi

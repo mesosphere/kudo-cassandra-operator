@@ -74,12 +74,6 @@ func TestService(t *testing.T) {
 	RunSpecsWithDefaultAndCustomReporters(t, TestName, []Reporter{junitReporter})
 }
 
-func assertNumberOfCassandraNodes(nodeCount int) {
-	nodes, err := cassandra.Nodes(Client, Operator.Instance)
-	Expect(err).To(BeNil())
-	Expect(len(nodes)).To(Equal(nodeCount))
-}
-
 var _ = Describe(TestName, func() {
 	Context("Installs the operator with node-to-node encryption enabled", func() {
 		It("Installs the operator from a directory", func() {
@@ -102,7 +96,7 @@ var _ = Describe(TestName, func() {
 			err = Operator.Instance.WaitForPlanComplete("deploy")
 			Expect(err).To(BeNil())
 
-			assertNumberOfCassandraNodes(NodeCount)
+			suites.AssertNumberOfCassandraNodes(Client, Operator, NodeCount)
 
 			By("Checking the container logs")
 			podName := fmt.Sprintf("%s-%s-%d", TestInstance, "node", 0)
@@ -148,7 +142,7 @@ var _ = Describe(TestName, func() {
 			err = Operator.Instance.WaitForPlanComplete("deploy")
 			Expect(err).To(BeNil())
 
-			assertNumberOfCassandraNodes(NodeCount)
+			suites.AssertNumberOfCassandraNodes(Client, Operator, NodeCount)
 
 			By("Checking the container logs")
 			podName := fmt.Sprintf("%s-%s-%d", TestInstance, "node", 0)
@@ -194,7 +188,7 @@ var _ = Describe(TestName, func() {
 			err = Operator.Instance.WaitForPlanComplete("deploy")
 			Expect(err).To(BeNil())
 
-			assertNumberOfCassandraNodes(NodeCount)
+			suites.AssertNumberOfCassandraNodes(Client, Operator, NodeCount)
 
 			By("Checking the container logs")
 			podName := fmt.Sprintf("%s-%s-%d", TestInstance, "node", 0)
@@ -240,7 +234,7 @@ var _ = Describe(TestName, func() {
 			err = Operator.Instance.WaitForPlanComplete("deploy")
 			Expect(err).To(BeNil())
 
-			assertNumberOfCassandraNodes(NodeCount)
+			suites.AssertNumberOfCassandraNodes(Client, Operator, NodeCount)
 
 			By("Checking nodetool access from an utlity pod")
 			podName := fmt.Sprintf("%s-%s-%d", TestInstance, "node", 0)

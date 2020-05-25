@@ -56,12 +56,6 @@ func TestService(t *testing.T) {
 	RunSpecsWithDefaultAndCustomReporters(t, TestName, []Reporter{junitReporter})
 }
 
-func assertNumberOfCassandraNodes(nodeCount int) {
-	nodes, err := cassandra.Nodes(Client, Operator.Instance)
-	Expect(err).To(BeNil())
-	Expect(len(nodes)).To(Equal(nodeCount))
-}
-
 var _ = Describe("external service", func() {
 
 	It("Installs the operator from the current directory", func() {
@@ -82,7 +76,7 @@ var _ = Describe("external service", func() {
 		err = Operator.Instance.WaitForPlanComplete("deploy")
 		Expect(err).To(BeNil())
 
-		assertNumberOfCassandraNodes(NodeCount)
+		suites.AssertNumberOfCassandraNodes(Client, Operator, NodeCount)
 
 		By("Allowing external access to the cassandra cluster")
 		nativeTransportPort := 9043
@@ -99,7 +93,7 @@ var _ = Describe("external service", func() {
 		err = Operator.Instance.WaitForPlanComplete("deploy")
 		Expect(err).To(BeNil())
 
-		assertNumberOfCassandraNodes(NodeCount)
+		suites.AssertNumberOfCassandraNodes(Client, Operator, NodeCount)
 
 		log.Infof("Verify that external service is started and has 1 open port")
 		svc, err := kubernetes.GetService(Client, fmt.Sprintf("%s-svc-external", TestInstance), TestNamespace)
@@ -125,7 +119,7 @@ var _ = Describe("external service", func() {
 		err = Operator.Instance.WaitForPlanComplete("deploy")
 		Expect(err).To(BeNil())
 
-		assertNumberOfCassandraNodes(NodeCount)
+		suites.AssertNumberOfCassandraNodes(Client, Operator, NodeCount)
 
 		log.Infof("Verify that external service is started and has 2 open ports")
 		svc, err = kubernetes.GetService(Client, fmt.Sprintf("%s-svc-external", TestInstance), TestNamespace)
@@ -151,7 +145,7 @@ var _ = Describe("external service", func() {
 		err = Operator.Instance.WaitForPlanComplete("deploy")
 		Expect(err).To(BeNil())
 
-		assertNumberOfCassandraNodes(NodeCount)
+		suites.AssertNumberOfCassandraNodes(Client, Operator, NodeCount)
 
 		svc, err = kubernetes.GetService(Client, fmt.Sprintf("%s-svc-external", TestInstance), TestNamespace)
 

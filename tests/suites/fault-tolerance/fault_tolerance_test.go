@@ -250,15 +250,16 @@ var _ = Describe("Fault tolerance tests", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			By("Ensuring that all nodes are up")
-
-			nodes, err := cassandra.Nodes(client, operator.Instance)
-			Expect(err).NotTo(HaveOccurred())
-
-			var totalNodes = 0
+			expectedDcCounts := map[string]int{}
 			for _, dc := range topology {
-				totalNodes += dc.Nodes
+				expectedDcCounts[dc.Datacenter] = dc.Nodes
 			}
-			Expect(nodes).To(HaveLen(totalNodes))
+			Eventually(func() map[string]int {
+				nodes, err := cassandra.Nodes(client, operator.Instance)
+				Expect(err).NotTo(HaveOccurred())
+
+				return collectDataCenterCounts(nodes)
+			}, 5*time.Minute, 15*time.Second).Should(Equal(expectedDcCounts))
 
 			By("Writing data to the cluster")
 			replicationString := buildDatacenterReplicationString(topology, 2)
@@ -267,12 +268,6 @@ var _ = Describe("Fault tolerance tests", func() {
 			output, err := cassandra.Cqlsh(client, operator.Instance, createSchemaCQL+testCQLScript)
 			Expect(err).To(BeNil())
 			Expect(output).To(ContainSubstring(testCQLScriptOutput))
-
-			By("Checking that node status reports correct data center")
-			dcCounts := collectDataCenterCounts(nodes)
-			for _, dc := range topology {
-				Expect(dcCounts[dc.Datacenter]).To(Equal(dc.Nodes))
-			}
 
 			By("Updating the topology")
 			topology = getTopology3DatacenterEach1Rack()
@@ -289,13 +284,17 @@ var _ = Describe("Fault tolerance tests", func() {
 
 			By("Ensuring that all nodes are up")
 
-			nodes, err = cassandra.Nodes(client, operator.Instance)
-			Expect(err).NotTo(HaveOccurred())
-
-			dcCounts = collectDataCenterCounts(nodes)
+			expectedDcCounts = map[string]int{}
 			for _, dc := range topology {
-				Expect(dcCounts[dc.Datacenter]).To(Equal(dc.Nodes))
+				expectedDcCounts[dc.Datacenter] = dc.Nodes
 			}
+
+			Eventually(func() map[string]int {
+				nodes, err := cassandra.Nodes(client, operator.Instance)
+				Expect(err).NotTo(HaveOccurred())
+
+				return collectDataCenterCounts(nodes)
+			}, 5*time.Minute, 15*time.Second).Should(Equal(expectedDcCounts))
 
 			By("Reading data from the cluster")
 			output, err = cassandra.Cqlsh(client, operator.Instance, testCQLOutputScript)

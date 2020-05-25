@@ -8,7 +8,10 @@ import (
 	"github.com/kudobuilder/test-tools/pkg/client"
 	"github.com/kudobuilder/test-tools/pkg/kubernetes"
 	"github.com/kudobuilder/test-tools/pkg/kudo"
+
 	"github.com/mesosphere/kudo-cassandra-operator/tests/cassandra"
+	"github.com/mesosphere/kudo-cassandra-operator/tests/suites"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
@@ -49,12 +52,6 @@ var _ = AfterSuite(func() {
 //	RunSpecsWithDefaultAndCustomReporters(t, TestName, []Reporter{junitReporter})
 //}
 
-func assertNumberOfCassandraNodes(nodeCount int) {
-	nodes, err := cassandra.Nodes(Client, Operator.Instance)
-	Expect(err).To(BeNil())
-	Expect(len(nodes)).To(Equal(nodeCount))
-}
-
 var _ = Describe(TestName, func() {
 	It("Installs the latest operator from the package registry", func() {
 		var err error
@@ -75,7 +72,7 @@ var _ = Describe(TestName, func() {
 
 		err = Operator.Instance.WaitForPlanComplete("deploy")
 		Expect(err).To(BeNil())
-		assertNumberOfCassandraNodes(NodeCount)
+		suites.AssertNumberOfCassandraNodes(Client, Operator, NodeCount)
 
 		By("Upgrading the running operator instance from a directory")
 
@@ -103,7 +100,7 @@ var _ = Describe(TestName, func() {
 
 		err = Operator.Instance.WaitForPlanComplete("upgrade")
 		Expect(err).To(BeNil())
-		assertNumberOfCassandraNodes(NodeCount)
+		suites.AssertNumberOfCassandraNodes(Client, Operator, NodeCount)
 		//It("Uninstalls the operator", func() {
 		//	err := cassandra.Uninstall(Client, Operator)
 		//	Expect(err).To(BeNil())

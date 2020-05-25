@@ -251,8 +251,9 @@ data:
 
     {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
       JVM_OPTS="$JVM_OPTS -Dcom.sun.management.jmxremote.local.only=false"
-      JVM_OPTS="$JVM_OPTS -Djava.rmi.server.hostname=$POD_NAME.{{ .Name }}-svc.$POD_NAMESPACE.svc.cluster.local"
-      
+      #JVM_OPTS="$JVM_OPTS -Djava.rmi.server.hostname=$POD_NAME.{{ .Name }}-svc.$POD_NAMESPACE.svc.cluster.local"
+      JVM_OPTS="$JVM_OPTS -Djava.rmi.server.hostname=$POD_IP"
+
       JVM_OPTS="$JVM_OPTS -Dcassandra.jmx.remote.port=$JMX_PORT"
       # if ssl is enabled the same port cannot be used for both jmx and rmi so either
       # pick another value for this property or comment out to use a random port (though see CASSANDRA-7087 for origins)
@@ -264,7 +265,6 @@ data:
       set +x
       readonly truststore_password=$(cat /etc/cassandra/truststore/truststore_password)
       readonly keystore_password=$(cat /etc/cassandra/truststore/keystore_password)
-      set -x
 
       # jmx ssl options
       JVM_OPTS="$JVM_OPTS -Dcom.sun.management.jmxremote.ssl=true"

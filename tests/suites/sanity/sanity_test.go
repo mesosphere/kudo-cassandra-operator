@@ -66,12 +66,6 @@ func TestService(t *testing.T) {
 	RunSpecsWithDefaultAndCustomReporters(t, TestName, []Reporter{junitReporter})
 }
 
-func assertNumberOfCassandraNodes(nodeCount int) {
-	nodes, err := cassandra.Nodes(Client, Operator.Instance)
-	Expect(err).To(BeNil())
-	Expect(len(nodes)).To(Equal(nodeCount))
-}
-
 var _ = Describe(TestName, func() {
 	It("Installs the current operator", func() {
 		var err error
@@ -90,7 +84,7 @@ var _ = Describe(TestName, func() {
 
 		err = Operator.Instance.WaitForPlanComplete("deploy")
 		Expect(err).To(BeNil())
-		assertNumberOfCassandraNodes(NodeCount)
+		suites.AssertNumberOfCassandraNodes(Client, Operator, NodeCount)
 
 		if !suites.IsLocalCluster() {
 			By("providing metrics to prometheus")
@@ -137,7 +131,7 @@ var _ = Describe(TestName, func() {
 		Expect(pod.Spec.Containers[0].Resources.Limits.Cpu().AsDec().UnscaledBig()).To(Equal(big.NewInt(int64(newCPULimit))))
 		Expect(pod.Spec.Containers[0].Resources.Limits.Memory().AsDec().UnscaledBig()).To(Equal(big.NewInt(int64(newMemLimitBytes))))
 
-		assertNumberOfCassandraNodes(NodeCount)
+		suites.AssertNumberOfCassandraNodes(Client, Operator, NodeCount)
 
 		By("Updating the instances parameters")
 		parameter := "disk_failure_policy"
@@ -160,7 +154,7 @@ var _ = Describe(TestName, func() {
 		Expect(err).To(BeNil())
 		Expect(configuration[parameter]).To(Equal(desiredValue))
 
-		assertNumberOfCassandraNodes(NodeCount)
+		suites.AssertNumberOfCassandraNodes(Client, Operator, NodeCount)
 
 		By("Configuring Cassandras properties through custom properties")
 		parameter = "otc_backlog_expiration_interval_ms"
@@ -186,7 +180,7 @@ var _ = Describe(TestName, func() {
 		Expect(err).To(BeNil())
 		Expect(configuration[parameter]).To(Equal(desiredValue))
 
-		assertNumberOfCassandraNodes(NodeCount)
+		suites.AssertNumberOfCassandraNodes(Client, Operator, NodeCount)
 
 		By("Configuring Cassandra JVM options through custom options")
 		parameter = "-XX:CMSWaitDuration"
@@ -213,7 +207,7 @@ var _ = Describe(TestName, func() {
 		Expect(err).To(BeNil())
 		Expect(configuration[parameter]).To(Equal(desiredValue))
 
-		assertNumberOfCassandraNodes(NodeCount)
+		suites.AssertNumberOfCassandraNodes(Client, Operator, NodeCount)
 
 		By("Scaling the instances number of nodes")
 		// Make sure we create an actual cluster of three nodes
@@ -229,7 +223,7 @@ var _ = Describe(TestName, func() {
 		err = Operator.Instance.WaitForPlanComplete("deploy")
 		Expect(err).To(BeNil())
 
-		assertNumberOfCassandraNodes(NodeCount)
+		suites.AssertNumberOfCassandraNodes(Client, Operator, NodeCount)
 
 		By("Triggering a Cassandra node repair")
 		podName, err := cassandra.PodName(Operator.Instance, 0)

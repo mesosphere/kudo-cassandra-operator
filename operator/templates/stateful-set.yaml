@@ -148,18 +148,9 @@ spec:
             - -c
           args:
             - /etc/cassandra/generate-cassandra-yaml.sh;
-              {{ if or (eq $.Params.TRANSPORT_ENCRYPTION_ENABLED "true") (eq $.Params.TRANSPORT_ENCRYPTION_CLIENT_ENABLED "true") (ne $.Params.JMX_LOCAL_ONLY "true") }}
-              /etc/tls/bin/generate-tls-artifacts.sh;
-              {{ end }}
               {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
               /etc/cassandra/generate-nodetool-ssl-properties.sh &&
               cp /etc/cassandra/nodetool-ssl.properties /home/cassandra/.cassandra/nodetool-ssl.properties;
-              {{ end }}
-              /etc/cassandra/generate-cqlshrc.sh;
-              {{ if $.Params.NODE_TOPOLOGY }}
-              /etc/cassandra/wait-for-node-zero.sh {{ $.Name }}-{{ $datacenter.datacenter }};
-              {{ else }}
-              /etc/cassandra/wait-for-node-zero.sh {{ $.Name }};
               {{ end }}
               /etc/cassandra-bootstrap/bootstrap wait &
               cassandra -f
@@ -201,6 +192,14 @@ spec:
               value: "{{ $.Name }}-topology-lock"
             - name: BOOTSTRAP_TIMEOUT
               value: "{{ $.Params.BOOTSTRAP_TIMEOUT }}"
+            - name: JMX_PORT
+              value: "{{ $.Params.JMX_PORT }}"
+            - name: USE_SSL
+              {{ if eq $.Params.JMX_LOCAL_ONLY "true" }}
+              value: "false"
+              {{ else }}
+              value: "true"
+              {{ end }}
           resources:
             requests:
               memory: "{{ $.Params.NODE_MEM_MIB }}Mi"
@@ -252,14 +251,8 @@ spec:
             - name: node-scripts
               mountPath: /etc/cassandra/node-token-save.sh
               subPath: node-token-save.sh
-            - name: node-scripts
-              mountPath: /etc/cassandra/wait-for-node-zero.sh
-              subPath: wait-for-node-zero.sh
             - name: dot-cassandra
               mountPath: /home/cassandra/.cassandra/
-            - name: generate-cqlshrc-sh
-              mountPath: /etc/cassandra/generate-cqlshrc.sh
-              subPath: generate-cqlshrc.sh
           {{ if or (eq $.Params.TRANSPORT_ENCRYPTION_ENABLED "true") (eq $.Params.TRANSPORT_ENCRYPTION_CLIENT_ENABLED "true") (ne $.Params.JMX_LOCAL_ONLY "true") }}
             - name: {{ $.Params.TLS_SECRET_NAME }}
               mountPath: /etc/tls/certs
@@ -585,11 +578,29 @@ spec:
         - name: bootstrap
           image: {{ $.Params.NODE_DOCKER_IMAGE }}
           imagePullPolicy: {{ $.Params.NODE_DOCKER_IMAGE_PULL_POLICY }}
+          securityContext:
+            capabilities:
+              add:
+                # TODO(mpereira): add an operator parameter for "memory lock" so
+                # that this capability and a respective Docker image with
+                # `setcap`ed binaries are conditionally used.
+                - IPC_LOCK
+                # FIXME(mpereira): might not be necessary given DCOS-59219.
+                - SYS_RESOURCE
           command:
             - bash
             - -c
           args:
-            - /etc/cassandra-bootstrap/bootstrap init
+            - {{ if or (eq $.Params.TRANSPORT_ENCRYPTION_ENABLED "true") (eq $.Params.TRANSPORT_ENCRYPTION_CLIENT_ENABLED "true") (ne $.Params.JMX_LOCAL_ONLY "true") }}
+              /etc/tls/bin/generate-tls-artifacts.sh;
+              {{ end }}
+              {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
+              /etc/cassandra/generate-nodetool-ssl-properties.sh &&
+              cp /etc/cassandra/nodetool-ssl.properties /home/cassandra/.cassandra/nodetool-ssl.properties;
+              {{ end }}
+              /etc/cassandra/generate-cqlshrc.sh;
+              /etc/cassandra/wait-for-node-zero.sh;
+              /etc/cassandra-bootstrap/bootstrap init
           env:
             - name: POD_IP
               valueFrom:
@@ -607,11 +618,48 @@ spec:
               value: "{{ $.Name }}-topology-lock"
             - name: BOOTSTRAP_TIMEOUT
               value: "{{ $.Params.BOOTSTRAP_TIMEOUT }}"
+            - name: SHUTDOWN_OLD_REACHABLE_NODE
+              value: "{{ $.Params.SHUTDOWN_OLD_REACHABLE_NODE }}"
+            - name: JMX_PORT
+              value: "{{ $.Params.JMX_PORT }}"
+            - name: USE_SSL
+              {{ if eq $.Params.JMX_LOCAL_ONLY "true" }}
+              value: "false"
+              {{ else }}
+              value: "true"
+              {{ end }}
           volumeMounts:
             - name: etc-cassandra
               mountPath: /etc/cassandra/
             - name: var-lib-cassandra
               mountPath: /var/lib/cassandra/
+            - name: dot-cassandra
+              mountPath: /home/cassandra/.cassandra/
+            - name: truststore-credentials
+              mountPath: /etc/cassandra/truststore
+              readOnly: yes
+            - name: generate-cqlshrc-sh
+              mountPath: /etc/cassandra/generate-cqlshrc.sh
+              subPath: generate-cqlshrc.sh
+            - name: node-scripts
+              mountPath: /etc/cassandra/wait-for-node-zero.sh
+              subPath: wait-for-node-zero.sh
+          {{ if or (eq $.Params.TRANSPORT_ENCRYPTION_ENABLED "true") (eq $.Params.TRANSPORT_ENCRYPTION_CLIENT_ENABLED "true") (ne $.Params.JMX_LOCAL_ONLY "true") }}
+            - name: {{ $.Params.TLS_SECRET_NAME }}
+              mountPath: /etc/tls/certs
+            - name: generate-tls-artifacts
+              mountPath: /etc/tls/bin
+          {{ end }}
+          {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
+            - name: generate-nodetool-ssl-properties
+              mountPath: /etc/cassandra/generate-nodetool-ssl-properties.sh
+              subPath: generate-nodetool-ssl-properties.sh
+          {{ end }}
+          {{ if $.Params.AUTHENTICATION_SECRET_NAME }}
+            - name: authentication-secret
+              mountPath: /etc/cassandra/authentication
+              readOnly: true
+          {{ end }}
           resources:
             requests:
               memory: "128Mi"

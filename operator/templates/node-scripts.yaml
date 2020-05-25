@@ -16,15 +16,15 @@ data:
     {{ end }}
   node-readiness-probe.sh: |
     {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
-    nodetool {{ $auth_params }} --ssl status -p {{ .Params.JMX_PORT }} | grep -q "U[NJ]  ${POD_IP}"
+    nodetool {{ $auth_params }} -p {{ .Params.JMX_PORT }} --ssl status| grep -q "U[NJ]  ${POD_IP}"
     {{ else }}
-    nodetool {{ $auth_params }} status -p {{ .Params.JMX_PORT }} | grep -q "U[NJ]  ${POD_IP}"
+    nodetool {{ $auth_params }} -p {{ .Params.JMX_PORT }} status | grep -q "U[NJ]  ${POD_IP}"
     {{ end }}
   node-liveness-probe.sh: |
     {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
-    nodetool {{ $auth_params }} --ssl info
+    nodetool {{ $auth_params }}  -p {{ .Params.JMX_PORT }} --ssl info
     {{ else }}
-    nodetool {{ $auth_params }} info
+    nodetool {{ $auth_params }} -p {{ .Params.JMX_PORT }}  info
     {{ end }}
   generate-rackdc-properties.sh: |
     # Generate the rackdc-properties
@@ -75,6 +75,12 @@ data:
   wait-for-node-zero.sh: |
     # With parallel startup of all nodes, we still need to make sure that the first node is reachable for all others, otherwise
     # we may end up with separate clusters. So every node except node-0 waits for node-0 to be reachable
-    if [ "$POD_NAME" != "$1-node-0" ]; then
-      while :; do cqlsh $1-node-0.{{ $.Name }}-svc.{{ $.Namespace }}.svc.cluster.local -e "SELECT uuid() FROM system.local" > /dev/null 2>&1 && break; echo "Waiting for '$1-node-0.{{ $.Name }}-svc.{{ $.Namespace }}.svc.cluster.local' to be available..."; sleep 5; done;
+    {{- if .Params.NODE_TOPOLOGY }}
+    NODE_ZERO={{ $.Name }}-{{ (index $.Params.NODE_TOPOLOGY 0).datacenter }}-node-0
+    {{- else }}
+    NODE_ZERO={{ $.Name }}-node-0
+    {{- end }}
+    echo "Testing if node $NODE_ZERO is reachable...";
+    if [ "$POD_NAME" != "$NODE_ZERO" ]; then
+      while :; do cqlsh $NODE_ZERO.{{ $.Name }}-svc.{{ $.Namespace }}.svc.cluster.local -e "SELECT uuid() FROM system.local" > /dev/null 2>&1 && break; echo "Waiting for '$NODE_ZERO.{{ $.Name }}-svc.{{ $.Namespace }}.svc.cluster.local' to be available..."; sleep 5; done;
     fi;
