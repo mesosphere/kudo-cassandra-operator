@@ -15,12 +15,14 @@ metadata:
   namespace: cassandra-install-test
 spec:
   template:
-    affinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-        nodeSelectorTerms:
-          - matchExpressions:
-              - key: "kudo-cassandra/cordon"
-                operator: DoesNotExist
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: "kudo-cassandra/cordon"
+                    operator: DoesNotExist
 status:
   readyReplicas: 1
 ---
