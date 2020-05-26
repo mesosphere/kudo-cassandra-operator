@@ -133,7 +133,7 @@ parameters:
 
   - name: SHUTDOWN_OLD_REACHABLE_NODE
     description: "When a node replace is done, try to connect to the old node and shut it down before starting up the old node"
-    default: true
+    default: false
 
   ################################################################################
   ########################## Backup and Restore settings #########################

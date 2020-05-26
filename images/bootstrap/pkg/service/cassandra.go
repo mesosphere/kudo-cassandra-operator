@@ -67,9 +67,10 @@ func (c *CassandraService) SetReplaceIP() error {
 		return nil
 	}
 
-	if isOldNodeReachableAndUp(oldIp) {
-		log.Infof("old node %s is still reachable and marked as UP. Shutdown old node: %t", oldIp, shutdownOldReachableNode)
-		if shutdownOldReachableNode {
+	if shutdownOldReachableNode {
+		// This is guarded by a feature flag, as this call can have quite a timeout and delay node startup
+		if isOldNodeReachableAndUp(oldIp) {
+			log.Infof("old node %s is still reachable and marked as UP. Try to shutdown old node now", oldIp)
 			tryOldNodeShutdown(oldIp)
 			return fmt.Errorf("tried to shutdown old node %s, wait for retry", oldIp)
 		}

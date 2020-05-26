@@ -23,6 +23,11 @@ import (
 	. "github.com/onsi/gomega"
 )
 
+// To run this test locally you need to have the AWS credentials in the env:
+// maws
+// source ../scripts/export_maws.sh
+// ./run.sh backup_restore
+
 var (
 	TestName          = "backup-restore-test"
 	OperatorName      = os.Getenv("OPERATOR_NAME")
@@ -40,6 +45,8 @@ var (
 	BackupBucket = "kudo-cassandra-backup-test"
 	BackupPrefix = uuid.New().String()
 	BackupName   = "first"
+
+	Secret *kubernetes.Secret
 )
 
 const createSchema = "CREATE SCHEMA schema1 WITH replication = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 };"
@@ -87,6 +94,12 @@ var _ = AfterSuite(func() {
 		fmt.Printf("Failed to delete namespace: %v\n", err)
 	}
 
+	if Secret != nil {
+		if err := Secret.Delete(); err != nil {
+			fmt.Printf("Error while deleting AWS secret")
+		}
+	}
+
 	if err := aws.DeleteFolderInS3(BackupBucket, BackupPrefix); err != nil {
 		fmt.Printf("Error while cleaning up S3 bucket: %v\n", err)
 	}
@@ -102,14 +115,6 @@ func TestService(t *testing.T) {
 		"%s-junit.xml", TestName,
 	))
 	RunSpecsWithDefaultAndCustomReporters(t, TestName, []Reporter{junitReporter})
-}
-
-func assertNumberOfCassandraNodes(nodeCount int) {
-	Eventually(func() int {
-		nodes, err := cassandra.Nodes(Client, Operator.Instance)
-		Expect(err).To(BeNil())
-		return len(nodes)
-	}, "60s", "2s").Should(Equal(nodeCount))
 }
 
 func createTlsSecret() string {
@@ -156,9 +161,13 @@ func createAwsCredentials() string {
 	}
 
 	By("Creating a aws-credentials secret")
-	_, _ = kubernetes.CreateSecret(awsSecretName).
+	awsSecret, err := kubernetes.CreateSecret(awsSecretName).
 		WithNamespace(TestNamespace).
 		WithStringData(awsCredentials).Do(Client)
+
+	Secret = &awsSecret
+
+	Expect(err).NotTo(HaveOccurred())
 
 	return awsSecretName
 }
@@ -178,7 +187,7 @@ var _ = Describe("backup and restore", func() {
 			"BACKUP_PREFIX":                 BackupPrefix,
 			"BACKUP_NAME":                   BackupName,
 			"BACKUP_AWS_S3_BUCKET_NAME":     BackupBucket,
-			"POD_MANAGEMENT_POLICY":         "Parallel",
+			"POD_MANAGEMENT_POLICY":         "OrderedReady",
 		}
 		suites.SetSuitesParameters(parameters)
 
@@ -194,7 +203,7 @@ var _ = Describe("backup and restore", func() {
 		err = Operator.Instance.WaitForPlanComplete("deploy")
 		Expect(err).To(BeNil())
 
-		assertNumberOfCassandraNodes(NodeCount)
+		suites.AssertNumberOfCassandraNodes(Client, Operator, NodeCount)
 
 		By("Writing Data to the cassandra cluster")
 		output, err := cassandra.Cqlsh(Client, Operator.Instance, testCQLScript)
@@ -250,7 +259,7 @@ var _ = Describe("backup and restore", func() {
 		err = Operator.Instance.WaitForPlanComplete("deploy", kudo.WaitTimeout(time.Minute*10))
 		Expect(err).To(BeNil())
 
-		assertNumberOfCassandraNodes(NodeCount)
+		suites.AssertNumberOfCassandraNodes(Client, Operator, NodeCount)
 
 		By("Reading Data from the cassandra cluster")
 		output, err = cassandra.Cqlsh(Client, Operator.Instance, confirmCQLScript)
@@ -275,7 +284,7 @@ var _ = Describe("backup and restore", func() {
 		By("Waiting for the plan to complete")
 		err = Operator.Instance.WaitForPlanComplete("deploy")
 		Expect(err).To(BeNil())
-		assertNumberOfCassandraNodes(NodeCount)
+		suites.AssertNumberOfCassandraNodes(Client, Operator, NodeCount)
 
 		By("Reading Data from the cassandra cluster again")
 		output, err = cassandra.Cqlsh(Client, Operator.Instance, confirmCQLScript)
@@ -322,7 +331,7 @@ var _ = Describe("backup and restore", func() {
 		err = Operator.Instance.WaitForPlanComplete("deploy")
 		Expect(err).To(BeNil())
 
-		assertNumberOfCassandraNodes(NodeCount)
+		suites.AssertNumberOfCassandraNodes(Client, Operator, NodeCount)
 
 		By("Writing Data to the cassandra cluster")
 		output, err := cassandra.Cqlsh(Client, Operator.Instance, testCQLScript)
@@ -385,7 +394,7 @@ var _ = Describe("backup and restore", func() {
 		err = Operator.Instance.WaitForPlanComplete("deploy", kudo.WaitTimeout(time.Minute*10))
 		Expect(err).To(BeNil())
 
-		assertNumberOfCassandraNodes(NodeCount)
+		suites.AssertNumberOfCassandraNodes(Client, Operator, NodeCount)
 
 		By("Reading Data from the cassandra cluster")
 		output, err = cassandra.Cqlsh(Client, Operator.Instance, confirmCQLScript)
