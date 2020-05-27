@@ -24,7 +24,9 @@ Those requests and limits can be tuned using the parameters:
 
 By default KUDO Cassandra uses 20GiB PV. This isn't recommended for production
 use. Please refer to [production](./production.md) docs to see the storage and
-computer resources recommendations
+compute resources recommendations
+
+## Resources per container
 
 #### Cassandra container
 
