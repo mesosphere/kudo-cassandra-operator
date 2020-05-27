@@ -48,20 +48,22 @@ spec:
       {{ end }}
       {{ end }}
       affinity:
-      {{ if $.Params.NODE_TOPOLOGY }}
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
               - matchExpressions:
+                  - key: "kudo-cassandra/cordon"
+                    operator: DoesNotExist
+          {{ if $.Params.NODE_TOPOLOGY }}
                   - key: {{ $datacenter.rackLabelKey }}
                     operator: In
                     values:
                     {{ range $rack := $datacenter.racks }}
                       - {{ $rack.rackLabelValue }}
                     {{ end }}
-      {{ end }}
-      {{ if (eq $.Params.NODE_ANTI_AFFINITY "true") }}
+          {{ end }}
         podAntiAffinity:
+          {{ if (eq $.Params.NODE_ANTI_AFFINITY "true") }}
           requiredDuringSchedulingIgnoredDuringExecution:
             - labelSelector:
                 matchExpressions:
@@ -70,8 +72,8 @@ spec:
                     values:
                     - {{ $.Name }}
               topologyKey: "kubernetes.io/hostname"
-      {{ end }}
-      {{ if $.Params.NODE_TOPOLOGY }}
+          {{ end }}
+          {{ if $.Params.NODE_TOPOLOGY }}
           preferredDuringSchedulingIgnoredDuringExecution:
             - weight: 100
               podAffinityTerm:
@@ -82,7 +84,7 @@ spec:
                       values:
                         - {{ $.Name }}
                 topologyKey: "{{ $datacenter.rackLabelKey }}"
-      {{ end }}
+          {{ end }}
       securityContext:
         # FIXME(mpereira): are the two settings below necessary?
         # allowPrivilegeEscalation: false
