@@ -91,14 +91,16 @@ plans:
               - node-rbac
               - node-resolver-rbac
       - name: nodes
-        strategy: parallel
+        strategy: serial
         steps:
-          - name: node
+          - name: pre-node
             tasks:
-              - node
               - ext-service
               - recovery-controller
               - backup-deploy
+          - name: node
+            tasks:
+              - node
   repair:
     strategy: serial
     phases:
