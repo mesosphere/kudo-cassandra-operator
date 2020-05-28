@@ -321,9 +321,10 @@ var _ = Describe("backup and restore", func() {
 		output, err = cassandra.Cqlsh(Client, Operator.Instance, confirmCQLScript)
 		Expect(err).To(BeNil())
 		Expect(output).To(ContainSubstring(testCQLScriptOutput2))
+	})
 
-		By("Uninstalling the operator instance")
-		err = cassandra.Uninstall(Client, Operator)
+	It("Uninstalls the operator", func() {
+		err := cassandra.Uninstall(Client, Operator)
 		Expect(err).To(BeNil())
 		Eventually(func() int {
 			pods, _ := kubernetes.ListPods(Client, TestNamespace)
@@ -332,7 +333,6 @@ var _ = Describe("backup and restore", func() {
 		}, "300s", "10s").Should(Equal(0))
 	})
 
-	// This test is disabled (PIt instead of It) and can be enabled as soon as https://github.com/thelastpickle/cassandra-medusa/pull/119 is merged and released
 	It("Creates and restores a backup with JMX SSL and authentication", func() {
 		var err error
 
@@ -446,5 +446,10 @@ var _ = Describe("backup and restore", func() {
 	It("Uninstalls the operator", func() {
 		err := cassandra.Uninstall(Client, Operator)
 		Expect(err).To(BeNil())
+		Eventually(func() int {
+			pods, _ := kubernetes.ListPods(Client, TestNamespace)
+			fmt.Printf("Polling pods: %v\n", len(pods))
+			return len(pods)
+		}, "300s", "10s").Should(Equal(0))
 	})
 })
