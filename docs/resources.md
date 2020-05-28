@@ -139,7 +139,10 @@ cass-prod-node-2   1/1     Running   0          8s
 ### Configmaps
 
 KUDO Cassandra generates the configurable scripts and properties used in KUDO
-Cassandra operator as configmaps objects PodDisruptionBudget KUDO Cassandra
+Cassandra operator as configmap objects. 
+
+### PodDisruptionBudget 
+KUDO Cassandra
 limits the number of pods that are down simultaneously. For Cassandra’s service
 to work without interruptions, especially when the quorum-based applications are
 running on top of Cassandra we would like to guarantee that the number of
