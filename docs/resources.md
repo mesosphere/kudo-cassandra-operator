@@ -136,23 +136,24 @@ cass-prod-node-1   1/1     Running   0          49s
 cass-prod-node-2   1/1     Running   0          8s
 ```
 
-When a multi-datacenter configuration with `NODE_TOPOLOGY` is used, the pod names include the datacenter name as well. 
-See [multi-datacenter](./multidatacenter.md) documentation.
+When a multi-datacenter configuration with `NODE_TOPOLOGY` is used, the pod
+names include the datacenter name as well. See
+[multi-datacenter](./multidatacenter.md) documentation.
 
 ### Configmaps
 
 KUDO Cassandra generates the configurable scripts and properties used in KUDO
-Cassandra operator as configmap objects. 
+Cassandra operator as configmap objects.
 
-### PodDisruptionBudget 
-KUDO Cassandra
-limits the number of pods that are down simultaneously. For Cassandra’s service
-to work without interruptions, especially when the quorum-based applications are
-running on top of Cassandra we would like to guarantee that the number of
-replicas running is never brought below the number required for a quorum, even
-temporarily. Unlike a regular pod deletion, for the KUDO Cassandra pod eviction
-the API server may reject operation if the eviction would cause a
-disruption budget to be disrupted.
+### PodDisruptionBudget
+
+KUDO Cassandra limits the number of pods that are down simultaneously. For
+Cassandra’s service to work without interruptions, especially when the
+quorum-based applications are running on top of Cassandra we would like to
+guarantee that the number of replicas running is never brought below the number
+required for a quorum, even temporarily. Unlike a regular pod deletion, for the
+KUDO Cassandra pod eviction the API server may reject operation if the eviction
+would cause a disruption budget to be disrupted.
 
 ### ServiceAccount / Role / RoleBinding
 
