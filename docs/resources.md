@@ -136,6 +136,9 @@ cass-prod-node-1   1/1     Running   0          49s
 cass-prod-node-2   1/1     Running   0          8s
 ```
 
+When a multi-datacenter configuration with `NODE_TOPOLOGY` is used, the pod names include the datacenter name as well. 
+See [multi-datacenter](./multidatacenter.md) documentation.
+
 ### Configmaps
 
 KUDO Cassandra generates the configurable scripts and properties used in KUDO
