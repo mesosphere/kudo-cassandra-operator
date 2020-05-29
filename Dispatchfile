@@ -70,6 +70,8 @@ dindTask("checks", inputs=["kudo-cassandra-operator"], outputs=["artifacts"], st
   command=[
     "/entrypoint.sh",
     "env", "BUILD_VCS_NUMBER_kudo_cassandra_operator=$(context.git.commit)",
+    # D2IQ-68628
+    "KUTTL_OPTIONS=--kind-config=dispatch-kind-config.yaml",
     "./kudo-cassandra-operator/shared/teamcity/run-pre-checks",
     "--build_artifacts_directory", "$(resources.outputs.artifacts.path)",
     "--kudo_version", "",
@@ -222,6 +224,7 @@ dindTask("checks", inputs=["kudo-cassandra-operator"], outputs=["artifacts"], st
       "memory": k8s.resource_quantity("7.5Gi")
     }
   )
+
  ), k8s.corev1.Container(
   name="exit",
   command=[
