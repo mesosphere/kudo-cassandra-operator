@@ -9,7 +9,7 @@ readonly artifacts_directory="${DS_TEST_ARTIFACTS_DIRECTORY:-${project_directory
 mkdir -p "${artifacts_directory}"
 
 # We need to ignore the suffix for the purpose of checking templates.
-IMAGE_DISAMBIGUATION_SUFFIX="" "${project_directory}/tools/compile_templates.sh" --check-only
+"${project_directory}/tools/docker.sh" env IMAGE_DISAMBIGUATION_SUFFIX="" "${project_directory}/tools/compile_templates.sh" --check-only
 
 "${project_directory}/tools/docker.sh" "${project_directory}/tools/generate_parameters_markdown.py"
 

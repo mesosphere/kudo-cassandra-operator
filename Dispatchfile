@@ -42,30 +42,6 @@ def secret_var(name, key):
     )
 
 dindTask("checks", inputs=["kudo-cassandra-operator"], outputs=["artifacts"], steps=[k8s.corev1.Container(
-  name="pre-checks",
-  command=[
-    "/entrypoint.sh",
-    "./kudo-cassandra-operator/tools/docker.sh",
-    "env", "BUILD_VCS_NUMBER_kudo_cassandra_operator=$(context.git.commit)",
-    "./kudo-cassandra-operator/shared/teamcity/run-pre-checks",
-    "--build_artifacts_directory", "$(resources.outputs.artifacts.path)",
-    "--kudo_version", "",
-    "--operator_repo_name", "kudo-cassandra-operator"
-  ],
-  workingDir="/workspace",
-  resources = k8s.corev1.ResourceRequirements(
-    limits={
-      "cpu": k8s.resource_quantity("2000m"),
-      "memory": k8s.resource_quantity("7.5Gi")
-    },
-    requests={
-      "cpu": k8s.resource_quantity("2000m"),
-      "memory": k8s.resource_quantity("7.5Gi")
-    }
-  )
-
-
- ), k8s.corev1.Container(
   name="image-build-and-push",
   command=[
     "/entrypoint.sh",
@@ -78,6 +54,28 @@ dindTask("checks", inputs=["kudo-cassandra-operator"], outputs=["artifacts"], st
   env=[
     k8s.corev1.EnvVar(name="BUILD_VCS_NUMBER_kudo_cassandra_operator", value="$(context.git.commit)")
   ],
+  resources = k8s.corev1.ResourceRequirements(
+    limits={
+      "cpu": k8s.resource_quantity("2000m"),
+      "memory": k8s.resource_quantity("7.5Gi")
+    },
+    requests={
+      "cpu": k8s.resource_quantity("2000m"),
+      "memory": k8s.resource_quantity("7.5Gi")
+    }
+  )
+
+ ), k8s.corev1.Container(
+  name="pre-checks",
+  command=[
+    "/entrypoint.sh",
+    "env", "BUILD_VCS_NUMBER_kudo_cassandra_operator=$(context.git.commit)",
+    "./kudo-cassandra-operator/shared/teamcity/run-pre-checks",
+    "--build_artifacts_directory", "$(resources.outputs.artifacts.path)",
+    "--kudo_version", "",
+    "--operator_repo_name", "kudo-cassandra-operator"
+  ],
+  workingDir="/workspace",
   resources = k8s.corev1.ResourceRequirements(
     limits={
       "cpu": k8s.resource_quantity("2000m"),
