@@ -29,7 +29,6 @@ func IsLocalCluster() bool {
 // - parameters for local testing in a minikube or other restricted environments
 // This includes limited CPU and memory settings as well as disabling the Prometheus exporter when running in local cluster
 func SetSuitesParameters(parameters map[string]string) {
-	parameters["NODE_DOCKER_IMAGE"] = os.Getenv("CASSANDRA_DOCKER_IMAGE")
 	if IsLocalCluster() {
 		parameters["NODE_MEM_MIB"] = "768"
 		parameters["NODE_MEM_LIMIT_MIB"] = "1024"

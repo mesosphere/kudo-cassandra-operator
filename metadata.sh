@@ -12,6 +12,8 @@ _project_directory="$(realpath -L "${_script_directory}")"
 ################################# Operator #####################################
 ################################################################################
 
+export VERBOSE="true"
+
 # https://github.com/mesosphere/kudo-cassandra-operator
 
 export PROJECT_NAME="kudo-cassandra-operator"

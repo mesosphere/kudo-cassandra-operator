@@ -13,4 +13,4 @@ fi
 
 docker build "${REPO_ROOT}/tools" -t kudo-cassandra-tools
 
-docker run --rm -u "$(id -u):$(id -g)" -v "${REPO_ROOT}:${REPO_ROOT}" -w "$(pwd)" kudo-cassandra-tools "$@"
+docker run --rm -u "$(id -u):$(id -g)" --env-file <(env) -v "${REPO_ROOT}:${REPO_ROOT}" -w "$(pwd)" kudo-cassandra-tools "$@"
