@@ -9,7 +9,7 @@ readonly artifacts_directory="${DS_TEST_ARTIFACTS_DIRECTORY:-${project_directory
 mkdir -p "${artifacts_directory}"
 
 # We need to ignore the suffix for the purpose of checking templates.
-IMAGE_DISAMBIGUATION_SUFFIX="" "${project_directory}/tools/compile_templates.sh" --check-only
+"${project_directory}/tools/docker.sh" env IMAGE_DISAMBIGUATION_SUFFIX="" "${project_directory}/tools/compile_templates.sh" --check-only
 
 "${project_directory}/tools/docker.sh" "${project_directory}/tools/generate_parameters_markdown.py"
 
@@ -44,6 +44,7 @@ docker run \
   -v "${project_directory}:${project_directory}" \
   -v "${artifacts_directory}/kuttl-dist:${project_directory}/kuttl-tests/kuttl-dist" \
   -w "${project_directory}"/kuttl-tests \
+  -e KUTTL_OPTIONS=${KUTTL_OPTIONS:-} \
   --env-file <(env | grep BUILD_VCS_NUMBER_) \
   --privileged --network host -v /var/run/docker.sock:/var/run/docker.sock \
   "${INTEGRATION_TESTS_DOCKER_IMAGE}" \
