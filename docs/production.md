@@ -1,25 +1,25 @@
 # Running KUDO Cassandra in production
 
-Before running KUDO Cassandra in production please follow this guide to ensure
+Before running KUDO Cassandra in production, please follow this guide to ensure
 the reliable stability of your production cluster.
 
-And also read the
+Also, please read about
 [Cassandra Anti-Patterns](https://docs.datastax.com/en/dse-planning/doc/planning/planningAntiPatterns.html)
-guidelines to not to follow any anti-patterns practices when running production
+to not to follow any bad practices when running production
 workload.
 
 ## Compute Resources
 
-For production use-case of KUDO Cassandra we recommend a minimum of 32 GiB of
-memory and 16 cores of CPU for the guaranteed stability.
+For production use of KUDO Cassandra we recommend a minimum of 32 GiB of
+memory and 16 cores of CPU for guaranteed stability.
 
-Read
+Refer to
 [Capacity Planning](https://docs.datastax.com/en/dse-planning/doc/planning/capacityPlanning.html)
-around how to do capacity planning for a Cassandra installation.
+to learn about capacity planning for a Cassandra installation.
 
 ## Storage
 
-Verify if there is a storage class installed in the Kubernetes cluster. In this
+Verify that there is a storage class installed in the Kubernetes cluster. In this
 example we will use the `aws-ebs-csi-driver` as the storage class reference.
 
 ```
@@ -30,7 +30,7 @@ awsebscsiprovisioner (default)   ebs.csi.aws.com   2d
 
 ### Volume Expansion
 
-Verify if the storage class has the option `AllowVolumeExpansion` and is set to
+Verify that the storage class has the option `AllowVolumeExpansion` set to
 `true`.
 
 ```
@@ -55,14 +55,12 @@ increase disk size by as much as they deem necessary for reliable stability.
 
 ### ReclaimPolicy
 
-Verify the storage class has the option `ReclaimPolicy` and is set to `Retain`.
+Verify the storage class has the option `ReclaimPolicy` set to `Retain`.
 
-To read more about the `ReclaimPolicy` read the official Kubernetes docs on
+To read more about the `ReclaimPolicy` see the official Kubernetes docs on
 [Changing the Reclaim Policy](https://kubernetes.io/docs/tasks/administer-cluster/change-pv-reclaim-policy/)
 
-```
 > PersistentVolumes can have various reclaim policies, including “Retain”, “Recycle”, and “Delete”. For dynamically provisioned PersistentVolumes, the default reclaim policy is “Delete”. This means that a dynamically provisioned volume is automatically deleted when a user deletes the corresponding PersistentVolumeClaim. This automatic behavior might be inappropriate if the volume contains precious data. In that case, it is more appropriate to use the “Retain” policy. With the “Retain” policy, if a user deletes a PersistentVolumeClaim, the corresponding PersistentVolume is not be deleted. Instead, it is moved to the Released phase, where all of its data can be manually recovered.
-```
 
 If the `StorageClass` is to be shared between many users, a common practice is
 to leave the default `ReclaimPolicy` as `Delete` and set `ReclaimPolicy: Retain`

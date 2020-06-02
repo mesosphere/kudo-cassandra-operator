@@ -3,9 +3,9 @@
 ## Computable Resources
 
 KUDO Cassandra by default requests 1.5 cpu and 4.5Gi of memory for each
-Cassandra node. The limits by default are 2 cpu and 4.5Gi of memory.
+Cassandra node. The default limits are 2 cpu and 4.5Gi of memory.
 
-Those requests and limits can be tuned using the parameters:
+Those requests and limits can be tuned using the following parameters:
 
 - NODE_CPU_MC
 - NODE_CPU_LIMIT_MC
@@ -22,9 +22,9 @@ Those requests and limits can be tuned using the parameters:
 
 ## Storage resources
 
-By default KUDO Cassandra uses 20GiB PV. This isn't recommended for production
+By default, KUDO Cassandra uses 20GiB PV. This isn't recommended for production
 use. Please refer to [production](./production.md) docs to see the storage and
-compute resources recommendations
+compute resources recommendations.
 
 ## Resources per container
 
@@ -81,7 +81,7 @@ resources:
 KUDO Cassandra is delivered with a different set of features, enabling or
 disabling those features creates more or fewer objects in Kubernetes.
 
-Let’s take a look at the resources created by default when doing a simple
+Let’s take a look at the resources created by default when doing a simple install:
 
 ```
 $ kubectl kudo install cassandra
@@ -122,9 +122,9 @@ default      └─Pod/cassandra-instance-node-2                                
 
 Statefulsets are designed to manage stateful workload in Kubernetes. KUDO
 Cassandra uses statefulsets. The operator by default uses `OrderedReady`pod
-management policy. Which guarantees that pods are created sequentially. This
-makes sure that when the Cassandra cluster is coming up, only one node starts at
-the same time. Pod names are <instance-name>-node-<ordinal-index> starting from
+management policy. This guarantees that pods are created sequentially, which means
+that when the Cassandra cluster is coming up, only one node starts at
+a time. Pod names are <instance-name>-node-<ordinal-index> starting from
 ordinal-index 0. For example a 3 node cluster created using KUDO Cassandra
 instance name cass-prod will have these pods:
 
@@ -147,13 +147,13 @@ Cassandra operator as configmap objects.
 
 ### PodDisruptionBudget
 
-KUDO Cassandra limits the number of pods that are down simultaneously. For
-Cassandra’s service to work without interruptions, especially when the
-quorum-based applications are running on top of Cassandra we would like to
+KUDO Cassandra limits the number of pods that may be down simultaneously. For
+Cassandra’s service to work without interruptions, especially when
+quorum-based applications are running on top of Cassandra, we need to
 guarantee that the number of replicas running is never brought below the number
 required for a quorum, even temporarily. Unlike a regular pod deletion, for the
-KUDO Cassandra pod eviction the API server may reject operation if the eviction
-would cause a disruption budget to be disrupted.
+KUDO Cassandra pod eviction, the API server may reject the operation if the eviction
+would cause the disruption budget to be exceeded.
 
 ### ServiceAccount / Role / RoleBinding
 
@@ -165,8 +165,8 @@ roles. The service account is <instance-name>-sa and then the Roles are:
 <instance-name>-role
 ```
 
-The node role is used by KUDO Cassandra recovery feature to use kubernetes API
-to detect any deleted kubelets. And also to free the KUDO Cassandra PVC Claim
+The node role is used by KUDO Cassandra's recovery feature which uses the Kubernetes API
+to detect any deleted kubelets. It is also used to free up the KUDO Cassandra PVC Claim
 Ref if that is necessary. The generic role, `<instance-name>-role` is used by
 the Cassandra node bootstrap binary to update the topology-lock configmap so it
 has access to the configmaps
@@ -175,13 +175,13 @@ has access to the configmaps
 
 KUDO Cassandra creates the TLS store credentials as a secret
 <instance-name>-tls-store-credentials. Those credentials are used as
-keystore/truststore credentials, when adding certificates to them. Which is done
-when SSL feature is enabled for KUDO Cassandra.
+keystore/truststore credentials, when adding certificates to them. This is done
+when KUDO Cassandra's SSL feature is enabled.
 
 ### Service
 
 KUDO Cassandra creates a headless service <instance-name>-svc (ClusterIP type).
-This service is used for internal access from inside the kubernetes cluster.
+This service is used for internal access from inside the Kubernetes cluster.
 
 ```
 $ kubectl get svc
@@ -189,13 +189,13 @@ NAME                     TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)         
 cassandra-instance-svc   ClusterIP   10.0.51.69   <none>        7000/TCP,7001/TCP,9042/TCP,7200/TCP   26m
 ```
 
-The service exposes the storage port on 7000 by default and if SSL is enabled
-then on 7001. The native transport port on 9042 by default and metrics are
-exposed on the port 7200 by default.
+The service exposes the storage port on 7000 by default and on 7001 if SSL is enabled.
+The native transport defaults to port 9042, and metrics are
+exposed via port 7200 by default.
 
-`RPC` port is disabled by default and can be enabled using the parameter
-START_RPC=true, which will expose the RPC port on 9160 by default. All above
-ports can be exposed on custom ports using the parameters:
+The `RPC` port is disabled by default and can be enabled using the parameter
+`START_RPC=true`, which will expose the RPC port on 9160 by default. All above
+information can be exposed via custom ports using the parameters:
 
 ```
 STORAGE_PORT
@@ -207,9 +207,9 @@ RPC_PORT
 ### ServiceMonitor
 
 KUDO Cassandra integrates with prometheus-operator by default. The
-ServiceMonitor uses the label kudo.dev/servicemonitor and kudo.dev/instance
-labels to discover the Cassandra pods.
+ServiceMonitor uses the labels kudo.dev/servicemonitor and kudo.dev/instance
+to discover the Cassandra pods.
 
-To disable the monitoring user can start the KUDO Cassandra with parameter
+To disable monitoring, users can start KUDO Cassandra with the parameter
 `PROMETHEUS_EXPORTER_ENABLED=false`. Read more information about monitoring in
 the Monitoring section
