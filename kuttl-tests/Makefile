@@ -52,8 +52,8 @@ install-kuttl: bin/kubectl-kuttl bin/kubectl-kudo bin/kubectl
 kind-test: install-kuttl render-test-templates
 	mkdir -p kuttl-dist/
 	go get github.com/jstemmer/go-junit-report
-	kubectl --kubeconfig=$(KUBECONFIG) kuttl test --config=./suites/kuttl-common.yaml --artifacts-dir=$(ARTIFACTS) $(KUTTL_OPTIONS) 2>&1 |tee /dev/fd/2 | go-junit-report -set-exit-code > kuttl-dist/common-junit.xml
-	kubectl --kubeconfig=$(KUBECONFIG) kuttl test --config=./suites/kuttl-failure-recovery.yaml --artifacts-dir=$(ARTIFACTS) $(KUTTL_OPTIONS) 2>&1 |tee /dev/fd/2 | go-junit-report -set-exit-code > kuttl-dist/failure-recovery-junit.xml
+	kubectl --kubeconfig=/workspace/kudo-cassandra-operator/kubeconfig kuttl test --config=./suites/kuttl-common.yaml --artifacts-dir=$(ARTIFACTS) $(KUTTL_OPTIONS) 2>&1 |tee /dev/fd/2 | go-junit-report -set-exit-code > kuttl-dist/common-junit.xml
+	kubectl --kubeconfig=/workspace/kudo-cassandra-operator/kubeconfig kuttl test --config=./suites/kuttl-failure-recovery.yaml --artifacts-dir=$(ARTIFACTS) $(KUTTL_OPTIONS) 2>&1 |tee /dev/fd/2 | go-junit-report -set-exit-code > kuttl-dist/failure-recovery-junit.xml
 
 .PHONY: clean
 clean:
