@@ -55,9 +55,10 @@ kind-test: install-kuttl render-test-templates
 	ls -alh /workspace/kudo-cassandra-operator
 	export KUBECONFIG=/workspace/kudo-cassandra-operator/kubeconfig
 	cp /workspace/kudo-cassandra-operator/kubeconfig .
-	ls -alh 
-	kubectl kuttl test --config=./suites/kuttl-common.yaml --artifacts-dir=$(ARTIFACTS) $(KUTTL_OPTIONS) 2>&1 |tee /dev/fd/2 | go-junit-report -set-exit-code > kuttl-dist/common-junit.xml
-	kubectl kuttl test --config=./suites/kuttl-failure-recovery.yaml --artifacts-dir=$(ARTIFACTS) $(KUTTL_OPTIONS) 2>&1 |tee /dev/fd/2 | go-junit-report -set-exit-code > kuttl-dist/failure-recovery-junit.xml
+	ls -alh
+	cat kubeconfig
+	kubectl kuttl test --config=./suites/kuttl-common.yaml --artifacts-dir=$(ARTIFACTS) 2>&1 |tee /dev/fd/2 | go-junit-report -set-exit-code > kuttl-dist/common-junit.xml
+	kubectl kuttl test --config=./suites/kuttl-failure-recovery.yaml --artifacts-dir=$(ARTIFACTS) 2>&1 |tee /dev/fd/2 | go-junit-report -set-exit-code > kuttl-dist/failure-recovery-junit.xml
 
 .PHONY: clean
 clean:
