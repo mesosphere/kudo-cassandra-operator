@@ -35,6 +35,7 @@ export VENDOR_DIRECTORY="${_project_directory}/shared/vendor"
 # http://www.apache.org/dyn/closer.lua/cassandra/3.11.6
 # https://hub.docker.com/_/cassandra
 # https://github.com/docker-library/cassandra/blob/master/3.11/Dockerfile
+# NOTE: Keep the version in tests in sync, see https://github.com/mesosphere/kudo-cassandra-operator/issues/136
 export CASSANDRA_VERSION="3.11.6"
 
 # https://github.com/kudobuilder/kudo/releases/tag/vx.y.z
