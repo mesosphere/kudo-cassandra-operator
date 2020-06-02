@@ -343,7 +343,7 @@ When it is decided that a release needs to be done, a _stable branch_ is created
 based off of the `master` branch. This can simply be done in GitHub web UI using
 the branch selector widget:
 
-![](docs/images/branch.png)
+![](docs/images/branch.png =300x)
 
 The name of stable branch is typically `release-vx.y` where `x.y` is the
 Cassandra `major.minor` version.
@@ -371,7 +371,7 @@ A tag is created for the release, using
 [the GitHub UI](https://github.com/mesosphere/kudo-cassandra-operator/releases/new).
 Copy the contents of the release entry from the changelog updated above.
 
-![](docs/images/tag.png)
+![](docs/images/tag.png =300x)
 
 #### Building docker images
 
@@ -383,9 +383,9 @@ with an additional parameter:
 1. Click the `...` next to the `Run` button on the
    [Docker Push](https://teamcity.mesosphere.io/buildConfiguration/Frameworks_DataServices_Kudo_Cassandra_Tools_DockerPush)
    build configuration page.
-1. Select the release tag on the `Changes` tab: ![](docs/images/run-on-tag.png)
+1. Select the release tag on the `Changes` tab: ![](docs/images/run-on-tag.png =300x)
 1. Add an `env.DISABLE_IMAGE_DISAMBIGUATION_SUFFIX` environment variable on the
-   `Parameters` tab: ![](docs/images/run-with-param.png)
+   `Parameters` tab: ![](docs/images/run-with-param.png =300x)
 1. click `Run Build`
 
 #### Copying to the `kudobuilder/operators` repository
