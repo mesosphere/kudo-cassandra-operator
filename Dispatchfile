@@ -30,14 +30,14 @@ task("goimports-check", inputs=["kudo-cassandra-operator"], steps=[k8s.corev1.Co
 )])
 
 cluster_name = "test-cluster"
-kind_cluster=make_kind_cluster(cluster_name, git)
+kind_cluster=make_kind_cluster(cluster_name, "kudo-cassandra-operator")
 
 storageResource("artifacts")
 
 dindTask("checks", inputs=["kudo-cassandra-operator"], outputs=["artifacts"],
   deps=[kind_cluster],
   steps=[
-  fetch_kubeconfig(cluster_name, git),
+  fetch_kubeconfig(cluster_name, "kudo-cassandra-operator"),
   k8s.corev1.Container(
   name="image-build-and-push",
   command=[
@@ -66,7 +66,6 @@ dindTask("checks", inputs=["kudo-cassandra-operator"], outputs=["artifacts"],
   name="pre-checks",
   command=[
     "/entrypoint.sh",
-    "ls -alh kudo-cassandra-operator",
     "env", "BUILD_VCS_NUMBER_kudo_cassandra_operator=$(context.git.commit)",
     "./kudo-cassandra-operator/shared/teamcity/run-pre-checks",
     "--build_artifacts_directory", "$(resources.outputs.artifacts.path)",
@@ -103,9 +102,9 @@ dindTask("checks", inputs=["kudo-cassandra-operator"], outputs=["artifacts"],
     k8s.corev1.EnvVar(name="WORKER_NODE_COUNT", value="10"),
     k8s.corev1.EnvVar(name="WORKER_NODE_INSTANCE_TYPE", value="t3.xlarge"),
     k8s.corev1.EnvVar(name="BUILD_VCS_NUMBER_kudo_cassandra_operator", value="$(context.git.commit)"),
-    k8s.corev1.EnvVar(name="GITHUB_TOKEN", valueFrom=secret_var("d2iq-dispatch-github-personal-access-token", "GITHUB_TOKEN")),  # needed by konvoy.sh to fetch konvoy from private repo
-    k8s.corev1.EnvVar(name="AWS_ACCESS_KEY_ID", valueFrom=secret_var("kudo-operators-aws", "AWS_ACCESS_KEY_ID")),
-    k8s.corev1.EnvVar(name="AWS_SECRET_ACCESS_KEY", valueFrom=secret_var("kudo-operators-aws", "AWS_SECRET_ACCESS_KEY"))
+    k8s.corev1.EnvVar(name="GITHUB_TOKEN", valueFrom=secretVar("d2iq-dispatch-github-personal-access-token", "GITHUB_TOKEN")),  # needed by konvoy.sh to fetch konvoy from private repo
+    k8s.corev1.EnvVar(name="AWS_ACCESS_KEY_ID", valueFrom=secretVar("kudo-operators-aws", "AWS_ACCESS_KEY_ID")),
+    k8s.corev1.EnvVar(name="AWS_SECRET_ACCESS_KEY", valueFrom=secretVar("kudo-operators-aws", "AWS_SECRET_ACCESS_KEY"))
   ],
   resources = k8s.corev1.ResourceRequirements(
     limits={
@@ -154,8 +153,8 @@ dindTask("checks", inputs=["kudo-cassandra-operator"], outputs=["artifacts"],
   ],
   workingDir="/workspace",
   env=[
-    k8s.corev1.EnvVar(name="AWS_ACCESS_KEY_ID", valueFrom=secret_var("kudo-operators-aws", "AWS_ACCESS_KEY_ID")),  # Needed for backup test
-    k8s.corev1.EnvVar(name="AWS_SECRET_ACCESS_KEY", valueFrom=secret_var("kudo-operators-aws", "AWS_SECRET_ACCESS_KEY")),  # ditto
+    k8s.corev1.EnvVar(name="AWS_ACCESS_KEY_ID", valueFrom=secretVar("kudo-operators-aws", "AWS_ACCESS_KEY_ID")),  # Needed for backup test
+    k8s.corev1.EnvVar(name="AWS_SECRET_ACCESS_KEY", valueFrom=secretVar("kudo-operators-aws", "AWS_SECRET_ACCESS_KEY")),  # ditto
     k8s.corev1.EnvVar(name="AVAILABILITY_ZONES", value="us-west-2a,us-west-2b,us-west-2c"),
     k8s.corev1.EnvVar(name="WORKER_NODE_COUNT", value="10"),
     k8s.corev1.EnvVar(name="WORKER_NODE_INSTANCE_TYPE", value="t3.xlarge"),
@@ -210,8 +209,8 @@ dindTask("checks", inputs=["kudo-cassandra-operator"], outputs=["artifacts"],
   workingDir="/workspace",
   env=[
     k8s.corev1.EnvVar(name="BUILD_VCS_NUMBER_kudo_cassandra_operator", value="$(context.git.commit)"),
-    k8s.corev1.EnvVar(name="AWS_ACCESS_KEY_ID", valueFrom=secret_var("kudo-operators-aws", "AWS_ACCESS_KEY_ID")),
-    k8s.corev1.EnvVar(name="AWS_SECRET_ACCESS_KEY", valueFrom=secret_var("kudo-operators-aws", "AWS_SECRET_ACCESS_KEY"))
+    k8s.corev1.EnvVar(name="AWS_ACCESS_KEY_ID", valueFrom=secretVar("kudo-operators-aws", "AWS_ACCESS_KEY_ID")),
+    k8s.corev1.EnvVar(name="AWS_SECRET_ACCESS_KEY", valueFrom=secretVar("kudo-operators-aws", "AWS_SECRET_ACCESS_KEY"))
   ],
   resources = k8s.corev1.ResourceRequirements(
     limits={
@@ -245,5 +244,5 @@ dindTask("checks", inputs=["kudo-cassandra-operator"], outputs=["artifacts"],
  )
 ])
 
-clean_kind=cleanup(kind_cluster, "checks", git)
+clean_kind=cleanup(kind_cluster, "checks", "kudo-cassandra-operator")
 action(tasks=[kind_cluster, "goimports-check", "checks", clean_kind], on=push())
