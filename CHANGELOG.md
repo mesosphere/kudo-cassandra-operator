@@ -84,3 +84,12 @@ and this project adheres to
 - Readiness probe
   ([#6](https://github.com/mesosphere/kudo-cassandra-operator/pull/6))
 - Unpriviledged container execution
+
+[unreleased]:
+  https://github.com/mesosphere/kudo-cassandra-operator/compare/v3.11.5-0.1.2...HEAD
+[3.11.5-0.1.2]:
+  https://github.com/mesosphere/kudo-cassandra-operator/compare/v3.11.5-0.1.1...v3.11.5-0.1.2
+[3.11.5-0.1.1]:
+  https://github.com/mesosphere/kudo-cassandra-operator/compare/v3.11.4-0.1.0...v3.11.5-0.1.1
+[3.11.4-0.1.0]:
+  https://github.com/mesosphere/kudo-cassandra-operator/releases/tag/v3.11.4-0.1.0
