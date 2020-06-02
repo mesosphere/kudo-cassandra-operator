@@ -41,8 +41,8 @@ namespace_name=default
 
 ### 1. Make sure that Prometheus Exporter is enabled on the KUDO Cassandra instance
 
-This parameter is `false` by default, so you only need to worry about this if you
-explicitly enabled it.
+This parameter is `false` by default, so you only need to worry about this if
+you explicitly enabled it.
 
 If you do not remember, you can check the value of the parameter on a running
 instance with a command like:
