@@ -76,7 +76,7 @@ dindTask("checks", inputs=["kudo-cassandra-operator"], outputs=["artifacts"],
   workingDir="/workspace",
   env=[
     k8s.corev1.EnvVar(name="KUBECONFIG", value="/workspace/kubeconfig")
-  ]
+  ],
   resources = k8s.corev1.ResourceRequirements(
     limits={
       "cpu": k8s.resource_quantity("2000m"),
