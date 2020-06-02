@@ -56,7 +56,9 @@ kind-test: install-kuttl render-test-templates
 	cp /workspace/kudo-cassandra-operator/kubeconfig .
 	ls -alh
 	cat kubeconfig
-	export KUBECONFIG=/workspace/kudo-cassandra-operator/kubeconfig
+	export KUBECONFIG=$(pwd)/kubeconfig
+	mkdir ~/.kube
+	cp kubconfig ~/.kube/config
 	kubectl kuttl test --config=./suites/kuttl-common.yaml --artifacts-dir=$(ARTIFACTS) 2>&1 |tee /dev/fd/2 | go-junit-report -set-exit-code > kuttl-dist/common-junit.xml
 	kubectl kuttl test --config=./suites/kuttl-failure-recovery.yaml --artifacts-dir=$(ARTIFACTS) 2>&1 |tee /dev/fd/2 | go-junit-report -set-exit-code > kuttl-dist/failure-recovery-junit.xml
 
