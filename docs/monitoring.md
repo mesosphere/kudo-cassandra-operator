@@ -4,8 +4,8 @@ This guide explains how to set up monitoring for KUDO Cassandra.
 
 ## Description
 
-The KUDO Cassandra operator will export metrics to Prometheus by default. It
-achieves this using a Prometheus exporter based on the
+The KUDO Cassandra operator can export metrics to Prometheus. It achieves this
+using a Prometheus exporter based on the
 [criteo/cassandra_exporter](https://github.com/criteo/cassandra_exporter).
 
 When the `PROMETHEUS_EXPORTER_ENABLED` parameter is set to `true`:
@@ -41,8 +41,8 @@ namespace_name=default
 
 ### 1. Make sure that Prometheus Exporter is enabled on the KUDO Cassandra instance
 
-This parameter is `true` by default, so you only need to worry about this if you
-explicitly disabled it.
+This parameter is `false` by default, so you only need to worry about this if you
+explicitly enabled it.
 
 If you do not remember, you can check the value of the parameter on a running
 instance with a command like:
