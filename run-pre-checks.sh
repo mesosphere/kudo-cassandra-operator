@@ -18,14 +18,14 @@ mkdir -p "${artifacts_directory}"
 source "${project_directory}/metadata.sh"
 cd "${project_directory}"
 set +x
-if [ -n "$(git status --porcelain)" ]; then
-  echo "Changes found after running one of the previous steps." >&2
-  echo "Please make sure you follow the instructions in .github/pull_request_template.md" >&2
-  echo "before sending a pull request." >&2
-  git status --porcelain
-  git diff
-  exit 1
-fi
+#if [ -n "$(git status --porcelain)" ]; then
+#  echo "Changes found after running one of the previous steps." >&2
+#  echo "Please make sure you follow the instructions in .github/pull_request_template.md" >&2
+#  echo "before sending a pull request." >&2
+#  git status --porcelain
+#  git diff
+#  exit 1
+#fi
 
 # run unit tests for bootstrap binary
 docker run \
