@@ -8,8 +8,7 @@ The KUDO Cassandra operator will export metrics to Prometheus by default. It
 achieves this using a Prometheus exporter based on the
 [criteo/cassandra_exporter](https://github.com/criteo/cassandra_exporter).
 
-When the `PROMETHEUS_EXPORTER_ENABLED` parameter is at its default value of
-`true`:
+When the `PROMETHEUS_EXPORTER_ENABLED` parameter is set to `true`:
 
 - A `prometheus-exporter` container will run in the same pod as every Cassandra
   `node` container. It will listen for connections on
