@@ -1,0 +1,8 @@
+apiVersion: kudo.dev/v1beta1
+kind: TestStep
+commands:
+  - command: cat params.yaml
+  - command: kubectl create secret tls cassandra-tls --cert=tls.crt --key=tls.key
+    namespaced: true
+  - command: kubectl kudo install --instance cassandra ../../../../operator  -P params.yaml
+    namespaced: true

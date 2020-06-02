@@ -16,6 +16,9 @@ export KUBECTL_PATH="${KUBECTL_PATH:-${VENDOR_DIRECTORY}/kubectl.sh}"
 export OPERATOR_DIRECTORY="${OPERATOR_DIRECTORY:-${project_directory}/operator}"
 export VENDOR_DIRECTORY="${VENDOR_DIRECTORY:-${project_directory}/shared/vendor}"
 
+# Tests that take longer than this in seconds are marked as slow
+export GINKO_SLOW_TEST_THRESHOLD=240
+
 if [ -n "${GOPATH:-}" ]; then
   export GINKGO_PATH="${GOPATH}/bin/ginkgo"
 else
@@ -36,4 +39,9 @@ go install github.com/onsi/ginkgo/ginkgo
 
 ${KUBECTL_PATH} kudo version
 
-${GINKGO_PATH} ./suites/... ${TESTS_FOCUS:+--ginkgo.focus=${TESTS_FOCUS}}
+if [[ -z ${1-} ]]
+then
+    ${GINKGO_PATH} --slowSpecThreshold=${GINKO_SLOW_TEST_THRESHOLD:-240} --succinct=false -v ./suites/... ${TESTS_FOCUS:+--ginkgo.focus=${TESTS_FOCUS}}
+else
+    ${GINKGO_PATH} --slowSpecThreshold=${GINKO_SLOW_TEST_THRESHOLD:-240} --succinct=false -v "./suites/$1/..." ${TESTS_FOCUS:+--ginkgo.focus=${TESTS_FOCUS}}
+fi

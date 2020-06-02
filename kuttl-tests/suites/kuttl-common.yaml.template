@@ -1,0 +1,18 @@
+apiVersion: kudo.dev/v1alpha1
+kind: TestSuite
+manifestDirs:
+  - ./manifests/
+commands:
+  - command: ./bin/kubectl-kudo init
+  - command: ./bin/kubectl create ns cassandra-install-test
+  - command: ./bin/kubectl-kudo install -n cassandra-install-test --skip-instance ../operator/
+testDirs:
+  - ./suites/common
+startKIND: true
+kindConfig: ./suites/common/kind-config.yaml
+{{- if not .IMAGE_DISAMBIGUATION_SUFFIX }}
+kindContainers:
+  - {{ .CASSANDRA_DOCKER_IMAGE }}
+{{- end }}
+timeout: 300
+parallel: 3

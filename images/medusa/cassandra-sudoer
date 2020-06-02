@@ -1,0 +1,4 @@
+Defaults        env_reset
+
+root        ALL=(ALL:ALL) ALL
+cassandra   ALL=(ALL)NOPASSWD: ALL

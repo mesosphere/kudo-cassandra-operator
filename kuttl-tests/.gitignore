@@ -1,0 +1,11 @@
+kuttl-dist/
+bin/
+kubeconfig
+.kube/
+.kudo/
+**/.kudo/
+**/.kube/
+/suites/kuttl-failure-recovery.yaml
+/suites/kuttl-common.yaml
+/suites/common/install-test/params.yaml
+/suites/failure-recovery/node-failure/params.yaml

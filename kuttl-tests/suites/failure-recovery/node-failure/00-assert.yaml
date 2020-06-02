@@ -1,0 +1,15 @@
+apiVersion: kudo.dev/v1beta1
+kind: Instance
+metadata:
+  name: cassandra
+status:
+  planStatus:
+    deploy:
+      status: COMPLETE
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: cassandra-node
+status:
+  readyReplicas: 2

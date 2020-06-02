@@ -1,0 +1,12 @@
+FROM ${INTEGRATION_TESTS_DOCKER_IMAGE_FROM}
+
+# For envsubst and KUTTL tests:
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends gettext-base apt-transport-https ca-certificates curl gnupg2 software-properties-common
+
+RUN curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add -
+RUN add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable"
+RUN apt-cache policy docker-ce
+RUN apt-get update -qq && apt install -y docker-ce
+
+RUN rm -rf /var/lib/apt/lists/*

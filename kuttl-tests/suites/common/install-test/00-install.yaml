@@ -1,0 +1,6 @@
+apiVersion: kudo.dev/v1beta1
+kind: TestStep
+commands:
+  - command: cat params.yaml
+  - command: kubectl kudo install cassandra -n cassandra-install-test --operator-version=0.1.2 --instance cassandra -P params.yaml
+    namespaced: true
