@@ -21,7 +21,7 @@ spec:
       containers:
       - name: cassandra-stress
         # TODO(mpereira): make this parameterizable.
-        image: mesosphere/cassandra:3.11.5-0.1.2
+        image: mesosphere/cassandra:3.11.6-0.2.0
         resources:
           requests:
             # TODO(mpereira): make this parameterizable.

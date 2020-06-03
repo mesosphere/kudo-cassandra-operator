@@ -8,17 +8,51 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [3.11.6-0.2.0] - 2020-06-02
+
 ### Changed
 
 - Bumped Cassandra Prometheus Exporter to 2.3.4.
   ([#56](https://github.com/mesosphere/kudo-cassandra-operator/pull/56))
+- IP addresses are now managed using a custom bootstrap binary.
+  ([#94](https://github.com/mesosphere/kudo-cassandra-operator/pull/94))
 - Bumped Cassandra to 3.11.6.
   ([#116](https://github.com/mesosphere/kudo-cassandra-operator/pull/116))
+- Minimum required KUDO version is now 0.13.0.
+  ([#123](https://github.com/mesosphere/kudo-cassandra-operator/pull/123))
 
 ### Added
 
 - TLS encryption for node-to-node and client-to-node connections.
   ([#31](https://github.com/mesosphere/kudo-cassandra-operator/pull/31))
+- External service to allow access to Cassandra from outside the cluster.
+  ([#46](https://github.com/mesosphere/kudo-cassandra-operator/pull/46))
+- Multi-Datacenter configuration.
+  ([#55](https://github.com/mesosphere/kudo-cassandra-operator/pull/55))
+- Allow JMX rpc to be accessed from within the cluster.
+  ([#58](https://github.com/mesosphere/kudo-cassandra-operator/pull/58))
+- Ability to tune podManagementPolicy to enable parallel deploy.
+  ([#72](https://github.com/mesosphere/kudo-cassandra-operator/pull/72))
+- Ability to automatically install service account and roles.
+  ([#71](https://github.com/mesosphere/kudo-cassandra-operator/pull/71))
+- Liveness probe.
+  ([#73](https://github.com/mesosphere/kudo-cassandra-operator/pull/73))
+- Repair plan.
+  ([#77](https://github.com/mesosphere/kudo-cassandra-operator/pull/77))
+- Nodetool SSL access via JMX.
+  ([#74](https://github.com/mesosphere/kudo-cassandra-operator/pull/74))
+- Password authentication.
+  ([#88](https://github.com/mesosphere/kudo-cassandra-operator/pull/88))
+- Backup and restore to/from S3 using medusa.
+  ([#60](https://github.com/mesosphere/kudo-cassandra-operator/pull/60),
+  [#124](https://github.com/mesosphere/kudo-cassandra-operator/pull/124))
+- Support for Cassandra clusters spanning multiple Kubernetes clusters.
+  ([#97](https://github.com/mesosphere/kudo-cassandra-operator/pull/97))
+- Support for custom prometheus exporter configuration.
+  ([#93](https://github.com/mesosphere/kudo-cassandra-operator/pull/93))
+- Ability to start new Cassandra nodes when a Kubernetes Cluster node fails via
+  custom recovery controller.
+  ([#96](https://github.com/mesosphere/kudo-cassandra-operator/pull/96))
 
 ## [3.11.5-0.1.2] - 2020-01-22
 
@@ -55,7 +89,9 @@ and this project adheres to
 - Unpriviledged container execution
 
 [unreleased]:
-  https://github.com/mesosphere/kudo-cassandra-operator/compare/v3.11.5-0.1.2...HEAD
+  https://github.com/mesosphere/kudo-cassandra-operator/compare/v3.11.6-0.2.0...HEAD
+[3.11.6-0.2.0]:
+  https://github.com/mesosphere/kudo-cassandra-operator/compare/v3.11.5-0.1.2...v3.11.6-0.2.0
 [3.11.5-0.1.2]:
   https://github.com/mesosphere/kudo-cassandra-operator/compare/v3.11.5-0.1.1...v3.11.5-0.1.2
 [3.11.5-0.1.1]:
