@@ -44,7 +44,8 @@ and this project adheres to
 - Password authentication.
   ([#88](https://github.com/mesosphere/kudo-cassandra-operator/pull/88))
 - Backup to S3 using medusa.
-  ([#60](https://github.com/mesosphere/kudo-cassandra-operator/pull/60))
+  ([#60](https://github.com/mesosphere/kudo-cassandra-operator/pull/60),
+  [#124](https://github.com/mesosphere/kudo-cassandra-operator/pull/124))
 - Support for Cassandra clusters spanning multiple Kubernetes clusters.
   ([#97](https://github.com/mesosphere/kudo-cassandra-operator/pull/97))
 - Support for custom prometheus exporter configuration.
