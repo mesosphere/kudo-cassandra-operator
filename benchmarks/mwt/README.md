@@ -27,7 +27,7 @@ The `parallel 1` is important for setup, as the order of the folders and the ord
 
 * **Teardown:** used to remove cassandra (and verify it has been removed)
 
-`kuttl test teardown/ `
+`kubectl kuttl test teardown/ `
 
 ## Tests under **Setup**
 
