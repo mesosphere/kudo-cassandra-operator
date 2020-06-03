@@ -11,7 +11,9 @@ source "${project_directory}/metadata.sh"
 
 if [[ -n ${IMAGE_DISAMBIGUATION_SUFFIX:-} ]]; then
   # Refresh templated files to pick up the suffix, if explicitly set.
-  "${project_directory}/tools/docker.sh" "${project_directory}/tools/compile_templates.sh"
+  "${project_directory}/tools/docker.sh" \
+    env "IMAGE_DISAMBIGUATION_SUFFIX=${IMAGE_DISAMBIGUATION_SUFFIX}" \
+    "${project_directory}/tools/compile_templates.sh"
 fi
 
 readonly kubeconfig="${KUBECONFIG:-${HOME}/.kube/config}"

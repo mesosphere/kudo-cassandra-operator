@@ -13,7 +13,6 @@ fi
 source "${project_directory}/metadata.sh"
 
 readonly DEBUG="${DEBUG:=false}"
-readonly VERBOSE="${VERBOSE:=false}"
 CHECK_ONLY=false
 
 if [ "${DEBUG}" == "true" ]; then
@@ -31,12 +30,6 @@ if [[ $# -gt 0 ]]; then
     ;;
   esac
 fi
-
-log () {
-  if [ "${VERBOSE}" == "true" ]; then
-    echo "${*}"
-  fi
-}
 
 declare -a env_vars
 mapfile -t env_vars < <(sed -E \
@@ -69,7 +62,7 @@ for template in "${templates[@]}"; do
       echo "OK" >&2
     fi
   else
-    log "compiling '${template}' to '${output_file}'"
+    echo >&2 "compiling '${template}' to '${output_file}'"
     envsubst "${ENV_VARS_STRING}" < "${template}" > "${output_file}"
   fi
 done
