@@ -42,25 +42,30 @@ var (
 	Client    = client.Client{}
 	Operator  = kudo.Operator{}
 
-	BackupBucket = "kudo-cassandra-backup-test"
-	BackupPrefix = uuid.New().String()
-	BackupName   = "first"
+	BackupBucket    = "kudo-cassandra-backup-test"
+	BackupPrefix    = uuid.New().String()
+	BackupPrefixTls = uuid.New().String()
+	BackupName      = "first"
 
-	Secret *kubernetes.Secret
+	AwsSecretName string
+
+	Secret     *kubernetes.Secret
+	TlsSecret  *kubernetes.Secret
+	AuthSecret *kubernetes.Secret
 )
 
 const createSchema = "CREATE SCHEMA schema1 WITH replication = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 };"
-const useSchma = "USE schema1;"
+const useSchema = "USE schema1;"
 const createTable = "CREATE TABLE users (user_id varchar PRIMARY KEY,first varchar,last varchar,age int);"
 const insertData = "INSERT INTO users (user_id, first, last, age) VALUES ('jsmith', 'John', 'Smith', 42);"
 const insertData2 = "INSERT INTO users (user_id, first, last, age) VALUES ('jdoe', 'Jane', 'Doe', 23);"
 const selectData = "SELECT * FROM users;"
 
-const testCQLScript = createSchema + useSchma + createTable + insertData + selectData
+const testCQLScript = createSchema + useSchema + createTable + insertData + selectData
 
-const additionalDataCQLScript = useSchma + insertData2 + selectData
+const additionalDataCQLScript = useSchema + insertData2 + selectData
 
-const confirmCQLScript = useSchma + selectData
+const confirmCQLScript = useSchema + selectData
 
 const testCQLScriptOutput = `
  user_id | age | first | last
@@ -84,6 +89,8 @@ var _ = BeforeSuite(func() {
 	if err := kubernetes.CreateNamespace(Client, TestNamespace); err != nil {
 		fmt.Printf("Failed to create namespace: %v\n", err)
 	}
+
+	AwsSecretName = createAwsCredentials()
 })
 
 var _ = AfterSuite(func() {
@@ -99,9 +106,22 @@ var _ = AfterSuite(func() {
 			fmt.Printf("Error while deleting AWS secret")
 		}
 	}
+	if TlsSecret != nil {
+		if err := TlsSecret.Delete(); err != nil {
+			fmt.Printf("Error while deleting TLS secret")
+		}
+	}
+	if AuthSecret != nil {
+		if err := AuthSecret.Delete(); err != nil {
+			fmt.Printf("Error while deleting Auth secret")
+		}
+	}
 
 	if err := aws.DeleteFolderInS3(BackupBucket, BackupPrefix); err != nil {
-		fmt.Printf("Error while cleaning up S3 bucket: %v\n", err)
+		fmt.Printf("Error while cleaning up S3 bucket for non-tls: %v\n", err)
+	}
+	if err := aws.DeleteFolderInS3(BackupBucket, BackupPrefixTls); err != nil {
+		fmt.Printf("Error while cleaning up S3 bucket for tls: %v\n", err)
 	}
 })
 
@@ -119,18 +139,20 @@ func TestService(t *testing.T) {
 
 func createTlsSecret() string {
 	const secretName = "cassandra-tls"
-	_, err := tls.CreateCertSecret(secretName).
+	s, err := tls.CreateCertSecret(secretName).
 		WithNamespace(TestNamespace).
 		WithCommonName("CassandraCA").
 		Do(Client)
 
 	Expect(err).NotTo(HaveOccurred())
+
+	TlsSecret = &s
 	return secretName
 }
 
 func createAuthSecret() string {
 	const secretName = "authn-credentials" ////nolint:gosec
-	_, err := kubernetes.CreateSecret(secretName).
+	s, err := kubernetes.CreateSecret(secretName).
 		WithNamespace(TestNamespace).
 		WithStringData(map[string]string{
 			"username": "cassandra",
@@ -139,6 +161,8 @@ func createAuthSecret() string {
 		Do(Client)
 
 	Expect(err).NotTo(HaveOccurred())
+
+	AuthSecret = &s
 	return secretName
 }
 
@@ -165,10 +189,9 @@ func createAwsCredentials() string {
 		WithNamespace(TestNamespace).
 		WithStringData(awsCredentials).Do(Client)
 
-	Secret = &awsSecret
-
 	Expect(err).NotTo(HaveOccurred())
 
+	Secret = &awsSecret
 	return awsSecretName
 }
 
@@ -177,17 +200,20 @@ var _ = Describe("backup and restore", func() {
 	It("Creates and restores a backup with local JMX and no SSL", func() {
 		var err error
 
-		awsSecretName := createAwsCredentials()
-
 		parameters := map[string]string{
-			"NODE_COUNT":                    strconv.Itoa(NodeCount),
-			"JMX_LOCAL_ONLY":                "true",
-			"BACKUP_RESTORE_ENABLED":        "true",
-			"BACKUP_AWS_CREDENTIALS_SECRET": awsSecretName,
-			"BACKUP_PREFIX":                 BackupPrefix,
-			"BACKUP_NAME":                   BackupName,
-			"BACKUP_AWS_S3_BUCKET_NAME":     BackupBucket,
-			"POD_MANAGEMENT_POLICY":         "OrderedReady",
+			"NODE_COUNT":                             strconv.Itoa(NodeCount),
+			"JMX_LOCAL_ONLY":                         "true",
+			"BACKUP_RESTORE_ENABLED":                 "true",
+			"BACKUP_AWS_CREDENTIALS_SECRET":          AwsSecretName,
+			"BACKUP_PREFIX":                          BackupPrefix,
+			"BACKUP_NAME":                            BackupName,
+			"BACKUP_AWS_S3_BUCKET_NAME":              BackupBucket,
+			"POD_MANAGEMENT_POLICY":                  "OrderedReady",
+			"NODE_READINESS_PROBE_INITIAL_DELAY_S":   "30",
+			"NODE_READINESS_PROBE_PERIOD_S":          "10",
+			"NODE_READINESS_PROBE_FAILURE_THRESHOLD": "6",
+			"NODE_LIVENESS_PROBE_INITIAL_DELAY_S":    "60",
+			"NODE_LIVENESS_PROBE_FAILURE_THRESHOLD":  "6",
 		}
 		suites.SetSuitesParameters(parameters)
 
@@ -233,17 +259,22 @@ var _ = Describe("backup and restore", func() {
 
 		By("Installing the operator from current directory")
 		parameters = map[string]string{
-			"NODE_COUNT":                    strconv.Itoa(NodeCount),
-			"JMX_LOCAL_ONLY":                "true",
-			"BACKUP_RESTORE_ENABLED":        "true",
-			"BACKUP_AWS_CREDENTIALS_SECRET": awsSecretName,
-			"BACKUP_PREFIX":                 BackupPrefix,
-			"BACKUP_NAME":                   BackupName,
-			"BACKUP_AWS_S3_BUCKET_NAME":     BackupBucket,
-			"RESTORE_FLAG":                  "true",
-			"RESTORE_OLD_NAMESPACE":         TestNamespace,
-			"RESTORE_OLD_NAME":              TestInstance,
-			"POD_MANAGEMENT_POLICY":         "Parallel",
+			"NODE_COUNT":                             strconv.Itoa(NodeCount),
+			"JMX_LOCAL_ONLY":                         "true",
+			"BACKUP_RESTORE_ENABLED":                 "true",
+			"BACKUP_AWS_CREDENTIALS_SECRET":          AwsSecretName,
+			"BACKUP_PREFIX":                          BackupPrefix,
+			"BACKUP_NAME":                            BackupName,
+			"BACKUP_AWS_S3_BUCKET_NAME":              BackupBucket,
+			"RESTORE_FLAG":                           "true",
+			"RESTORE_OLD_NAMESPACE":                  TestNamespace,
+			"RESTORE_OLD_NAME":                       TestInstance,
+			"POD_MANAGEMENT_POLICY":                  "Parallel",
+			"NODE_READINESS_PROBE_INITIAL_DELAY_S":   "30",
+			"NODE_READINESS_PROBE_PERIOD_S":          "10",
+			"NODE_READINESS_PROBE_FAILURE_THRESHOLD": "6",
+			"NODE_LIVENESS_PROBE_INITIAL_DELAY_S":    "60",
+			"NODE_LIVENESS_PROBE_FAILURE_THRESHOLD":  "6",
 		}
 		suites.SetSuitesParameters(parameters)
 
@@ -292,11 +323,19 @@ var _ = Describe("backup and restore", func() {
 		Expect(output).To(ContainSubstring(testCQLScriptOutput2))
 	})
 
-	// This test is disabled (PIt instead of It) and can be enabled as soon as https://github.com/thelastpickle/cassandra-medusa/pull/119 is merged and released
-	PIt("Creates and restores a backup with JMX SSL and authentication", func() {
+	It("Uninstalls the operator", func() {
+		err := cassandra.Uninstall(Client, Operator)
+		Expect(err).To(BeNil())
+		Eventually(func() int {
+			pods, _ := kubernetes.ListPods(Client, TestNamespace)
+			fmt.Printf("Polling pods: %v\n", len(pods))
+			return len(pods)
+		}, "300s", "10s").Should(Equal(0))
+	})
+
+	It("Creates and restores a backup with JMX SSL and authentication", func() {
 		var err error
 
-		awsSecretName := createAwsCredentials()
 		tlsSecretName := createTlsSecret()
 		authSecretName := createAuthSecret()
 
@@ -307,15 +346,16 @@ var _ = Describe("backup and restore", func() {
 			"JMX_LOCAL_ONLY":                         "false",
 			"TLS_SECRET_NAME":                        tlsSecretName,
 			"BACKUP_RESTORE_ENABLED":                 "true",
-			"BACKUP_AWS_CREDENTIALS_SECRET":          awsSecretName,
-			"BACKUP_PREFIX":                          BackupPrefix,
+			"BACKUP_AWS_CREDENTIALS_SECRET":          AwsSecretName,
+			"BACKUP_PREFIX":                          BackupPrefixTls,
 			"BACKUP_NAME":                            BackupName,
 			"BACKUP_AWS_S3_BUCKET_NAME":              BackupBucket,
 			"POD_MANAGEMENT_POLICY":                  "Parallel",
-			"BACKUP_MEDUSA_DOCKER_IMAGE":             "medusa-test:0.0.1",
-			"BACKUP_MEDUSA_DOCKER_IMAGE_PULL_POLICY": "IfNotPresent",
-			"NODE_READINESS_PROBE_INITIAL_DELAY_S":   "15",
+			"NODE_READINESS_PROBE_INITIAL_DELAY_S":   "30",
+			"NODE_READINESS_PROBE_PERIOD_S":          "10",
+			"NODE_READINESS_PROBE_FAILURE_THRESHOLD": "6",
 			"NODE_LIVENESS_PROBE_INITIAL_DELAY_S":    "60",
+			"NODE_LIVENESS_PROBE_FAILURE_THRESHOLD":  "6",
 		}
 		suites.SetSuitesParameters(parameters)
 
@@ -367,18 +407,19 @@ var _ = Describe("backup and restore", func() {
 			"JMX_LOCAL_ONLY":                         "false",
 			"TLS_SECRET_NAME":                        tlsSecretName,
 			"BACKUP_RESTORE_ENABLED":                 "true",
-			"BACKUP_AWS_CREDENTIALS_SECRET":          awsSecretName,
-			"BACKUP_PREFIX":                          BackupPrefix,
+			"BACKUP_AWS_CREDENTIALS_SECRET":          AwsSecretName,
+			"BACKUP_PREFIX":                          BackupPrefixTls,
 			"BACKUP_NAME":                            BackupName,
 			"BACKUP_AWS_S3_BUCKET_NAME":              BackupBucket,
 			"RESTORE_FLAG":                           "true",
 			"RESTORE_OLD_NAMESPACE":                  TestNamespace,
 			"RESTORE_OLD_NAME":                       TestInstance,
 			"POD_MANAGEMENT_POLICY":                  "Parallel",
-			"NODE_READINESS_PROBE_INITIAL_DELAY_S":   "15",
+			"NODE_READINESS_PROBE_INITIAL_DELAY_S":   "30",
+			"NODE_READINESS_PROBE_PERIOD_S":          "10",
+			"NODE_READINESS_PROBE_FAILURE_THRESHOLD": "6",
 			"NODE_LIVENESS_PROBE_INITIAL_DELAY_S":    "60",
-			"BACKUP_MEDUSA_DOCKER_IMAGE":             "medusa-test:0.0.1",
-			"BACKUP_MEDUSA_DOCKER_IMAGE_PULL_POLICY": "IfNotPresent",
+			"NODE_LIVENESS_PROBE_FAILURE_THRESHOLD":  "6",
 		}
 		suites.SetSuitesParameters(parameters)
 
@@ -405,5 +446,10 @@ var _ = Describe("backup and restore", func() {
 	It("Uninstalls the operator", func() {
 		err := cassandra.Uninstall(Client, Operator)
 		Expect(err).To(BeNil())
+		Eventually(func() int {
+			pods, _ := kubernetes.ListPods(Client, TestNamespace)
+			fmt.Printf("Polling pods: %v\n", len(pods))
+			return len(pods)
+		}, "300s", "10s").Should(Equal(0))
 	})
 })

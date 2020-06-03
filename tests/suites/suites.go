@@ -7,6 +7,7 @@ import (
 	"github.com/kudobuilder/test-tools/pkg/client"
 	"github.com/kudobuilder/test-tools/pkg/kudo"
 	. "github.com/onsi/gomega"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/mesosphere/kudo-cassandra-operator/tests/cassandra"
 )
@@ -16,7 +17,16 @@ func AssertNumberOfCassandraNodes(client client.Client, op kudo.Operator, nodeCo
 		nodes, err := cassandra.Nodes(client, op.Instance)
 		Expect(err).To(BeNil())
 
-		return len(nodes)
+		upNormalNodes := 0
+		for _, n := range nodes {
+			if n["status"] == "UN" {
+				upNormalNodes++
+			} else {
+				log.Infof("Node %s is not in status UN yet, but %s", n["address"], n["status"])
+			}
+		}
+
+		return upNormalNodes
 	}, 5*time.Minute, 15*time.Second).Should(Equal(nodeCount))
 }
 
@@ -29,7 +39,6 @@ func IsLocalCluster() bool {
 // - parameters for local testing in a minikube or other restricted environments
 // This includes limited CPU and memory settings as well as disabling the Prometheus exporter when running in local cluster
 func SetSuitesParameters(parameters map[string]string) {
-	parameters["NODE_DOCKER_IMAGE"] = os.Getenv("CASSANDRA_DOCKER_IMAGE")
 	if IsLocalCluster() {
 		parameters["NODE_MEM_MIB"] = "768"
 		parameters["NODE_MEM_LIMIT_MIB"] = "1024"

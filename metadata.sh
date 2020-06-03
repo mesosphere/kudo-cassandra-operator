@@ -47,7 +47,7 @@ export CASSANDRA_EXPORTER_DOCKER_IMAGE="criteord/cassandra_exporter"
 export CASSANDRA_EXPORTER_VERSION="2.3.4"
 
 # https://github.com/thelastpickle/cassandra-medusa/releases
-export MEDUSA_BACKUP_VERSION="0.5.1"
+export MEDUSA_BACKUP_VERSION="0.6.0"
 
 export RECOVERY_CONTROLLER_VERSION="0.0.2"
 ################################################################################
