@@ -19,6 +19,7 @@ export OPERATOR_NAME="cassandra"
 
 # More details about KUDO Versioning:
 # https://github.com/kudobuilder/kudo/pull/1028
+# NOTE: Keep the version in tests in sync, see https://github.com/mesosphere/kudo-cassandra-operator/issues/136
 export OPERATOR_VERSION="0.2.0"
 
 # This should be an empty string on stable branches and "-SNAPSHOT" on
