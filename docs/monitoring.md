@@ -69,7 +69,7 @@ Instance cassandra was updated.
 ### 2. Install the Grafana dashboard
 
 A sample grafana dashboard is provided in
-[the monitoring directory](../monitoring/grafana).
+[the monitoring directory](https://github.com/mesosphere/kudo-cassandra-operator/tree/master/monitoring/grafana).
 
 How you access the Grafana UI depends on how it was installed. Upon accessing
 the `/dashboard/import` URI you will be able to upload or copy-paste the
