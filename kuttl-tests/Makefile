@@ -45,24 +45,22 @@ bin/kubectl-kudo_$(KUDO_VERSION)_$(OS):
 bin/kubectl-kudo: bin/kubectl-kudo_$(KUDO_VERSION)_$(OS)
 	ln -sf ./kubectl-kudo_$(KUDO_VERSION)_$(OS) ./bin/kubectl-kudo
 
-bin/kind_$(KIND_VERSION)_$(OS):
-	mkdir -p bin/
-	curl -Lo bin/kind_$(KIND_VERSION)_$(OS) https://github.com/kubernetes-sigs/kind/releases/download/v$(KIND_VERSION)/kind-$(OS)-$(MACHINE)
-	chmod +x bin/kind_$(KIND_VERSION)_$(OS)
-
-bin/kind: bin/kind_$(KIND_VERSION)_$(OS)
-	ln -sf ./kind_$(KIND_VERSION)_$(OS) ./bin/kind
-
 .PHONY: install-kuttl
-install-kuttl: bin/kubectl-kuttl bin/kubectl-kudo bin/kubectl bin/kind
+install-kuttl: bin/kubectl-kuttl bin/kubectl-kudo bin/kubectl
 
 .PHONY: kind-test
 kind-test: install-kuttl render-test-templates
 	mkdir -p kuttl-dist/
 	go get github.com/jstemmer/go-junit-report
-	kind delete cluster
-	kubectl kuttl test --config=./suites/kuttl-common.yaml --artifacts-dir=$(ARTIFACTS) $(KUTTL_OPTIONS) 2>&1 |tee /dev/fd/2 | go-junit-report -set-exit-code > kuttl-dist/common-junit.xml
-	kubectl kuttl test --config=./suites/kuttl-failure-recovery.yaml --artifacts-dir=$(ARTIFACTS) $(KUTTL_OPTIONS) 2>&1 |tee /dev/fd/2 | go-junit-report -set-exit-code > kuttl-dist/failure-recovery-junit.xml
+	ls -alh /workspace/kudo-cassandra-operator
+	cp /workspace/kudo-cassandra-operator/kubeconfig .
+	ls -alh
+	cat kubeconfig
+	export KUBECONFIG=$(pwd)/kubeconfig
+	mkdir ~/.kube
+	cp kubeconfig ~/.kube/config
+	kubectl kuttl test --config=./suites/kuttl-common.yaml --artifacts-dir=$(ARTIFACTS) 2>&1 |tee /dev/fd/2 | go-junit-report -set-exit-code > kuttl-dist/common-junit.xml
+	kubectl kuttl test --config=./suites/kuttl-failure-recovery.yaml --artifacts-dir=$(ARTIFACTS) 2>&1 |tee /dev/fd/2 | go-junit-report -set-exit-code > kuttl-dist/failure-recovery-junit.xml
 
 .PHONY: clean
 clean:

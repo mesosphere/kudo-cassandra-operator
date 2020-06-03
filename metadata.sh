@@ -32,10 +32,10 @@ export VENDOR_DIRECTORY="${_project_directory}/shared/vendor"
 ############################### Dependencies ###################################
 ################################################################################
 
-# http://www.apache.org/dyn/closer.lua/cassandra/3.11.5
+# http://www.apache.org/dyn/closer.lua/cassandra/3.11.6
 # https://hub.docker.com/_/cassandra
 # https://github.com/docker-library/cassandra/blob/master/3.11/Dockerfile
-export CASSANDRA_VERSION="3.11.5"
+export CASSANDRA_VERSION="3.11.6"
 
 # https://github.com/kudobuilder/kudo/releases/tag/vx.y.z
 export KUDO_VERSION="0.13.0"

@@ -34,7 +34,7 @@ parameters:
 
   - name: NODE_DOCKER_IMAGE
     description: "Cassandra node Docker image."
-    default: "mesosphere/cassandra:3.11.5-0.1.2-SNAPSHOT"
+    default: "mesosphere/cassandra:3.11.6-0.1.2-SNAPSHOT"
 
   - name: NODE_DOCKER_IMAGE_PULL_POLICY
     description: "Cassandra node Docker image pull policy."

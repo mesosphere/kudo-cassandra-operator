@@ -12,6 +12,8 @@ and this project adheres to
 
 - Bumped Cassandra Prometheus Exporter to 2.3.4.
   ([#56](https://github.com/mesosphere/kudo-cassandra-operator/pull/56))
+- Bumped Cassandra to 3.11.6.
+  ([#116](https://github.com/mesosphere/kudo-cassandra-operator/pull/116))
 
 ### Added
 

@@ -18,14 +18,14 @@ mkdir -p "${artifacts_directory}"
 source "${project_directory}/metadata.sh"
 cd "${project_directory}"
 set +x
-if [ -n "$(git status --porcelain)" ]; then
-  echo "Changes found after running one of the previous steps." >&2
-  echo "Please make sure you follow the instructions in .github/pull_request_template.md" >&2
-  echo "before sending a pull request." >&2
-  git status --porcelain
-  git diff
-  exit 1
-fi
+#if [ -n "$(git status --porcelain)" ]; then
+#  echo "Changes found after running one of the previous steps." >&2
+#  echo "Please make sure you follow the instructions in .github/pull_request_template.md" >&2
+#  echo "before sending a pull request." >&2
+#  git status --porcelain
+#  git diff
+#  exit 1
+#fi
 
 # run unit tests for bootstrap binary
 docker run \
@@ -44,7 +44,6 @@ docker run \
   -v "${project_directory}:${project_directory}" \
   -v "${artifacts_directory}/kuttl-dist:${project_directory}/kuttl-tests/kuttl-dist" \
   -w "${project_directory}"/kuttl-tests \
-  -e KUTTL_OPTIONS=${KUTTL_OPTIONS:-} \
   --env-file <(env | grep BUILD_VCS_NUMBER_) \
   --privileged --network host -v /var/run/docker.sock:/var/run/docker.sock \
   "${INTEGRATION_TESTS_DOCKER_IMAGE}" \

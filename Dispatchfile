@@ -1,6 +1,8 @@
 #!mesosphere/dispatch-starlark:v0.5
 
-load("github.com/mesosphere/dispatch-catalog/starlark/stable/pipeline@0.0.4", "gitResource")
+load("github.com/mesosphere/dispatch-catalog/starlark/stable/pipeline@0.0.4", "gitResource", "pullRequest", "push", "secretVar", "clean", "imageResource", "volume", "storageResource")
+load("github.com/mesosphere/cluster-claim-controller/starlark/claim", "make_kind_cluster", "fetch_kubeconfig", "cleanup")
+load("github.com/mesosphere/dispatch-catalog/starlark/stable/docker@0.0.4", "dindTask")
 
 gitResource("kudo-cassandra-operator", url="$(context.git.url)", revision="$(context.git.commit)")
 
@@ -27,21 +29,16 @@ task("goimports-check", inputs=["kudo-cassandra-operator"], steps=[k8s.corev1.Co
   )
 )])
 
-
-load("github.com/mesosphere/dispatch-catalog/starlark/stable/docker@0.0.4", "dindTask")
-load("github.com/mesosphere/dispatch-catalog/starlark/stable/pipeline@0.0.4", "storageResource")
+cluster_name = "test-cluster"
+kind_cluster=make_kind_cluster(cluster_name, "kudo-cassandra-operator")
 
 storageResource("artifacts")
 
-def secret_var(name, key):
-    return k8s.corev1.EnvVarSource(
-        secretKeyRef=k8s.corev1.SecretKeySelector(
-            localObjectReference=k8s.corev1.LocalObjectReference(name=name),
-            key=key
-        )
-    )
-
-dindTask("checks", inputs=["kudo-cassandra-operator"], outputs=["artifacts"], steps=[k8s.corev1.Container(
+dindTask("checks", inputs=["kudo-cassandra-operator"], outputs=["artifacts"],
+  deps=[kind_cluster],
+  steps=[
+  fetch_kubeconfig(cluster_name, "kudo-cassandra-operator"),
+  k8s.corev1.Container(
   name="image-build-and-push",
   command=[
     "/entrypoint.sh",
@@ -70,8 +67,6 @@ dindTask("checks", inputs=["kudo-cassandra-operator"], outputs=["artifacts"], st
   command=[
     "/entrypoint.sh",
     "env", "BUILD_VCS_NUMBER_kudo_cassandra_operator=$(context.git.commit)",
-    # D2IQ-68628
-    "KUTTL_OPTIONS=--kind-config=dispatch-kind-config.yaml",
     "./kudo-cassandra-operator/shared/teamcity/run-pre-checks",
     "--build_artifacts_directory", "$(resources.outputs.artifacts.path)",
     "--kudo_version", "",
@@ -104,9 +99,9 @@ dindTask("checks", inputs=["kudo-cassandra-operator"], outputs=["artifacts"], st
     k8s.corev1.EnvVar(name="WORKER_NODE_COUNT", value="10"),
     k8s.corev1.EnvVar(name="WORKER_NODE_INSTANCE_TYPE", value="t3.xlarge"),
     k8s.corev1.EnvVar(name="BUILD_VCS_NUMBER_kudo_cassandra_operator", value="$(context.git.commit)"),
-    k8s.corev1.EnvVar(name="GITHUB_TOKEN", valueFrom=secret_var("d2iq-dispatch-github-personal-access-token", "GITHUB_TOKEN")),  # needed by konvoy.sh to fetch konvoy from private repo
-    k8s.corev1.EnvVar(name="AWS_ACCESS_KEY_ID", valueFrom=secret_var("kudo-operators-aws", "AWS_ACCESS_KEY_ID")),
-    k8s.corev1.EnvVar(name="AWS_SECRET_ACCESS_KEY", valueFrom=secret_var("kudo-operators-aws", "AWS_SECRET_ACCESS_KEY"))
+    k8s.corev1.EnvVar(name="GITHUB_TOKEN", valueFrom=secretVar("d2iq-dispatch-github-personal-access-token", "GITHUB_TOKEN")),  # needed by konvoy.sh to fetch konvoy from private repo
+    k8s.corev1.EnvVar(name="AWS_ACCESS_KEY_ID", valueFrom=secretVar("kudo-operators-aws", "AWS_ACCESS_KEY_ID")),
+    k8s.corev1.EnvVar(name="AWS_SECRET_ACCESS_KEY", valueFrom=secretVar("kudo-operators-aws", "AWS_SECRET_ACCESS_KEY"))
   ],
   resources = k8s.corev1.ResourceRequirements(
     limits={
@@ -155,8 +150,8 @@ dindTask("checks", inputs=["kudo-cassandra-operator"], outputs=["artifacts"], st
   ],
   workingDir="/workspace",
   env=[
-    k8s.corev1.EnvVar(name="AWS_ACCESS_KEY_ID", valueFrom=secret_var("kudo-operators-aws", "AWS_ACCESS_KEY_ID")),  # Needed for backup test
-    k8s.corev1.EnvVar(name="AWS_SECRET_ACCESS_KEY", valueFrom=secret_var("kudo-operators-aws", "AWS_SECRET_ACCESS_KEY")),  # ditto
+    k8s.corev1.EnvVar(name="AWS_ACCESS_KEY_ID", valueFrom=secretVar("kudo-operators-aws", "AWS_ACCESS_KEY_ID")),  # Needed for backup test
+    k8s.corev1.EnvVar(name="AWS_SECRET_ACCESS_KEY", valueFrom=secretVar("kudo-operators-aws", "AWS_SECRET_ACCESS_KEY")),  # ditto
     k8s.corev1.EnvVar(name="AVAILABILITY_ZONES", value="us-west-2a,us-west-2b,us-west-2c"),
     k8s.corev1.EnvVar(name="WORKER_NODE_COUNT", value="10"),
     k8s.corev1.EnvVar(name="WORKER_NODE_INSTANCE_TYPE", value="t3.xlarge"),
@@ -211,8 +206,8 @@ dindTask("checks", inputs=["kudo-cassandra-operator"], outputs=["artifacts"], st
   workingDir="/workspace",
   env=[
     k8s.corev1.EnvVar(name="BUILD_VCS_NUMBER_kudo_cassandra_operator", value="$(context.git.commit)"),
-    k8s.corev1.EnvVar(name="AWS_ACCESS_KEY_ID", valueFrom=secret_var("kudo-operators-aws", "AWS_ACCESS_KEY_ID")),
-    k8s.corev1.EnvVar(name="AWS_SECRET_ACCESS_KEY", valueFrom=secret_var("kudo-operators-aws", "AWS_SECRET_ACCESS_KEY"))
+    k8s.corev1.EnvVar(name="AWS_ACCESS_KEY_ID", valueFrom=secretVar("kudo-operators-aws", "AWS_ACCESS_KEY_ID")),
+    k8s.corev1.EnvVar(name="AWS_SECRET_ACCESS_KEY", valueFrom=secretVar("kudo-operators-aws", "AWS_SECRET_ACCESS_KEY"))
   ],
   resources = k8s.corev1.ResourceRequirements(
     limits={
@@ -246,6 +241,5 @@ dindTask("checks", inputs=["kudo-cassandra-operator"], outputs=["artifacts"], st
  )
 ])
 
-
-load("github.com/mesosphere/dispatch-catalog/starlark/stable/pipeline@0.0.4", "push")
-action(tasks=["goimports-check", "checks"], on=push())
+clean_kind=cleanup(kind_cluster, "checks", "kudo-cassandra-operator")
+action(tasks=[kind_cluster, "goimports-check", "checks", clean_kind], on=push())
