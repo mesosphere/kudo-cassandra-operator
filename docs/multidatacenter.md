@@ -19,9 +19,9 @@ rack awareness.
 In a multi-datacenter setup, a Cassandra cluster is formed by combining multiple
 Cassandra datacenters. Cassandra datacenters can either run in a single
 Kubernetes cluster that is spanning multiple physical datacenters, or in
-multiple Kubernetes clusters, each one in a different physical datacenter.
-All instances of Cassandra have to have the same name. This is achieved by using
-the same instance name or by setting the `OVERRIDE_CLUSTER_NAME` parameter.
+multiple Kubernetes clusters, each one in a different physical datacenter. All
+instances of Cassandra have to have the same name. This is achieved by using the
+same instance name or by setting the `OVERRIDE_CLUSTER_NAME` parameter.
 
 ### Node labels
 
@@ -216,7 +216,6 @@ in your cluster as you use in the NODE_TOPOLOGY definition.
 ### Full list of required parameters
 
 ```yaml
-ENDPOINT_SNITCH=GossipingPropertyFileSnitch 
-NODE_ANTI_AFFINITY=true
+ENDPOINT_SNITCH=GossipingPropertyFileSnitch NODE_ANTI_AFFINITY=true
 NODE_TOPOLOGY=<the cluster topology>
 ```
