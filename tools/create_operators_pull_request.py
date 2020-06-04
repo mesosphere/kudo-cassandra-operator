@@ -74,12 +74,6 @@ def parse_arguments() -> argparse.Namespace:
         + "This will also be the PR title",
     )
     parser.add_argument(
-        "--trailer",
-        type=str,
-        nargs="+",
-        help="A trailer to append to the end of git commit message. See https://git-scm.com/docs/git-interpret-trailers"
-    )
-    parser.add_argument(
         "--operators-base-branch",
         type=str,
         default="master",
@@ -378,9 +372,6 @@ def main() -> int:
             if rc != 0:
                 log.error(error_message)
                 return rc
-
-        if args.trailer:
-            git_commit_message_body += "\n\n" + "\n".join(args.trailer)
 
         git_commit_message = (
             f"{git_commit_message_subject}\n\n{git_commit_message_body}"
