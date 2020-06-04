@@ -74,7 +74,7 @@ KUDO Cassandra operator uses an initContainer to read the rack of the deployed
 pod. This requires a service account with valid RBAC permissions. KUDO Cassandra
 provides an easy way to automatically create this service account for you:
 
-```yaml
+```text
 SERVICE_ACCOUNT_INSTALL=true
 ```
 
@@ -193,7 +193,7 @@ each other.
 
 To let cassandra know about the topology, a different Snitch needs to be set:
 
-```yaml
+```text
 ENDPOINT_SNITCH=GossipingPropertyFileSnitch
 ```
 
@@ -206,7 +206,7 @@ information from a local file which the operator generates from the
 This prefents the cluster to schedule two cassandra nodes on to the same
 Kubernetes node.
 
-```yaml
+```text
 NODE_ANTI_AFFINITY=true
 ```
 
@@ -215,7 +215,8 @@ in your cluster as you use in the NODE_TOPOLOGY definition.
 
 ### Full list of required parameters
 
-```yaml
-ENDPOINT_SNITCH=GossipingPropertyFileSnitch NODE_ANTI_AFFINITY=true
+```text
+ENDPOINT_SNITCH=GossipingPropertyFileSnitch
+NODE_ANTI_AFFINITY=true
 NODE_TOPOLOGY=<the cluster topology>
 ```
