@@ -8,7 +8,7 @@ and this project adheres to
 
 ## [Unreleased]
 
-## [3.11.6-0.2.0] - 2020-06-02
+## [3.11.6-1.0.0] - 2020-06-04
 
 ### Changed
 
@@ -89,9 +89,9 @@ and this project adheres to
 - Unpriviledged container execution
 
 [unreleased]:
-  https://github.com/mesosphere/kudo-cassandra-operator/compare/v3.11.6-0.2.0...HEAD
-[3.11.6-0.2.0]:
-  https://github.com/mesosphere/kudo-cassandra-operator/compare/v3.11.5-0.1.2...v3.11.6-0.2.0
+  https://github.com/mesosphere/kudo-cassandra-operator/compare/v3.11.6-1.0.0...HEAD
+[3.11.6-1.0.0]:
+  https://github.com/mesosphere/kudo-cassandra-operator/compare/v3.11.5-0.1.2...v3.11.6-1.0.0
 [3.11.5-0.1.2]:
   https://github.com/mesosphere/kudo-cassandra-operator/compare/v3.11.5-0.1.1...v3.11.5-0.1.2
 [3.11.5-0.1.1]:
