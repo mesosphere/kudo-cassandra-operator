@@ -130,10 +130,12 @@ Evicting a Cassandra node is similar to Failure recovery described above. The
 recovery controller will automate certain steps. The main difference is that
 during node eviction the Kubernetes node should stay available, i.e. other pods
 on that node shouldn’t get evicted. To evict a Cassandra node, first cordon or
-taint the Kubernetes node the Cassandra node is running on. This ensures that
-the pod, once deleted, won’t be restarted on the same node. Next, mark the pod
-for eviction by adding the label kudo-cassandra/evict=true. This will trigger
-the recovery controller and it will run the same steps as in failure recovery.
+taint the Kubernetes node the Cassandra node is running on. Alternatively, add
+the label `kudo-cassandra/cordon=true` to the pod to evict if the whole node
+shouldn't be cordoned. This ensures that the pod, once deleted, won’t be
+restarted on the same node. Next, mark the pod for eviction by adding the label
+`kudo-cassandra/evict=true`. This will trigger the recovery controller and it
+will run the same steps as in failure recovery.
 As a result, the old pod will be terminated and rescheduled on a different
 Kubernetes node.
 
