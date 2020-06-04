@@ -5,6 +5,14 @@ kudoVersion: "${KUDO_VERSION}"
 kubernetesVersion: "${KUBERNETES_VERSION}"
 appVersion: "${CASSANDRA_VERSION}"
 maintainers:
+  - name: Zain Malik
+    email: zmalik@D2iQ.com
+  - name: Jan Schlicht
+    email: jan@D2iQ.com
+  - name: Andreas Neumann
+    email: aneumann@D2iQ.com
+  - name: Marcin Owsiany
+    email: mowsiany@D2iQ.com
   - name: Murilo Pereira
     email: murilo@murilopereira.com
 url: http://cassandra.apache.org/

@@ -43,8 +43,8 @@ namespace_name=default
 
 This parameter is `false` by default, so you need to enable it explicitly.
 
-You can check the value of the parameter on a running
-instance with a command like:
+You can check the value of the parameter on a running instance with a command
+like:
 
 ```bash
 kubectl get instance --template '{{.spec.parameters.PROMETHEUS_EXPORTER_ENABLED}}{{"\n"}} $instance_name -n $namespace_name'

@@ -126,7 +126,7 @@ Example output:
 ```
 Plan(s) for "cassandra" in namespace "default":
 .
-└── cassandra (Operator-Version: "cassandra-0.1.2" Active-Plan: "deploy")
+└── cassandra (Operator-Version: "cassandra-1.0.0" Active-Plan: "deploy")
     ├── Plan deploy (serial strategy) [COMPLETE]
     │   └── Phase nodes (parallel strategy) [COMPLETE]
     │       └── Step node [COMPLETE]
@@ -376,7 +376,7 @@ kubectl kudo plan status --instance=$INSTANCE_NAME -n $NAMESPACE
 ```
 Plan(s) for "cassandra" in namespace "default":
 .
-└── cassandra (Operator-Version: "cassandra-0.1.2" Active-Plan: "deploy")
+└── cassandra (Operator-Version: "cassandra-1.0.0" Active-Plan: "deploy")
     ├── Plan deploy (serial strategy) [IN_PROGRESS]
     │   └── Phase nodes (parallel strategy) [IN_PROGRESS]
     │       └── Step node [IN_PROGRESS]
