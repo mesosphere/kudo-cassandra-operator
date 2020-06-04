@@ -215,6 +215,7 @@ in your cluster as you use in the NODE_TOPOLOGY definition.
 ### Full list of required parameters
 
 ```yaml
-ENDPOINT_SNITCH=GossipingPropertyFileSnitch NODE_ANTI_AFFINITY=true
+ENDPOINT_SNITCH=GossipingPropertyFileSnitch 
+NODE_ANTI_AFFINITY=true
 NODE_TOPOLOGY=<the cluster topology>
 ```
