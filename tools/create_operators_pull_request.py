@@ -224,7 +224,7 @@ def commit_copied_operator_files_and_push_branch(
         return rc, f"stdout:\n{stdout}\nstderr:\n{stderr}"
 
     rc, stdout, stderr = run(
-        f"git -C {operators_directory} commit -am '{git_commit_message}'",
+        f"git -C {operators_directory} commit -s -am '{git_commit_message}'",
         debug=debug,
     )
     if rc != 0:
