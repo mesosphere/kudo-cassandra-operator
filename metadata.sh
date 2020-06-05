@@ -40,7 +40,7 @@ export VENDOR_DIRECTORY="${_project_directory}/shared/vendor"
 export CASSANDRA_VERSION="3.11.6"
 
 # https://github.com/kudobuilder/kudo/releases/tag/vx.y.z
-export KUDO_VERSION="0.13.0"
+export KUDO_VERSION="0.14.0-rc2"
 
 export KUBERNETES_VERSION="1.15.0"
 
