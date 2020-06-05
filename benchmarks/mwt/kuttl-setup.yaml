@@ -1,0 +1,7 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestSuite
+parallel: 1
+skipDelete: true
+timeout: 30
+testDirs:
+  - setup

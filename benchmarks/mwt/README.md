@@ -23,11 +23,15 @@
 
 `kubectl kuttl test setup/  --parallel 1 --skip-delete`
 
+or
+
+`kubectl kuttl test --config kuttl-setup.yaml`
+
 The `parallel 1` is important for setup, as the order of the folders and the order of there execution matters.  The tests are designed to allow for a restart.  If kudo confirmation is guaranteed, it is possible to run: `kubectl kuttl test setup/ --parallel 1 --skip-delete --test 01-cassandra-install`.  The tests inside "cassandra-install" are also allowed to run multiple tests with good end results.  This is the reason command failures are ignored.  If a command fails we don't care unless the desired asserted state is not reached (which is built into the test).
 
 * **Teardown:** used to remove cassandra (and verify it has been removed)
 
-`kubectl kuttl test teardown/ `
+`kubectl kuttl test --config kuttl-teardown.yaml`
 
 ## Tests under **Setup**
 
