@@ -3,7 +3,7 @@ kind: TestSuite
 manifestDirs:
   - ./manifests/
 commands:
-  - command: ./bin/kubectl-kudo init
+  - command: ./bin/kubectl-kudo init --unsafe-self-signed-webhook-ca=true
   - command: ./bin/kubectl create ns cassandra-install-test
   - command: ./bin/kubectl-kudo install -n cassandra-install-test --skip-instance ../operator/
 testDirs:
