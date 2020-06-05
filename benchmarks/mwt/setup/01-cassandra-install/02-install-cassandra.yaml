@@ -5,7 +5,7 @@ metadata:
   namespace: cassandra
 spec:
   operatorVersion:
-    name: cassandra-0.1.2
+    name: cassandra-1.0.0
     namespace: cassandra
     kind: OperatorVersion
   name: "cassandra"
