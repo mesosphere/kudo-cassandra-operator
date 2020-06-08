@@ -5,6 +5,7 @@ import (
 	"os"
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/kudobuilder/test-tools/pkg/client"
 	"github.com/kudobuilder/test-tools/pkg/debug"
@@ -96,11 +97,11 @@ var _ = Describe("external service", func() {
 		suites.AssertNumberOfCassandraNodes(Client, Operator, NodeCount)
 
 		log.Infof("Verify that external service is started and has 1 open port")
-		svc, err := kubernetes.GetService(Client, fmt.Sprintf("%s-svc-external", TestInstance), TestNamespace)
-		Expect(err).To(BeNil())
-		Expect(len(svc.Spec.Ports)).To(Equal(1))
-		Expect(svc.Spec.Ports[0].Name).To(Equal("native-transport"))
-		Expect(svc.Spec.Ports[0].Port).To(Equal(int32(nativeTransportPort)))
+		Eventually(func() bool {
+			svc, _ := kubernetes.GetService(Client, fmt.Sprintf("%s-svc-external", TestInstance), TestNamespace)
+			log.Infof("External Service: %v, Error: %v", svc, err)
+			return err != nil && len(svc.Spec.Ports) == 1 && svc.Spec.Ports[0].Name == "native-transport" && svc.Spec.Ports[0].Port == int32(nativeTransportPort)
+		}, 2*time.Minute, 10*time.Second).Should(BeTrue())
 
 		By("Opening a second port if rpc is enabled")
 		rpcPort := 9161
@@ -114,19 +115,17 @@ var _ = Describe("external service", func() {
 		err = Operator.Instance.UpdateParameters(parameters)
 		Expect(err).To(BeNil())
 
-		//err = Operator.Instance.WaitForPlanInProgress("deploy", kudo.WaitTimeout(time.Second*90))
-		//Expect(err).To(BeNil())
 		err = Operator.Instance.WaitForPlanComplete("deploy")
 		Expect(err).To(BeNil())
 
 		suites.AssertNumberOfCassandraNodes(Client, Operator, NodeCount)
 
 		log.Infof("Verify that external service is started and has 2 open ports")
-		svc, err = kubernetes.GetService(Client, fmt.Sprintf("%s-svc-external", TestInstance), TestNamespace)
-		Expect(err).To(BeNil())
-		Expect(len(svc.Spec.Ports)).To(Equal(2))
-		Expect(svc.Spec.Ports[1].Name).To(Equal("rpc"))
-		Expect(svc.Spec.Ports[1].Port).To(Equal(int32(rpcPort)))
+		Eventually(func() bool {
+			svc, _ := kubernetes.GetService(Client, fmt.Sprintf("%s-svc-external", TestInstance), TestNamespace)
+			log.Infof("External Service: %v, Error: %v", svc, err)
+			return err != nil && len(svc.Spec.Ports) == 2 && svc.Spec.Ports[1].Name == "rpc" && svc.Spec.Ports[1].Port == int32(rpcPort)
+		}, 2*time.Minute, 10*time.Second).Should(BeTrue())
 
 		By("Disabling the external service again")
 		parameters = map[string]string{
@@ -147,12 +146,13 @@ var _ = Describe("external service", func() {
 
 		suites.AssertNumberOfCassandraNodes(Client, Operator, NodeCount)
 
-		svc, err = kubernetes.GetService(Client, fmt.Sprintf("%s-svc-external", TestInstance), TestNamespace)
-
-		log.Infof("Get External Service %v, %v", svc, err)
+		Eventually(func() error {
+			svc, err := kubernetes.GetService(Client, fmt.Sprintf("%s-svc-external", TestInstance), TestNamespace)
+			log.Infof("External Service: %v, Error: %v", svc, err)
+			return err
+		}, 2*time.Minute, 10*time.Second).Should(Not(BeNil()))
 
 		Expect(err).To(Not(BeNil()))
-
 	})
 
 	It("Uninstalls the operator", func() {
