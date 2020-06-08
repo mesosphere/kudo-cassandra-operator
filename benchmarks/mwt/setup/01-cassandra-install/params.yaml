@@ -1,0 +1,7 @@
+  parameters:
+    NODE_COUNT: "3"
+    NODE_MEM_MIB: "4096"
+    NODE_MEM_LIMIT_MIB: "4096"
+    NODE_CPU_MC: "1000"
+    NODE_CPU_LIMIT_MC: "1000"
+    NODE_DISK_SIZE_GIB: "20"

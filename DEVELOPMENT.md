@@ -359,7 +359,10 @@ This is achieved by creating and merging a PR _against the stable branch_ where:
 1.  (as needed) the various `*_VERSION` variables are set as necessary for base
     tech and the operator version, according to the versioning scheme shown
     above,
-1.  necessary files are updated by running `./tools/compile_template.sh`
+1.  necessary files are updated by running:
+    - `./tools/compile_template.sh`
+    - `./tools/generate_parameters_markdown.sh`
+    - `./tools/format_files.sh`
 
 #### Creating Release Notes
 

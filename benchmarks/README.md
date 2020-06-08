@@ -9,6 +9,8 @@
 3. read [README](mwt/README.md)
 
 ```bash
+kudo_cassandra_operator_name="cassandra"
+kudo_cassandra_operator_version="1.0.0"
 kudo_cassandra_instance_name="cassandra"
 kudo_cassandra_instance_namespace="cassandra"
 

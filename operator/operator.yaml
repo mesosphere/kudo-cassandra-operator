@@ -1,10 +1,18 @@
 apiVersion: kudo.dev/v1beta1
 name: "cassandra"
-operatorVersion: "0.1.2"
+operatorVersion: "1.0.0"
 kudoVersion: "0.13.0"
 kubernetesVersion: "1.15.0"
 appVersion: "3.11.6"
 maintainers:
+  - name: Zain Malik
+    email: zmalik@D2iQ.com
+  - name: Jan Schlicht
+    email: jan@D2iQ.com
+  - name: Andreas Neumann
+    email: aneumann@D2iQ.com
+  - name: Marcin Owsiany
+    email: mowsiany@D2iQ.com
   - name: Murilo Pereira
     email: murilo@murilopereira.com
 url: http://cassandra.apache.org/
@@ -91,14 +99,16 @@ plans:
               - node-rbac
               - node-resolver-rbac
       - name: nodes
-        strategy: parallel
+        strategy: serial
         steps:
-          - name: node
+          - name: pre-node
             tasks:
-              - node
               - ext-service
               - recovery-controller
               - backup-deploy
+          - name: node
+            tasks:
+              - node
   repair:
     strategy: serial
     phases:

@@ -58,7 +58,7 @@ echo ${cassandra_image}
 Example output:
 
 ```
-mesosphere/cassandra:3.11.6-0.1.2
+mesosphere/cassandra:3.11.6-1.0.0
 ```
 
 #### 4. Run a command which accesses cassandra in a pod

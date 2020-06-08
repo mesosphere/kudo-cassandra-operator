@@ -19,7 +19,8 @@ export OPERATOR_NAME="cassandra"
 
 # More details about KUDO Versioning:
 # https://github.com/kudobuilder/kudo/pull/1028
-export OPERATOR_VERSION="0.1.2"
+# NOTE: Keep the version in tests in sync, see https://github.com/mesosphere/kudo-cassandra-operator/issues/136
+export OPERATOR_VERSION="1.0.0"
 
 # This should be an empty string on stable branches and "-SNAPSHOT" on
 # non-stable branches.
@@ -35,6 +36,7 @@ export VENDOR_DIRECTORY="${_project_directory}/shared/vendor"
 # http://www.apache.org/dyn/closer.lua/cassandra/3.11.6
 # https://hub.docker.com/_/cassandra
 # https://github.com/docker-library/cassandra/blob/master/3.11/Dockerfile
+# NOTE: Keep the version in tests in sync, see https://github.com/mesosphere/kudo-cassandra-operator/issues/136
 export CASSANDRA_VERSION="3.11.6"
 
 # https://github.com/kudobuilder/kudo/releases/tag/vx.y.z
@@ -46,7 +48,7 @@ export CASSANDRA_EXPORTER_DOCKER_IMAGE="criteord/cassandra_exporter"
 export CASSANDRA_EXPORTER_VERSION="2.3.4"
 
 # https://github.com/thelastpickle/cassandra-medusa/releases
-export MEDUSA_BACKUP_VERSION="0.5.1"
+export MEDUSA_BACKUP_VERSION="0.6.0"
 
 export RECOVERY_CONTROLLER_VERSION="0.0.2"
 ################################################################################
