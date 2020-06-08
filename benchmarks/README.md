@@ -4,61 +4,29 @@
 
 ### Set up some KUDO Cassandra instance information
 
+1. Ensure a configuration with clsuter
+2. cd mwt
+3. read [README](mwt/README.md)
+
 ```bash
 kudo_cassandra_operator_name="cassandra"
 kudo_cassandra_operator_version="1.0.0"
 kudo_cassandra_instance_name="cassandra"
 kudo_cassandra_instance_namespace="cassandra"
-kudo_cassandra_statefulset_name="node"
 
 svc_endpoint="${kudo_cassandra_instance_name}-svc.${kudo_cassandra_instance_namespace}.svc.cluster.local"
 ```
 
-### Create namespace
+### Setup and Verify KUDO Cassandra
 
-```bash
-kubectl create namespace "${kudo_cassandra_instance_namespace}"
-```
+From `mwt`  
+Run `kubectl kuttl test setup/ --parallel 1 --skip-delete`  
+Which will:
 
-### Install KUDO Cassandra with some parameters
-
-Tweak the parameters as desired.
-
-```bash
-kubectl kudo install ./operator \
-        --instance="${kudo_cassandra_instance_name}" \
-        --namespace="${kudo_cassandra_instance_namespace}" \
-        -p "NODE_COUNT=10" \
-        -p "NODE_MEM_MIB=8196" \
-        -p "NODE_MEM_LIMIT_MIB=8196" \
-        -p "NODE_CPU_MC=6000" \
-        -p "NODE_CPU_LIMIT_MC=6000" \
-        -p "NODE_DISK_SIZE_GIB=100" \
-        -p "PROMETHEUS_EXPORTER_CPU_MC=1000" \
-        -p "PROMETHEUS_EXPORTER_CPU_LIMIT_MC=1000"
-```
-
-### Wait for deploy plan to be `COMPLETE`
-
-```bash
-kubectl kudo plan status \
-        --instance="${kudo_cassandra_instance_name}" \
-        --namespace="${kudo_cassandra_instance_namespace}"
-```
-
-### Make sure `nodetool status` looks good
-
-```bash
-pod="0"
-container="cassandra"
-kubectl exec "pod/${kudo_cassandra_instance_name}-${kudo_cassandra_statefulset_name}-${pod}" \
-        -n "${kudo_cassandra_instance_namespace}" \
-        -c "${container}" \
-        -- \
-        bash -c "\
-          nodetool status
-        "
-```
+1. verify setup
+2. install cassandra
+3. wait for deployment to finish
+4. output nodetool status
 
 ### Run `kassandra-stress`
 
@@ -106,9 +74,5 @@ kubectl delete <deployment> -n "${kudo_cassandra_instance_namespace}"
 
 ### Uninstall operator
 
-```bash
-./scripts/uninstall_operator.sh \
-  --operator "${kudo_cassandra_operator_name}" \
-  --version "${kudo_cassandra_operator_version}" \
-  --instance "${kudo_cassandra_instance_name}" \
-```
+From `mwt`  
+Run `kubectl kuttl test teardown/`
