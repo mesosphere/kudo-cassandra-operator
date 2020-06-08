@@ -1,2 +1,4 @@
 PARALLEL: 2
 TARGET_HOST: cassandra-node-0.cassandra-svc.default.svc.cluster.local
+KEYSPACE_NAME: "stress1"
+REPLICATION_STRING: "strategy=SimpleStrategy, replication_factor=1"

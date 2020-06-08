@@ -14,7 +14,7 @@ parameters:
 
   - name: KEYSPACE_NAME
     description: "The name of the keyspace where data is generated in. Should be different for separate workload runs"
-    default: "stress-keyspace"
+    default: "stress1"
 
   - name: DURATION
     description: "The duration for which cassandra-stress will generate load"
@@ -27,6 +27,10 @@ parameters:
   - name: CONSISTENCY_LEVEL
     description: "The consistency level of the new keyspace. Must be one of ONE, LOCAL_ONE, etc. https://docs.datastax.com/en/cql-oss/3.x/cql/cql_reference/cqlshConsistency.html"
     default: "ONE"
+
+  - name: REPLICATION_STRING
+    description: "The replication string for the key space"
+    default: "strategy=SimpleStrategy, replication_factor=1"
 
   - name: STRESS_CPU_MC
     description: "CPU request (in millicores) for the stress node containers."
