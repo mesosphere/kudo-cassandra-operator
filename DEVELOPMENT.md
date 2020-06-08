@@ -334,45 +334,63 @@ i.e. `3.11.x` and `4.0.x`.
 
 #### Feature development
 
-Development happens in feature branches which are merged into the `master`
-branch via GitHub PRs.
+Development happens in feature branches. Notable changes should be added to the
+`Unreleased` entry in [`CHANGELOG.md`](CHANGELOG.md#unreleased).
+
+Feature branches are merged into the `master` branch via GitHub PRs.
+
+#### Updating version and change log
+
+When it is decided that a regular release needs to be done, several things
+should happen on the `master` branch first:
+
+1. Pick and set `OPERATOR_VERSION` number in [`metadata.sh`](metadata.sh)
+   according to the [versioning scheme](#versioning)
+2. Create an entry for the release in the [`CHANGELOG`](CHANGELOG.md). In theory
+   you should just need to add a header and footer with the version number. In
+   practice it might be that some notable changes were not mentioned in the
+   [`CHANEGELOG.md`](CHANGELOG.md) file, so you should go through the list of
+   commits since the last release and make sure the notable ones are enumerated.
 
 #### Stable branch creation
-
-When it is decided that a release needs to be done, a _stable branch_ is created
-based off of the `master` branch. This can simply be done in GitHub web UI using
-the branch selector widget:
-
-![](docs/images/branch.png)
 
 The name of stable branch is typically `release-vx.y` where `x.y` is the
 Cassandra `major.minor` version.
 
-In this branch all operator dependencies (Docker images, KUDO version, Golang
-libraries, etc.) are made to be _stable_, as in no _running versions_ (SNAPSHOT,
-latest, etc.) are used.
+**If it does not exist yet**, simply create it off `master` in GitHub web UI
+using the branch selector widget:
+
+![](docs/images/branch.png)
+
+**If it exists already**, you have two options:
+
+- if you want to include all changes in `master` so far (a regular release),
+  then merge `master` into the stable branch and push manually. Please take care
+  to use a merge commit, _do not squash_.
+- if you want to do only a patch release with some very specific changes,
+  cherry-pick selected commits onto the stable branch using a regular PR
+  process. In this case, you should also
+  [update the version and change log](#updating-version-and-change-log) directly
+  on the stable branch, rather than `master`.
+
+**In either case**, you need to subsequently make sure the `-SNAPSHOT` suffix is
+removed from version strings in the stable branch.
 
 This is achieved by creating and merging a PR _against the stable branch_ where:
 
-1.  the value of `POSSIBLE_SNAPHOT_SUFFIX` in [`metadata.sh`](metadata.sh) is
-    set to an empty string,
-1.  (as needed) the various `*_VERSION` variables are set as necessary for base
-    tech and the operator version, according to the versioning scheme shown
-    above,
-1.  necessary files are updated by running:
-    - `./tools/compile_template.sh`
-    - `./tools/generate_parameters_markdown.sh`
-    - `./tools/format_files.sh`
+1. value of `POSSIBLE_SNAPHOT_SUFFIX` in [`metadata.sh`](metadata.sh) is set to
+   an empty string, and
+1. necessary files are updated by running:
+   - `./tools/compile_template.sh`
+   - `./tools/generate_parameters_markdown.sh`
+   - `./tools/format_files.sh`
 
-#### Creating Release Notes
+#### Tagging the release
 
-Create an entry for the release in the [CHANGELOG](CHANGELOG.md).
-
-#### Tagging release
-
-A tag is created for the release, using
+Create a tag for the release, using
 [the GitHub UI](https://github.com/mesosphere/kudo-cassandra-operator/releases/new).
-Copy the contents of the release entry from the changelog updated above.
+Copy the contents of the release entry from the
+[recently updated changelog](#updating-version-and-change-log).
 
 ![](docs/images/tag.png)
 
@@ -395,26 +413,20 @@ with an additional parameter:
 
 The [kudobuilder/operators](https://github.com/kudobuilder/operators) repository
 contains a collection of KUDO operators. As of right now (2019-12-11) it is
-required that operators are published there so that packages can be built for
+necessary to publish operators there so that packages can be built for
 installation via `kubectl kudo install`.
 
-The
+This step can be done automatically with the
 [`tools/create_operators_pull_request.py`](tools/create_operators_pull_request.py)
-script copies over all "KUDO operator"-related files to kudobuilder.operators.
+script.
 
-For example, the following command creates a PR under kudobuilder/operators
-copying all "KUDO operator"-related files from the
-mesosphere/kudo-cassandra-operator (the [`operator`](operator) and
-[`docs`](docs) directory as of 2019-12-11) into a directory under
-kudobuilder/operators:
+The most convenient way to run it is with the dedicated
+[TeamCity job](https://teamcity.mesosphere.io/buildConfiguration/Frameworks_DataServices_Kudo_Cassandra_Tools_CreateKudobuilderOperatorsPr).
+Just run it on the tag similarly to how you ran the
+[docker images job](#building-docker-images).
 
-```bash
-./tools/create_operators_pull_request.py \
-  --operator-repository mesosphere/kudo-cassandra-operator \
-  --operator-name cassandra \
-  --operator-git-tag v3.11.5-0.1.1 \
-  --github-token "${github_token}"
-```
+This will create a PR which needs to be reviewed and approved. See the build log
+tag for a link.
 
 #### Building and pushing a KUDO operator package
 
@@ -425,5 +437,4 @@ Ask the friendly folks on #kudo channel on the kubernetes.slack.com instance.
 Once the stable branch is created, additional commits may be landed on it either
 via merging from the `master` branch or cherry-picking individual commits.
 
-These can then be released by updating the `OPERATOR_VERSION` in
-[`metadata.sh`](metadata.sh) and repeating the last steps of this workflow.
+These can then be released by repeating this workflow.
