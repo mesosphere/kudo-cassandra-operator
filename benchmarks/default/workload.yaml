@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: workload-local
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: workload-local
+  serviceName: workload-local-svc
+  replicas: 10
+  podManagementPolicy: Parallel
+  template:
+    metadata:
+      labels:
+        app: workload-local
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+        runAsGroup: 999
+        fsGroup: 999
+      containers:
+        - name: cassandra-stress
+          # TODO(mpereira): make this parameterizable.
+          image: mesosphere/cassandra:3.11.5-0.1.2
+          resources:
+            requests:
+              # TODO(mpereira): make this parameterizable.
+              cpu: 900m
+              memory: 2048Mi
+            limits:
+              # TODO(mpereira): make this parameterizable.
+              cpu: 1500m
+              memory: 3192Mi
+          securityContext:
+            capabilities:
+              add:
+                - IPC_LOCK
+                - SYS_RESOURCE
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+          command:
+            - /bin/bash
+            - -c
+          args:
+            - set -x;
+              export POD_ID=`echo $POD_NAME | sed -n -e 's/workload-local-\([0-9]\{1,4\}\)$/\1/p'`;
+              echo "Pod ID $POD_ID";
+              export POP_STRING="${POD_ID}000001..$((POD_ID+1))000000";
+              echo "Population String $POP_STRING";
+              export KEYSPACE=`echo workload-local | tr -cd '[:alnum:]_' | cut -c 1-32`;
+              echo "Using Keyspace $KEYSPACE";
+              if [[ $POD_ID != "1" ]]; then
+              echo "Not the first instance, sleep for 30 seconds to allow schema creation to settle through cluster";
+              sleep 30;
+              fi;
+              cassandra-stress write duration=1h cl=LOCAL_ONE -pop seq=$POP_STRING -node cassandra-instance-svc.default.svc.cluster.local -schema keyspace="$KEYSPACE" "replication(strategy=SimpleStrategy, replication_factor=1)" -rate 'threads=250' -graph file=/tmp/workload-local.html title=workload-local -errors ignore;
+              sleep infinity
