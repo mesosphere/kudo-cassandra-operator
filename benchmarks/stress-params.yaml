@@ -1,0 +1,2 @@
+PARALLEL: 2
+TARGET_HOST: cassandra-node-0.cassandra-svc.default.svc.cluster.local
