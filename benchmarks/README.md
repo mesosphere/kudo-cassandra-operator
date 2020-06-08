@@ -19,13 +19,13 @@ svc_endpoint="${kudo_cassandra_instance_name}-svc.${kudo_cassandra_instance_name
 
 ### Setup and Verify KUDO Cassandra
 
-
-From `mwt`
-Run `kubectl kuttl test setup/  --parallel 1 --skip-delete`
+From `mwt`  
+Run `kubectl kuttl test setup/ --parallel 1 --skip-delete`  
 Which will:
+
 1. verify setup
 2. install cassandra
-3. wait for deployment to finish 
+3. wait for deployment to finish
 4. output nodetool status
 
 ### Run `kassandra-stress`
@@ -74,5 +74,5 @@ kubectl delete <deployment> -n "${kudo_cassandra_instance_namespace}"
 
 ### Uninstall operator
 
-From `mwt`
+From `mwt`  
 Run `kubectl kuttl test teardown/`
