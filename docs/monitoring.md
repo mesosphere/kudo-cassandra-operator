@@ -4,12 +4,11 @@ This guide explains how to set up monitoring for KUDO Cassandra.
 
 ## Description
 
-The KUDO Cassandra operator will export metrics to Prometheus by default. It
-achieves this using a Prometheus exporter based on the
+The KUDO Cassandra operator can export metrics to Prometheus. It achieves this
+using a Prometheus exporter based on the
 [criteo/cassandra_exporter](https://github.com/criteo/cassandra_exporter).
 
-When the `PROMETHEUS_EXPORTER_ENABLED` parameter is at its default value of
-`true`:
+When the `PROMETHEUS_EXPORTER_ENABLED` parameter is set to `true`:
 
 - A `prometheus-exporter` container will run in the same pod as every Cassandra
   `node` container. It will listen for connections on
@@ -27,7 +26,7 @@ When the `PROMETHEUS_EXPORTER_ENABLED` parameter is at its default value of
   [Grafana](https://grafana.com/) set up in the cluster. The
   [kube-prometheus](https://github.com/coreos/kube-prometheus) project provides
   both of them.
-- KUDO CLI installed (only necessary if you _had_ disabled this feature before).
+- KUDO CLI installed.
 
 The examples below assume that the instance and namespace names are stored in
 the following shell variables. With this assumptions met, you should be able to
@@ -42,11 +41,10 @@ namespace_name=default
 
 ### 1. Make sure that Prometheus Exporter is enabled on the KUDO Cassandra instance
 
-This parameter is `true` by default, so you only need to worry about this if you
-explicitly disabled it.
+This parameter is `false` by default, so you need to enable it explicitly.
 
-If you do not remember, you can check the value of the parameter on a running
-instance with a command like:
+You can check the value of the parameter on a running instance with a command
+like:
 
 ```bash
 kubectl get instance --template '{{.spec.parameters.PROMETHEUS_EXPORTER_ENABLED}}{{"\n"}} $instance_name -n $namespace_name'
@@ -91,6 +89,9 @@ to check the `Prometheus` resource. The `serviceMonitorNamespaceSelector` and
 match the
 [labels on the `ServiceMonitor` resource](../operator/templates/service-monitor.yaml#L7)
 created by the KUDO Cassandra operator.
+
+The Prometheus exporter container that is run alongside each Cassandra node
+requires 1 CPU and 512MiB memory each.
 
 ## Custom Configuration
 

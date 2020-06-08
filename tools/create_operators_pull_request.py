@@ -10,6 +10,7 @@ import sys
 import tempfile
 
 from utils import (
+    RELEASE_TAG_PATTERN,
     run,
     get_git_version,
     get_git_user,
@@ -21,7 +22,6 @@ from utils import (
     configure_git_user,
     create_pull_request,
 )
-from release import RELEASE_TAG_PATTERN
 
 PROGRAM_NAME = os.path.basename(__file__)
 
@@ -224,7 +224,7 @@ def commit_copied_operator_files_and_push_branch(
         return rc, f"stdout:\n{stdout}\nstderr:\n{stderr}"
 
     rc, stdout, stderr = run(
-        f"git -C {operators_directory} commit -am '{git_commit_message}'",
+        f"git -C {operators_directory} commit -s -am '{git_commit_message}'",
         debug=debug,
     )
     if rc != 0:

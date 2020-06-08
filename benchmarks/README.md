@@ -6,7 +6,7 @@
 
 ```bash
 kudo_cassandra_operator_name="cassandra"
-kudo_cassandra_operator_version="0.1.2"
+kudo_cassandra_operator_version="1.0.0"
 kudo_cassandra_instance_name="cassandra"
 kudo_cassandra_instance_namespace="cassandra"
 kudo_cassandra_statefulset_name="node"

@@ -71,7 +71,8 @@ var _ = Describe(TestName, func() {
 		var err error
 
 		parameters := map[string]string{
-			"NODE_COUNT": strconv.Itoa(NodeCount),
+			"NODE_COUNT":                  strconv.Itoa(NodeCount),
+			"PROMETHEUS_EXPORTER_ENABLED": "true",
 		}
 		suites.SetSuitesParameters(parameters)
 

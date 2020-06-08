@@ -139,7 +139,7 @@ func (c *Executor) Run(arguments ...string) (string, string, error) {
 			Containers: []v1.Container{
 				{
 					Name:  "nodetool",
-					Image: "cassandra:3.11.5",
+					Image: "cassandra:3.11.6",
 					Command: []string{
 						"bash",
 						"-c",

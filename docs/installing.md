@@ -55,10 +55,9 @@ kubectl kudo install cassandra \
 ```
 
 By default a 3-node Cassandra cluster is installed, with each Cassandra node
-requiring 1 CPU and 4GiB memory. Alongside each Cassandra node a Prometheus
-exporter container is also run, requiring 1 CPU and 512MiB memory each.
+requiring 1 CPU and 4GiB memory.
 
-The total resources needed are 6 CPUs and 13.5GiB memory
+The total resources needed are 3 CPUs and 12GiB memory
 
 The command above will start the operator instance installation. To check the
 installation progress, the KUDO CLI provides us with the `plan status` command.
