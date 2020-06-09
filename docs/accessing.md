@@ -58,7 +58,7 @@ echo ${cassandra_image}
 Example output:
 
 ```
-mesosphere/cassandra:3.11.5-0.1.2
+mesosphere/cassandra:3.11.6-1.0.0
 ```
 
 #### 4. Run a command which accesses cassandra in a pod
@@ -115,7 +115,7 @@ The operator supports creation of a service that opens up ports to access
 Cassandra from outside the cluster. To enable this, you have to set the
 following variables:
 
-```
+```bash
 kubectl kudo update $instance_name -n $namespace_name -p EXTERNAL_NATIVE_TRANSPORT=true
 ```
 

@@ -11,7 +11,9 @@ source "${project_directory}/metadata.sh"
 
 if [[ -n ${IMAGE_DISAMBIGUATION_SUFFIX:-} ]]; then
   # Refresh templated files to pick up the suffix, if explicitly set.
-  "${project_directory}/tools/docker.sh" "${project_directory}/tools/compile_templates.sh"
+  "${project_directory}/tools/docker.sh" \
+    env "IMAGE_DISAMBIGUATION_SUFFIX=${IMAGE_DISAMBIGUATION_SUFFIX}" \
+    "${project_directory}/tools/compile_templates.sh"
 fi
 
 readonly kubeconfig="${KUBECONFIG:-${HOME}/.kube/config}"
@@ -34,7 +36,7 @@ docker run \
        -e "DS_KUDO_VERSION=v${KUDO_VERSION}" \
        -e "OPERATOR_DIRECTORY=${container_operator_directory}" \
        -e "VENDOR_DIRECTORY=${container_vendor_directory}" \
-       -e "IMAGE_DISAMBIGUATION_SUFFIX=${IMAGE_DISAMBIGUATION_SUFFIX}" \
+       -e "IMAGE_DISAMBIGUATION_SUFFIX=${IMAGE_DISAMBIGUATION_SUFFIX:-}" \
        -e "TEST_ARTIFACTS_DIRECTORY=${container_artifacts_directory}" \
        -e "AWS_ACCESS_KEY_ID" \
        -e "AWS_SECRET_ACCESS_KEY" \

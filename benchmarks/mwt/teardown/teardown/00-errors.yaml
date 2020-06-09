@@ -1,0 +1,17 @@
+apiVersion: kudo.dev/v1beta1
+kind: Instance
+metadata:
+  name: cassandra
+  namespace: cassandra
+
+---
+apiVersion: kudo.dev/v1beta1
+kind: OperatorVersion
+metadata:
+  namespace: cassandra
+
+---
+apiVersion: kudo.dev/v1beta1
+kind: Operator
+metadata:
+  namespace: cassandra

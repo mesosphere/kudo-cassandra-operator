@@ -330,124 +330,111 @@ commonality with regards to the operator itself. The operator version
 progression is only meaningful within an app version's `major.minor` family,
 i.e. `3.11.x` and `4.0.x`.
 
-### Development cycle
-
-Development happens in feature branches which are merged into the master branch
-via GitHub PRs. When it is decided that a release needs to be done, a _stable
-branch_ is created based off of the master branch. In this branch all operator
-dependencies (Docker images, KUDO version, Golang libraries, etc.) are made to
-be _stable_, as in no _running versions_ (SNAPSHOT, latest, etc.) are used. The
-app version is set to the underlying Apache Cassandra version and the operator
-version is updated according to the versioning scheme shown above. After these
-changes are committed to the stable branch, a git tag is created with the
-version to be released.
-
 ### Release workflow
 
-A concrete example: it is desired that `3.11.4-0.1.0` is released:
+#### Feature development
 
-1. A `release-v3.11` branch is created from master
-1. Changes making dependencies stable and changing the app version be `3.11.4`
-   and the operator version be `0.1.0` are committed and pushed to the remote
-1. A `v3.11.4-0.1.0` git tag is created from the `release-v3.11` branch HEAD
+Development happens in feature branches. Notable changes should be added to the
+`Unreleased` entry in [`CHANGELOG.md`](CHANGELOG.md#unreleased).
 
-The [release.py](./tools/release.py) script can be used to achieve the last step
-above:
+Feature branches are merged into the `master` branch via GitHub PRs.
 
-```bash
-./tools/release.py \
-  --repository mesosphere/kudo-cassandra-operator \
-  --git-branch release-v3.11 \
-  --git-tag v3.11.4-0.1.0
-```
+#### Updating version and change log
 
-### Backport workflow
+When it is decided that a regular release needs to be done, several things
+should happen on the `master` branch first:
 
-Any further releases based on Apache Cassandra `3.11.x` should originate from
-backported changes from the master branch to the existing `release-v3.11`
-branch, and then released as tags.
+1. Pick and set `OPERATOR_VERSION` number in [`metadata.sh`](metadata.sh)
+   according to the [versioning scheme](#versioning)
+2. Create an entry for the release in the [`CHANGELOG`](CHANGELOG.md). In theory
+   you should just need to add a header and footer with the version number. In
+   practice it might be that some notable changes were not mentioned in the
+   [`CHANEGELOG.md`](CHANGELOG.md) file, so you should go through the list of
+   commits since the last release and make sure the notable ones are enumerated.
 
-It is likely that all commits in the master branch should be present in a new
-release. In that case, for a concrete example:
+#### Stable branch creation
 
-1. A `release-v3.11` branch already exists
-1. `git merge master` is run
-1. Changes making dependencies stable and changing the app version be `3.11.5`
-   and the operator version be `0.1.1` are committed and pushed to the remote
-1. A `v3.11.5-0.1.1` git tag is created from the `release-v3.11` branch HEAD
+The name of stable branch is typically `release-vx.y` where `x.y` is the
+Cassandra `major.minor` version.
 
-Another scenario is wanting just a few commits in the master branch to be
-present in a new release. In that case, for a concrete example: it is desired
-that `3.11.5-0.1.1` is released with commits `c792f72` and `385c4ed` that are in
-the `master` branch:
+**If it does not exist yet**, simply create it off `master` in GitHub web UI
+using the branch selector widget:
 
-1. A `release-v3.11` branch already exists
-1. `git cherry-pick --ff c792f72` is run
-1. `git cherry-pick --ff 385c4ed` is run
-1. Changes making dependencies stable and changing the app version be `3.11.5`
-   and the operator version be `0.1.1` are committed and pushed to the remote
-1. A `v3.11.5-0.1.1` git tag is created from the `release-v3.11` branch HEAD
+![](docs/images/branch.png)
 
-As before, the [release.py](./tools/release.py) script can be used to achieve
-the last step above:
+**If it exists already**, you have two options:
 
-```bash
-./tools/release.py \
-  --repository mesosphere/kudo-cassandra-operator \
-  --git-branch release-v3.11 \
-  --git-tag v3.11.5-0.1.1
-```
+- if you want to include all changes in `master` so far (a regular release),
+  then merge `master` into the stable branch and push manually. Please take care
+  to use a merge commit, _do not squash_.
+- if you want to do only a patch release with some very specific changes,
+  cherry-pick selected commits onto the stable branch using a regular PR
+  process. In this case, you should also
+  [update the version and change log](#updating-version-and-change-log) directly
+  on the stable branch, rather than `master`.
 
-### Additional release work
+**In either case**, you need to subsequently make sure the `-SNAPSHOT` suffix is
+removed from version strings in the stable branch.
 
-After doing the steps in either "[release workflow](#release-workflow)" or
-"[backport workflow](#backport-workflow)" a git tag will be created. A few
-further steps are required.
+This is achieved by creating and merging a PR _against the stable branch_ where:
 
-1. Create an entry for the release in the [CHANGELOG](CHANGELOG.md).
-1. Copy the contents of the release entry in the CHANGELOG to the release entry
-   under
-   "[releases](https://github.com/mesosphere/kudo-cassandra-operator/releases)".
-1. Publish the operator to the
-   [kudobuilder/operators](https://github.com/kudobuilder/operators) repository.
-   Check the [following section](#synchronize-changes-to-kudobuilderoperators)
-   for more details on how to get this done.
+1. value of `POSSIBLE_SNAPHOT_SUFFIX` in [`metadata.sh`](metadata.sh) is set to
+   an empty string, and
+1. necessary files are updated by running:
+   - `./tools/compile_template.sh`
+   - `./tools/generate_parameters_markdown.sh`
+   - `./tools/format_files.sh`
 
-### Snapshots (to be implemented)
+#### Tagging the release
 
-Snapshot release versions will have the following format:
+Create a tag for the release, using
+[the GitHub UI](https://github.com/mesosphere/kudo-cassandra-operator/releases/new).
+Copy the contents of the release entry from the
+[recently updated changelog](#updating-version-and-change-log).
 
-```
-${app_version}-0.0.0-YYYYMMDDHHmmss-${git_sha}
-```
+![](docs/images/tag.png)
 
-Example:
+#### Building docker images
 
-```
-3.11.4-0.0.0-20191225000000-1909e93ffa56
-```
+Docker images need to be built and pushed with names matching the tagged
+release. This is typically achieved by running the
+[`images/build.sh`](./images/build.sh) script using TeamCity on the release tag
+with an additional parameter:
 
-## Synchronize changes to [kudobuilder/operators](https://github.com/kudobuilder/operators)
+1. Click the `...` next to the `Run` button on the
+   [Docker Push](https://teamcity.mesosphere.io/buildConfiguration/Frameworks_DataServices_Kudo_Cassandra_Tools_DockerPush)
+   build configuration page.
+1. Select the release tag on the `Changes` tab: ![](docs/images/run-on-tag.png)
+1. Add an `env.DISABLE_IMAGE_DISAMBIGUATION_SUFFIX` environment variable on the
+   `Parameters` tab: ![](docs/images/run-with-param.png)
+1. click `Run Build`
+
+#### Copying to the `kudobuilder/operators` repository
 
 The [kudobuilder/operators](https://github.com/kudobuilder/operators) repository
 contains a collection of KUDO operators. As of right now (2019-12-11) it is
-required that operators are published there so that they are available via
-`kubectl kudo install`.
+necessary to publish operators there so that packages can be built for
+installation via `kubectl kudo install`.
 
-The
+This step can be done automatically with the
 [`tools/create_operators_pull_request.py`](tools/create_operators_pull_request.py)
-script copies over all "KUDO operator"-related files to kudobuilder.operators.
+script.
 
-For example, the following command creates a PR under kudobuilder/operators
-copying all "KUDO operator"-related files from the
-mesosphere/kudo-cassandra-operator (the [`operator`](operator) and
-[`docs`](docs) directory as of 2019-12-11) into a directory under
-kudobuilder/operators:
+The most convenient way to run it is with the dedicated
+[TeamCity job](https://teamcity.mesosphere.io/buildConfiguration/Frameworks_DataServices_Kudo_Cassandra_Tools_CreateKudobuilderOperatorsPr).
+Just run it on the tag similarly to how you ran the
+[docker images job](#building-docker-images).
 
-```bash
-./tools/create_operators_pull_request.py \
-  --operator-repository mesosphere/kudo-cassandra-operator \
-  --operator-name cassandra \
-  --operator-git-tag v3.11.5-0.1.1 \
-  --github-token "${github_token}"
-```
+This will create a PR which needs to be reviewed and approved. See the build log
+tag for a link.
+
+#### Building and pushing a KUDO operator package
+
+Ask the friendly folks on #kudo channel on the kubernetes.slack.com instance.
+
+#### Lather, rinse, repeat as required
+
+Once the stable branch is created, additional commits may be landed on it either
+via merging from the `master` branch or cherry-picking individual commits.
+
+These can then be released by repeating this workflow.

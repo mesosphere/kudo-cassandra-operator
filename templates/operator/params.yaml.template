@@ -219,7 +219,7 @@ parameters:
   ################################################################################
 
   - name: PROMETHEUS_EXPORTER_ENABLED
-    default: "true"
+    default: "false"
 
   - name: PROMETHEUS_EXPORTER_PORT
     description: "Prometheus exporter port."

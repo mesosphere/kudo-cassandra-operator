@@ -2,8 +2,10 @@
 
 **Table of Contents**
 
-- [Requirements](#requirements)
-- [Installing the operator](#installing-the-operator)
+- [Installing the KUDO Cassandra Operator](#installing-the-kudo-cassandra-operator)
+  - [Requirements](#requirements)
+  - [Installing the operator](#installing-the-operator)
+  - [Required Permissions](#required-permissions)
 
 ## Requirements
 
@@ -46,17 +48,16 @@ parameter will cause the instance to be installed in the "default" namespace,
 and omitting the `--instance` parameter will cause the instance name to be
 "cassandra". If providing a namespace, make sure it exists.
 
-```
+```bash
 kubectl kudo install cassandra \
         --instance analytics-cassandra \
         --namespace production
 ```
 
 By default a 3-node Cassandra cluster is installed, with each Cassandra node
-requiring 1 CPU and 4GiB memory. Alongside each Cassandra node a Prometheus
-exporter container is also run, requiring 1 CPU and 512MiB memory each.
+requiring 1 CPU and 4GiB memory.
 
-The total resources needed are 6 CPUs and 13.5GiB memory
+The total resources needed are 3 CPUs and 12GiB memory
 
 The command above will start the operator instance installation. To check the
 installation progress, the KUDO CLI provides us with the `plan status` command.

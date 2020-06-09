@@ -34,7 +34,7 @@ parameters:
 
   - name: NODE_DOCKER_IMAGE
     description: "Cassandra node Docker image."
-    default: "mesosphere/cassandra:3.11.5-0.1.2-SNAPSHOT"
+    default: "mesosphere/cassandra:3.11.6-1.0.0-SNAPSHOT"
 
   - name: NODE_DOCKER_IMAGE_PULL_POLICY
     description: "Cassandra node Docker image pull policy."
@@ -170,7 +170,7 @@ parameters:
 
   - name: BACKUP_MEDUSA_DOCKER_IMAGE
     description: "Medusa backup Docker image."
-    default: "mesosphere/kudo-cassandra-medusa:0.5.1-0.1.2-SNAPSHOT"
+    default: "mesosphere/kudo-cassandra-medusa:0.6.0-1.0.0-SNAPSHOT"
 
   - name: BACKUP_MEDUSA_DOCKER_IMAGE_PULL_POLICY
     description: "Medusa backup Docker image pull policy."
@@ -219,7 +219,7 @@ parameters:
   ################################################################################
 
   - name: PROMETHEUS_EXPORTER_ENABLED
-    default: "true"
+    default: "false"
 
   - name: PROMETHEUS_EXPORTER_PORT
     description: "Prometheus exporter port."
@@ -243,7 +243,7 @@ parameters:
 
   - name: PROMETHEUS_EXPORTER_DOCKER_IMAGE
     description: "Prometheus exporter Docker image."
-    default: "mesosphere/cassandra-prometheus-exporter:2.3.4-0.1.2-SNAPSHOT"
+    default: "mesosphere/cassandra-prometheus-exporter:2.3.4-1.0.0-SNAPSHOT"
 
   - name: PROMETHEUS_EXPORTER_DOCKER_IMAGE_PULL_POLICY
     description: "Prometheus exporter Docker image pull policy."
