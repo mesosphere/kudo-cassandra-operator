@@ -1,0 +1,19 @@
+apiVersion: kudo.dev/v1beta1
+kind: Instance
+metadata:
+  name: cassandra-stress
+  namespace: cassandra
+
+---
+apiVersion: kudo.dev/v1beta1
+kind: OperatorVersion
+metadata:
+  name: cassandra-stress-0.1.0
+  namespace: cassandra
+
+---
+apiVersion: kudo.dev/v1beta1
+kind: Operator
+metadata:
+  name: cassandra-stress
+  namespace: cassandra

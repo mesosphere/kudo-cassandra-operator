@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: {{ $.Name }}-stress
+  name: {{ $.Name }}
   namespace: {{ $.Namespace }}
 spec:
   selector:
@@ -47,13 +47,13 @@ spec:
             - -c
           args:
             - set -x;
-              export POD_ID=`echo $POD_NAME | sed -n -e 's/{{ $.Name }}-stress-\([0-9]\{1,4\}\)$/\1/p'`;
+              export POD_ID=`echo $POD_NAME | sed -n -e 's/{{ $.Name }}-\([0-9]\{1,4\}\)$/\1/p'`;
               echo "Pod ID $POD_ID";
               export POP_STRING="${POD_ID}000001..$((POD_ID+1))000000";
               echo "Population String $POP_STRING";
               export KEYSPACE=`echo {{ .Params.KEYSPACE_NAME }} | tr -cd '[:alnum:]_' | cut -c 1-32`;
               echo "Using Keyspace $KEYSPACE";
-              if [[ $$POD_ID != "1" ]]; then
+              if [[ $$POD_ID != "0" ]]; then
               echo "Not the first instance, sleep for 30 seconds to allow schema creation to settle through cluster";
               sleep 30;
               fi;
