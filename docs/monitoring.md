@@ -62,7 +62,7 @@ kubectl kudo update -p PROMETHEUS_EXPORTER_ENABLED=true --instance $instance_nam
 
 Expected output:
 
-```
+```text
 Instance cassandra was updated.
 ```
 
@@ -101,7 +101,7 @@ we need to create a configmap with the properties we want to override.
 
 Example custom configuration:
 
-```
+```yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -115,7 +115,7 @@ data:
 
 Create the ConfigMap in the namespace we will have the KUDO Cassandra cluster
 
-```
+```bash
 $ kubectl create -f custom-exporter-configuration.yaml -n $namespace_name
 configmap/custom-exporter-configuration created
 ```
