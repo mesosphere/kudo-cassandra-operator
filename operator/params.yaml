@@ -1006,7 +1006,7 @@ parameters:
 
   - name: RECOVERY_CONTROLLER_DOCKER_IMAGE
     description: "Recovery controller Docker image."
-    default: "mesosphere/kudo-cassandra-recovery:0.0.2-0.1.2-SNAPSHOT"
+    default: "mesosphere/kudo-cassandra-recovery:0.0.2-1.0.0-SNAPSHOT"
 
   - name: RECOVERY_CONTROLLER_DOCKER_IMAGE_PULL_POLICY
     description: "Recovery controller Docker image pull policy."
