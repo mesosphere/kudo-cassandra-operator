@@ -1,0 +1,6 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+  - command: kubectl create namespace cassandra
+    ignoreFailure: true
+#  if we can't create a namespace, it is likely because it already exists, if that is the case, 00-assert will catch it.
