@@ -31,13 +31,7 @@ kubectl kudo install cassandra
 
 ## Roadmap
 
-- Backup/restore
-- Rack-awareness
-- Node replace
-- Inter-pod anti-affinity
 - RBAC, pod security policies
-- Liveness probe
-- Multi-datacenter support
 - Diagnostics bundle
 
 ## Documentation
