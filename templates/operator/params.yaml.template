@@ -80,6 +80,10 @@ parameters:
     description: "When a pod starts and the liveness probe fails, `failure_threshold` attempts will be made before restarting the pod."
     default: "3"
 
+  - name: NODE_TOLERATIONS
+    description: A list of kubernetes tolerations to let pods get scheduled on tainted nodes
+    type: array
+
   - name: OVERRIDE_CLUSTER_NAME
     description: "Override the name of the Cassandra cluster set by the operator. This shouldn't be explicit set, unless you know what you're doing."
     default: ""

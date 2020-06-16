@@ -9,3 +9,8 @@ NODE_MEM_MIB: "2048"
 NODE_MEM_LIMIT_MIB: "3192"
 PROMETHEUS_EXPORTER_ENABLED: "false"
 SERVICE_ACCOUNT_INSTALL: "true"
+NODE_TOLERATIONS: |-
+  - key: "dedicated"
+    value: "cassandra"
+    operator: "Equal"
+    effect: "NoExecute"

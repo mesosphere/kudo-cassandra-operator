@@ -1,4 +1,4 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
-  - command: kubectl kudo install cassandra --instance cassandra --namespace cassandra -P params.yaml
+  - command: kubectl kudo install ../../../../operator --instance cassandra --namespace cassandra -P params.yaml
