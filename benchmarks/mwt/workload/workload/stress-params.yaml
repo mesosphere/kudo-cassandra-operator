@@ -1,5 +1,5 @@
 PARALLEL: 2
 DURATION: 1m
-TARGET_HOST: cassandra-node-0.cassandra-svc.cassandra.svc.cluster.local
+TARGET_HOST: cassandra-dc1-node-0.cassandra-svc.cassandra.svc.cluster.local
 KEYSPACE_NAME: "stress1"
-REPLICATION_STRING: "strategy=SimpleStrategy, replication_factor=1"
+REPLICATION_STRING: "strategy=NetworkTopologyStrategy, dc1=1, dc2=1"
