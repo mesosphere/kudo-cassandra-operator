@@ -4,8 +4,8 @@ parameters:
     description: "A cassandra node that is used by cassandra stress"
     required: true
 
-  - name: PARALLEL
-    description: "Number of Cassandra Stress instances to start"
+  - name: NUM_CLIENTS
+    description: "Number of Cassandra Stress clients to start"
     default: "3"
 
   - name: THREADS_PER_CLIENT

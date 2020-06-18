@@ -1,5 +1,5 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
-  - command: ./wait-for-finish.sh
+  - command: ./wait-for-finish.sh $NUM_CLIENTS
     ignoreFailure: false

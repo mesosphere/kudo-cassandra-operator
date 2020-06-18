@@ -7,7 +7,7 @@ set -e
 
 kudo_cassandra_instance_namespace="cassandra"
 workload_name="cassandra-stress"
-num_clients=2
+num_clients=$1
 
 echo "Waiting for pods to be finished"
 

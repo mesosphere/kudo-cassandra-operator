@@ -9,7 +9,7 @@ spec:
       app: {{ $.Name }}
       cassandra-stress: {{ $.OperatorName }}
   serviceName: {{ $.Name }}-stress-svc
-  replicas: {{ .Params.PARALLEL }}
+  replicas: {{ .Params.NUM_CLIENTS }}
   podManagementPolicy: Parallel
   template:
     metadata:
@@ -22,6 +22,11 @@ spec:
         runAsUser: 999
         runAsGroup: 999
         fsGroup: 999
+      tolerations:
+        - key: "dedicated"
+          value: "cassandra"
+          operator: "Equal"
+          effect: "NoExecute"
       containers:
         - name: cassandra-stress
           image: mesosphere/cassandra:3.11.6-1.0.0
@@ -57,6 +62,6 @@ spec:
               echo "Not the first instance, sleep for 30 seconds to allow schema creation to settle through cluster";
               sleep 30;
               fi;
-              /opt/cassandra/tools/bin/cassandra-stress write duration={{ .Params.DURATION }} cl={{ .Params.CONSISTENCY_LEVEL }} -pop seq=$POP_STRING -node {{ .Params.TARGET_HOST }} -schema keyspace="$KEYSPACE" "replication({{ .Params.REPLICATION_STRING }})" -rate 'threads={{ .Params.THREADS_PER_CLIENT }}' -graph file={{ .Params.GRAPH_FILE }} title={{ $.Name }} -errors ignore;
+              /opt/cassandra/tools/bin/cassandra-stress write duration={{ .Params.DURATION }} cl={{ .Params.CONSISTENCY_LEVEL }} -pop seq=$POP_STRING -node {{ .Params.TARGET_HOST }} -schema keyspace="$KEYSPACE" "replication({{ .Params.REPLICATION_STRING }})" -rate 'threads={{ .Params.THREADS_PER_CLIENT }}' -graph file={{ .Params.GRAPH_FILE }} title={{ $.Name }} -errors ignore -mode native cql3 connectionsPerHost=5 maxPending=64;
               echo "Finished Cassandra Stress";
               sleep infinity

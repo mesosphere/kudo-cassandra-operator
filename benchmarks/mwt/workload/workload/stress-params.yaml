@@ -1,5 +1,7 @@
-PARALLEL: 2
-DURATION: 1m
+NUM_CLIENTS: 120
+DURATION: 10m
+THREADS_PER_CLIENT: 500
 TARGET_HOST: cassandra-dc1-node-0.cassandra-svc.cassandra.svc.cluster.local
-KEYSPACE_NAME: "stress1"
-REPLICATION_STRING: "strategy=NetworkTopologyStrategy, dc1=1, dc2=1"
+KEYSPACE_NAME: "stress6"
+CONSISTENCY_LEVEL: "LOCAL_ONE"
+REPLICATION_STRING: "strategy=NetworkTopologyStrategy, datacenter1=1"

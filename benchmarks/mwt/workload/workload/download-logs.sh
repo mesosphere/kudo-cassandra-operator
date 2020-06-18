@@ -3,7 +3,7 @@ set -e
 
 kudo_cassandra_instance_namespace="cassandra"
 workload_name="cassandra-stress"
-num_clients=5
+num_clients=$1
 
 pods=`kubectl get pods -n "${kudo_cassandra_instance_namespace}" | grep "${workload_name}" | awk '{print $1}'`
 
