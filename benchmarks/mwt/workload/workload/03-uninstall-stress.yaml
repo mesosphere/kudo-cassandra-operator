@@ -1,0 +1,9 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+  - command: kubectl kudo uninstall --instance cassandra-stress --namespace cassandra
+    ignoreFailure: false
+  - command: kubectl delete operatorversion cassandra-stress-0.1.0 --namespace cassandra
+    ignoreFailure: true
+  - command: kubectl delete operator cassandra-stress --namespace cassandra
+    ignoreFailure: true

@@ -1,0 +1,50 @@
+apiVersion: kudo.dev/v1beta1
+parameters:
+  - name: TARGET_HOST
+    description: "A cassandra node that is used by cassandra stress"
+    required: true
+
+  - name: NUM_CLIENTS
+    description: "Number of Cassandra Stress clients to start"
+    default: "3"
+
+  - name: THREADS_PER_CLIENT
+    description: "Number of threads per client"
+    default: 10
+
+  - name: KEYSPACE_NAME
+    description: "The name of the keyspace where data is generated in. Should be different for separate workload runs"
+    default: "stress1"
+
+  - name: DURATION
+    description: "The duration for which cassandra-stress will generate load"
+    default: 5m
+
+  - name: GRAPH_FILE
+    description: "The name of the file where graph data is stored"
+    default: "/tmp/graphdata.html"
+
+  - name: CONSISTENCY_LEVEL
+    description: "The consistency level of the new keyspace. Must be one of ONE, LOCAL_ONE, etc. https://docs.datastax.com/en/cql-oss/3.x/cql/cql_reference/cqlshConsistency.html"
+    default: "ONE"
+
+  - name: REPLICATION_STRING
+    description: "The replication string for the key space"
+    default: "strategy=SimpleStrategy, replication_factor=1"
+
+  - name: STRESS_CPU_MC
+    description: "CPU request (in millicores) for the stress node containers."
+    default: "900"
+
+  - name: STRESS_CPU_LIMIT_MC
+    description: "CPU limit (in millicores) for the stress node containers."
+    default: "1500"
+
+  - name: STRESS_MEM_MIB
+    description: "Memory request (in MiB) for the stress node containers."
+    default: "2048"
+
+  - name: STRESS_MEM_LIMIT_MIB
+    description: "Memory limit (in MiB) for the stress node containers."
+    default: "3192"
+

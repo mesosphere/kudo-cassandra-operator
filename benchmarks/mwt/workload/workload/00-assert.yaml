@@ -1,12 +1,11 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestAssert
-timeout: 600
+timeout: 900
 ---
-
 apiVersion: kudo.dev/v1beta1
 kind: Instance
 metadata:
-  name: cassandra
+  name: cassandra-stress
   namespace: cassandra
 status:
   planStatus:
