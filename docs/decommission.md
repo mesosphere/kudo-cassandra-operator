@@ -1,8 +1,8 @@
 # Decommission KUDO Cassandra nodes
 
-KUDO Cassandra doesn't provide an automated way to scale down the Cassandra
-cluster, as this is a critical operation that shouldn't be repeated frequently.
-And to avoid KUDO Cassandra users falling in anti-patterns when managing an
+KUDO Cassandra does not provide an automated way to scale down the Cassandra
+cluster, as this is a critical operation that should not be repeated frequently,
+and to discourage anti-patterns when managing an
 Apache Cassandra cluster.
 
 ## Manually decommissioning KUDO Cassandra nodes
@@ -40,4 +40,4 @@ kubectl kudo update -p NODE_COUNT=4 --instance analytics-cassandra -n dev
 
 Once the update plan is complete, we can delete the PVC that was attached to the
 KUDO Cassandra `pod/analytics-cassandra-node-4`. Not deleting or cleaning the
-PVC will result in issues when scaling up the cluster next time.
+PVC will result in issues when scaling the cluster up next time.
