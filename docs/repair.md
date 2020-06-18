@@ -1,7 +1,8 @@
 # Repair KUDO Cassandra
 
-KUDO Cassandra comes with a repair plan. Which can be triggered using `REPAIR_POD` parameter
-Let's see with an example of a 3 node cluster 
+KUDO Cassandra comes with a repair plan. Which can be triggered using
+`REPAIR_POD` parameter Let's see with an example of a 3 node cluster
+
 ```
 kubectl get pods
 NAME                                       READY   STATUS      RESTARTS   AGE
@@ -9,6 +10,7 @@ cassandra-instance-node-0                  1/1     Running     0          4m44s
 cassandra-instance-node-1                  1/1     Running     0          4m7s
 cassandra-instance-node-2                  1/1     Running     1          3m25s
 ```
+
 we can repair the node-0 by running
 
 ```
@@ -47,6 +49,7 @@ Plan(s) for "cassandra-instance" in namespace "default":
 ```
 
 And to fetch the logs of the repair job we can get logs of the job.
+
 ```
 kubectl logs --selector job-name=cassandra-instance-node-repair-job
 I0618 11:18:06.389132       1 request.go:621] Throttling request took 1.154911388s, request: GET:https://10.0.0.1:443/apis/scheduling.kubefed.io/v1alpha1?timeout=32s
