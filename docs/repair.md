@@ -3,7 +3,7 @@
 KUDO Cassandra comes with a repair plan. It can be triggered using the
 `REPAIR_POD` parameter.
 
- Let's see with an example of a 3 node cluster
+Let's see with an example of a 3 node cluster
 
 ```
 kubectl get pods

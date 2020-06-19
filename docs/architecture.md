@@ -16,8 +16,9 @@ parameters.
 
 ## Multi-Datacenter Architecture
 
-KUDO Cassandra can span a ring across multiple kubernetes clusters, to facilitate the
-deployment across various regions and zones. Read more about multidataceneter
-configuration options in the [multi-dataceneter](./multidataceneter.md) docs.
+KUDO Cassandra can span a ring across multiple kubernetes clusters, to
+facilitate the deployment across various regions and zones. Read more about
+multidataceneter configuration options in the
+[multi-dataceneter](./multidataceneter.md) docs.
 
 ![](images/multi-dc-arch.png)

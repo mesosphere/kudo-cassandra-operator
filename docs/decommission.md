@@ -2,8 +2,7 @@
 
 KUDO Cassandra does not provide an automated way to scale down the Cassandra
 cluster, as this is a critical operation that should not be repeated frequently,
-and to discourage anti-patterns when managing an
-Apache Cassandra cluster.
+and to discourage anti-patterns when managing an Apache Cassandra cluster.
 
 ## Manually decommissioning KUDO Cassandra nodes
 
