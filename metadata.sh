@@ -44,6 +44,8 @@ export KUDO_VERSION="0.13.0"
 
 export KUBERNETES_VERSION="1.15.0"
 
+export JOLOKIA_VERSION="1.6.2"
+
 export CASSANDRA_EXPORTER_DOCKER_IMAGE="criteord/cassandra_exporter"
 export CASSANDRA_EXPORTER_VERSION="2.3.4"
 

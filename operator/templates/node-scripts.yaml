@@ -15,14 +15,13 @@ data:
     nodetool {{ $auth_params }} drain
     {{ end }}
   node-readiness-probe.sh: |
-    # If we can connect with cqlsh we're ready to serve requests
-    cqlsh -e "SELECT uuid() FROM system.local" > /dev/null
+    IS_NATIVE_TRANSPORT_RUNNING=`curl -s localhost:{{ $.Params.JOLOKIA_PORT }}/jolokia/read/org.apache.cassandra.db:type=StorageService/NativeTransportRunning | jq .value`
+    echo "Native Transport Running: $IS_NATIVE_TRANSPORT_RUNNING"
+    [[ $IS_NATIVE_TRANSPORT_RUNNING == "true" ]]
   node-liveness-probe.sh: |
-    {{ if ne $.Params.JMX_LOCAL_ONLY "true" }}
-    nodetool {{ $auth_params }}  -p {{ .Params.JMX_PORT }} --ssl info
-    {{ else }}
-    nodetool {{ $auth_params }} -p {{ .Params.JMX_PORT }} info
-    {{ end }}
+    DEADLOCKED_THREADS=`curl -s localhost:{{ $.Params.JOLOKIA_PORT }}/jolokia/exec/java.lang:type=Threading/findDeadlockedThreads | jq .value`
+    echo "Deadlocked Threads: $DEADLOCKED_THREADS"
+    [[ $DEADLOCKED_THREADS == "null" ]]
   generate-rackdc-properties.sh: |
     # Generate the rackdc-properties
     RACK=`kubectl get node -L$RACKLABEL | grep ${NODE_NAME} | awk '{print $6}'`
