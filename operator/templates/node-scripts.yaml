@@ -16,8 +16,9 @@ data:
     {{ end }}
   node-readiness-probe.sh: |
     IS_NATIVE_TRANSPORT_RUNNING=`curl -s localhost:{{ $.Params.JOLOKIA_PORT }}/jolokia/read/org.apache.cassandra.db:type=StorageService/NativeTransportRunning | jq .value`
-    echo "Native Transport Running: $IS_NATIVE_TRANSPORT_RUNNING"
-    [[ $IS_NATIVE_TRANSPORT_RUNNING == "true" ]]
+    IS_NODE_LIVE=`curl -s localhost:{{ $.Params.JOLOKIA_PORT }}/jolokia/read/org.apache.cassandra.db:type=StorageService/LiveNodes | jq .value | grep -E ${POD_IP}`
+    echo "Native Transport Running: $IS_NATIVE_TRANSPORT_RUNNING, Live Node: $IS_NODE_LIVE (Expecting ${POD_IP})"
+    [[ $IS_NATIVE_TRANSPORT_RUNNING == "true" ]] && [[ $IS_NODE_LIVE != "" ]]
   node-liveness-probe.sh: |
     DEADLOCKED_THREADS=`curl -s localhost:{{ $.Params.JOLOKIA_PORT }}/jolokia/exec/java.lang:type=Threading/findDeadlockedThreads | jq .value`
     echo "Deadlocked Threads: $DEADLOCKED_THREADS"
