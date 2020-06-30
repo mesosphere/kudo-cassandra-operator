@@ -126,6 +126,10 @@ parameters:
     description: "When a node replace is done, try to connect to the old node and shut it down before starting up the old node"
     default: false
 
+  - name: JOLOKIA_PORT
+    description: "The internal port for the Jolokia Agent. This port is not exposed, but can be changed if it conflicts with another port."
+    default: 7777
+
   ################################################################################
   ########################## Backup and Restore settings #########################
   ################################################################################
