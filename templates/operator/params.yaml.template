@@ -876,7 +876,7 @@ parameters:
 
   - name: KUBECTL_VERSION
     description: "Version of 'bitnami/kubectl' image. This image is used for some functionality of the operator."
-    default: "1.18.2"
+    default: "1.18.4"
 
   ################################################################################
   ################################ JVM Options ###################################

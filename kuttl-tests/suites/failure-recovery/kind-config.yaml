@@ -2,10 +2,10 @@ kind: Cluster
 apiVersion: kind.sigs.k8s.io/v1alpha3
 nodes:
   - role: control-plane
-    image: kindest/node:v1.17.2
+    image: kindest/node:v1.18.4@sha256:d8ff5fc405fc679dd3dd0cccc01543ba4942ed90823817d2e9e2c474a5343c4f
   - role: worker
-    image: kindest/node:v1.17.2
+    image: kindest/node:v1.18.4@sha256:d8ff5fc405fc679dd3dd0cccc01543ba4942ed90823817d2e9e2c474a5343c4f
   - role: worker
-    image: kindest/node:v1.17.2
+    image: kindest/node:v1.18.4@sha256:d8ff5fc405fc679dd3dd0cccc01543ba4942ed90823817d2e9e2c474a5343c4f
   - role: worker
-    image: kindest/node:v1.17.2
+    image: kindest/node:v1.18.4@sha256:d8ff5fc405fc679dd3dd0cccc01543ba4942ed90823817d2e9e2c474a5343c4f
