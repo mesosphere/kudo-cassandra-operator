@@ -1,6 +1,6 @@
 KUDO_VERSION=0.13.0
 KUTTL_VERSION=0.5.0
-KUBERNETES_VERSION=1.18.2
+KUBERNETES_VERSION=1.18.4
 KIND_VERSION=0.8.1
 
 OS=$(shell uname -s | tr '[:upper:]' '[:lower:]')
