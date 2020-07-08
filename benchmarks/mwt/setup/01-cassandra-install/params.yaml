@@ -1,0 +1,34 @@
+OVERRIDE_CLUSTER_NAME: "MWT"
+NODE_READINESS_PROBE_INITIAL_DELAY_S: 30
+JMX_LOCAL_ONLY: true
+NODE_DISK_SIZE_GIB: 90
+NODE_CPU_MC: "6000"
+NODE_CPU_LIMIT_MC: "7000"
+NODE_MEM_MIB: "20000"
+NODE_MEM_LIMIT_MIB: "22000"
+NODE_ANTI_AFFINITY: "true"
+PROMETHEUS_EXPORTER_ENABLED: "true"
+SERVICE_ACCOUNT_INSTALL: "true"
+NODE_TOLERATIONS: |-
+  - key: "dedicated"
+    value: "cassandra"
+    operator: "Equal"
+    effect: "NoExecute"
+ENDPOINT_SNITCH: "GossipingPropertyFileSnitch"
+NODE_TOPOLOGY: |-
+  - datacenter: dc1
+    datacenterLabels:
+      dedicated: cassandra
+    nodes: 15
+    rackLabelKey: failure-domain.beta.kubernetes.io/region
+    racks:
+      - rack: rack1
+        rackLabelValue: us-west-2
+  - datacenter: dc2
+    datacenterLabels:
+      dedicated: cassandra
+    nodes: 15
+    rackLabelKey: failure-domain.beta.kubernetes.io/region
+    racks:
+      - rack: rack1
+        rackLabelValue: us-west-2

@@ -9,8 +9,34 @@ import http.client
 import json
 import logging
 import os.path as path
+import re
 import subprocess
 import uuid
+
+SEMVER_MAJOR_MINOR_PATTERN = re.compile(r"(0|[1-9]\d*)\.(0|[1-9]\d*)")
+
+# https://regex101.com/r/vkijKf/1/
+SEMVER_PATTERN = re.compile(
+    r"(0|[1-9]\d*)"
+    r"\.(0|[1-9]\d*)"
+    r"\.(0|[1-9]\d*)"
+    r"(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?"
+    r"(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?"
+)
+
+OPERATOR_VERSION_PATTERN = SEMVER_PATTERN
+
+# Assuming APP_VERSION follows SemVer for now.
+APP_VERSION_PATTERN = SEMVER_PATTERN
+
+# Assuming APP_VERSION follows SemVer for now.
+APP_VERSION_MAJOR_MINOR_PATTERN = SEMVER_MAJOR_MINOR_PATTERN
+
+VERSION_PATTERN = re.compile(
+    f"{APP_VERSION_PATTERN.pattern}-{OPERATOR_VERSION_PATTERN.pattern}"
+)
+
+RELEASE_TAG_PATTERN = re.compile(f"v{VERSION_PATTERN.pattern}")
 
 
 log = logging.getLogger(__name__)

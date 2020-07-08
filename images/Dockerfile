@@ -9,10 +9,14 @@ FROM cassandra:3.11.6
 
 RUN set -eux; \
   apt-get update; \
-  apt-get install -y --no-install-recommends libcap2-bin; \
-    echo "/opt/java/openjdk/lib/amd64/" >> /etc/ld.so.conf.d/java.conf; \
-    echo "/opt/java/openjdk/lib/amd64/jli" >> /etc/ld.so.conf.d/java.conf; \
-    ldconfig; \
+  apt-get install -y --no-install-recommends libcap2-bin jq; \
+  curl -Lo /etc/jolokia.tar.gz https://github.com/rhuss/jolokia/releases/download/v1.6.2/jolokia-1.6.2-bin.tar.gz; \
+  tar xvfz /etc/jolokia.tar.gz; \
+  mv jolokia-1.6.2/agents/jolokia-jvm.jar /etc/jolokia-agent.jar; \
+  rm -rf jolokia-1.6.2; \
+  echo "/opt/java/openjdk/lib/amd64/" >> /etc/ld.so.conf.d/java.conf; \
+  echo "/opt/java/openjdk/lib/amd64/jli" >> /etc/ld.so.conf.d/java.conf; \
+  ldconfig; \
   # Setting this capability will cause running the Java binary to not be
   # "recognized" when the Cassandra binary is run in a container without
   # IPC_LOCK capabilities, showing a message like "Cassandra 3.0 and later

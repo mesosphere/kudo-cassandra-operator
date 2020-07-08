@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ $.Name }}
+  namespace: {{ $.Namespace }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ $.Name }}
+      cassandra-stress: {{ $.OperatorName }}
+  serviceName: {{ $.Name }}-stress-svc
+  replicas: {{ .Params.NUM_CLIENTS }}
+  podManagementPolicy: Parallel
+  template:
+    metadata:
+      labels:
+        app: {{ $.Name }}
+        cassandra-stress: {{ $.OperatorName }}
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+        runAsGroup: 999
+        fsGroup: 999
+      tolerations:
+        - key: "dedicated"
+          value: "cassandra"
+          operator: "Equal"
+          effect: "NoExecute"
+      containers:
+        - name: cassandra-stress
+          image: mesosphere/cassandra:3.11.6-1.0.0
+          resources:
+            requests:
+              cpu: {{ .Params.STRESS_CPU_MC }}m
+              memory: {{ .Params.STRESS_MEM_MIB }}Mi
+            limits:
+              cpu: {{ .Params.STRESS_CPU_LIMIT_MC }}m
+              memory: {{ .Params.STRESS_MEM_LIMIT_MIB }}Mi
+          securityContext:
+            capabilities:
+              add:
+                - IPC_LOCK
+                - SYS_RESOURCE
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+          command:
+            - /bin/bash
+            - -c
+          args:
+            - set -x;
+              export POD_ID=`echo $POD_NAME | sed -n -e 's/{{ $.Name }}-\([0-9]\{1,4\}\)$/\1/p'`;
+              echo "Pod ID $POD_ID";
+              export POP_STRING="${POD_ID}000001..$((POD_ID+1))000000";
+              echo "Population String $POP_STRING";
+              export KEYSPACE=`echo {{ .Params.KEYSPACE_NAME }} | tr -cd '[:alnum:]_' | cut -c 1-32`;
+              echo "Using Keyspace $KEYSPACE";
+              if [[ $$POD_ID != "0" ]]; then
+              echo "Not the first instance, sleep for 30 seconds to allow schema creation to settle through cluster";
+              sleep 30;
+              fi;
+              /opt/cassandra/tools/bin/cassandra-stress write duration={{ .Params.DURATION }} cl={{ .Params.CONSISTENCY_LEVEL }} -pop seq=$POP_STRING -node {{ .Params.TARGET_HOST }} -schema keyspace="$KEYSPACE" "replication({{ .Params.REPLICATION_STRING }})" -rate 'threads={{ .Params.THREADS_PER_CLIENT }}' -graph file={{ .Params.GRAPH_FILE }} title={{ $.Name }} -errors ignore -mode native cql3 connectionsPerHost=5 maxPending=64;
+              echo "Finished Cassandra Stress";
+              sleep infinity
