@@ -7,7 +7,7 @@ require (
 	github.com/google/uuid v1.1.1
 	github.com/imdario/mergo v0.3.8 // indirect
 	github.com/jstemmer/go-junit-report v0.9.1 // indirect
-	github.com/kudobuilder/kudo v0.13.0
+	github.com/kudobuilder/kudo v0.15.0-rc1
 	github.com/kudobuilder/test-tools v0.5.0
 	github.com/onsi/ginkgo v1.12.0
 	github.com/onsi/gomega v1.9.0
@@ -16,12 +16,8 @@ require (
 	github.com/thoas/go-funk v0.6.0
 	golang.org/x/time v0.0.0-20190921001708-c4c64cad1fd0 // indirect
 	gopkg.in/yaml.v2 v2.3.0
-	k8s.io/api v0.17.6
-	k8s.io/apimachinery v0.17.6
+	k8s.io/api v0.18.4
+	k8s.io/apimachinery v0.18.4
 )
 
-replace k8s.io/api => k8s.io/api v0.17.4
-
-replace k8s.io/apimachinery => k8s.io/apimachinery v0.17.4
-
-replace k8s.io/client-go => k8s.io/client-go v0.17.4
+replace github.com/kudobuilder/test-tools v0.5.0 => github.com/kudobuilder/test-tools v0.6.1-0.20200708162125-48510fdcc00f
