@@ -3,7 +3,7 @@ kind: TestSuite
 manifestDirs:
   - ./manifests/
 commands:
-  - command: ./bin/kubectl-kudo init
+  - command: ./bin/kubectl-kudo init --unsafe-self-signed-webhook-ca
 testDirs:
   - ./suites/failure-recovery
 startKIND: true
