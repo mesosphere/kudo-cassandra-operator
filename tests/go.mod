@@ -20,4 +20,4 @@ require (
 	k8s.io/apimachinery v0.18.4
 )
 
-replace github.com/kudobuilder/test-tools v0.5.0 => github.com/kudobuilder/test-tools v0.6.1-0.20200708162125-48510fdcc00f
+replace github.com/kudobuilder/test-tools v0.5.0 => github.com/kudobuilder/test-tools v0.6.1-0.20200709142100-a76842c52ba2
