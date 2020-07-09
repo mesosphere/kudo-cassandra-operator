@@ -42,7 +42,7 @@ export CASSANDRA_VERSION="3.11.6"
 # https://github.com/kudobuilder/kudo/releases/tag/vx.y.z
 export KUDO_VERSION="0.15.0-rc1"
 
-export KUBERNETES_VERSION="1.18.0"
+export KUBERNETES_VERSION="1.16.0"
 
 export JOLOKIA_VERSION="1.6.2"
 
