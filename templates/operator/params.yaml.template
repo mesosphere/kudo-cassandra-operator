@@ -210,11 +210,11 @@ parameters:
     type: array
 
   - name: NODE_ANTI_AFFINITY
-    description: "Ensure that every Cassandra node is deployed on separate hosts"
+    description: "Ensure that every Cassandra node is deployed on separate hosts."
     default: "false"
 
   - name: SERVICE_ACCOUNT_INSTALL
-    description: "This flag can be set to true to automatic installation of a cluster role, service account and role binding"
+    description: "This flag can be set to true to automatic installation of a cluster role, service account and role binding."
     default: "false"
 
   - name: EXTERNAL_SEED_NODES
@@ -227,7 +227,7 @@ parameters:
   ################################################################################
 
   - name: PROMETHEUS_EXPORTER_ENABLED
-    description: "A toggle to enable the prometheus metrics exporter"
+    description: "A toggle to enable the prometheus metrics exporter."
     default: "false"
 
   - name: PROMETHEUS_EXPORTER_PORT
