@@ -113,11 +113,6 @@ parameters:
     description: "The external port to use for Cassandra rpc protocol."
     default: "9160"
 
-  - name: MAX_UNAVAILABLE_NODES
-    displayName: "Max number of nodes that can be unavailable"
-    description: "Maximum number of nodes that are allowed to be down, either for restarts or from unscheduled outage. See PodDisruptionBudget"
-    default: 1
-
   - name: BOOTSTRAP_TIMEOUT
     description: "Timeout for the bootstrap binary to join the cluster with the new IP. Valid time units are 'ns', 'us', 'ms', 's', 'm', 'h'."
     default: "12h30m"
