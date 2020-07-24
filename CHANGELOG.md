@@ -6,7 +6,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [3.11.6-1.0.1] - 2020-07-24
+
+### Changed
+
+- Fix warnings when running 'kubectl kudo package verify'
+  ([#157](https://github.com/mesosphere/kudo-cassandra-operator/pull/157))
+- Use Toggle Task for deployment of Cassandra exporter
+  ([#140](https://github.com/mesosphere/kudo-cassandra-operator/pull/140))
+- Rework Readiness and Liveness Probes
+  ([#155](https://github.com/mesosphere/kudo-cassandra-operator/pull/155))
+
+### Added
+
+- Add architecture/repair/decommission docs
+  ([#154](https://github.com/mesosphere/kudo-cassandra-operator/pull/154))
+- Create simple Operator for Workload generation
+  ([#151](https://github.com/mesosphere/kudo-cassandra-operator/pull/151))
+- Allow definition of node tolerations for tainted k8s nodes
+  ([#153](https://github.com/mesosphere/kudo-cassandra-operator/pull/153))
+- Add resources and production docs
+  ([#126](https://github.com/mesosphere/kudo-cassandra-operator/pull/126))
+- Add v1 dashboard
+  ([#141](https://github.com/mesosphere/kudo-cassandra-operator/pull/141))
 
 ## [3.11.6-1.0.0] - 2020-06-04
 
