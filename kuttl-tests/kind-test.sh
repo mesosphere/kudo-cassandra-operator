@@ -18,9 +18,9 @@ ARTIFACTS=kuttl-dist
 OS=$(uname -s | tr '[:upper:]' '[:lower:]')
 KUDO_MACHINE=$(uname -m)
 MACHINE=$(uname -m)
-ifeq "${MACHINE}" "x86_64"
+if [ "${MACHINE}" == "x86_64" ]; then
   MACHINE=amd64
-endif
+fi
 
 mkdir -p bin/
 
