@@ -3,7 +3,7 @@ lint:
 	golangci-lint run
 
 .PHONY: kind-test
-kind-test:
+kind-test: render-test-templates
 	./kind-test.sh
 
 .PHONY: clean
