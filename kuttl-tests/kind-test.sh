@@ -15,10 +15,10 @@ KIND_VERSION=0.8.1
 
 ARTIFACTS=kuttl-dist
 
-OS=$(shell uname -s | tr '[:upper:]' '[:lower:]')
-KUDO_MACHINE=$(shell uname -m)
-MACHINE=$(shell uname -m)
-ifeq "$(MACHINE)" "x86_64"
+OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+KUDO_MACHINE=$(uname -m)
+MACHINE=$(uname -m)
+ifeq "${MACHINE}" "x86_64"
   MACHINE=amd64
 endif
 
