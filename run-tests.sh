@@ -33,7 +33,7 @@ docker run \
        --rm \
        -e "KUBECONFIG=${container_kubeconfig}" \
        -e "KUBECTL_PATH=${container_vendor_directory}/kubectl.sh"  \
-       -e "DS_KUDO_VERSION=v${KUDO_VERSION}" \
+       -e "DS_KUDO_VERSION=${DS_KUDO_VERSION}" \
        -e "OPERATOR_DIRECTORY=${container_operator_directory}" \
        -e "VENDOR_DIRECTORY=${container_vendor_directory}" \
        -e "IMAGE_DISAMBIGUATION_SUFFIX=${IMAGE_DISAMBIGUATION_SUFFIX:-}" \
