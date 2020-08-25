@@ -20,7 +20,7 @@ export OPERATOR_NAME="cassandra"
 # More details about KUDO Versioning:
 # https://github.com/kudobuilder/kudo/pull/1028
 # NOTE: Keep the version in tests in sync, see https://github.com/mesosphere/kudo-cassandra-operator/issues/136
-export OPERATOR_VERSION="1.0.1"
+export OPERATOR_VERSION="1.0.2"
 
 # This should be an empty string on stable branches and "-SNAPSHOT" on
 # non-stable branches.
@@ -37,10 +37,10 @@ export VENDOR_DIRECTORY="${_project_directory}/shared/vendor"
 # https://hub.docker.com/_/cassandra
 # https://github.com/docker-library/cassandra/blob/master/3.11/Dockerfile
 # NOTE: Keep the version in tests in sync, see https://github.com/mesosphere/kudo-cassandra-operator/issues/136
-export CASSANDRA_VERSION="3.11.6"
+export CASSANDRA_VERSION="3.11.7"
 
 # https://github.com/kudobuilder/kudo/releases/tag/vx.y.z
-export KUDO_VERSION="0.15.0-rc1"
+export KUDO_VERSION="0.16.0"
 
 export KUBERNETES_VERSION="1.16.0"
 
