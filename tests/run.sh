@@ -10,11 +10,8 @@ source "${project_directory}/metadata.sh"
 
 # Note: the following environment variables are required by the shared
 # data-services-kudo tooling.
-export DS_KUDO_VERSION="${DS_KUDO_VERSION:-v${KUDO_VERSION}}"
 export KUBECONFIG="${KUBECONFIG:-${HOME}/.kube/config}"
 export KUBECTL_PATH="${KUBECTL_PATH:-${VENDOR_DIRECTORY}/kubectl.sh}"
-export OPERATOR_DIRECTORY="${OPERATOR_DIRECTORY:-${project_directory}/operator}"
-export VENDOR_DIRECTORY="${VENDOR_DIRECTORY:-${project_directory}/shared/vendor}"
 
 # Tests that take longer than this in seconds are marked as slow
 export GINKO_SLOW_TEST_THRESHOLD=240

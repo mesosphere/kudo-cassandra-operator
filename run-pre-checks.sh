@@ -38,6 +38,8 @@ docker run \
 mkdir -p "${artifacts_directory}"/kuttl-dist
 echo "Saving KUTTL artifacts to ${artifacts_directory}/kuttl-dist"
 
+# Note: DS_KUDO_VERSION is used by the shared data-services-kudo tooling.
+
 # run KUTTL tests in ./kuttl-tests directory
 docker run \
   --rm \
@@ -45,6 +47,7 @@ docker run \
   -v "${artifacts_directory}/kuttl-dist:${project_directory}/kuttl-tests/kuttl-dist" \
   -w "${project_directory}"/kuttl-tests \
   --env-file <(env | grep BUILD_VCS_NUMBER_) \
+  -e "DS_KUDO_VERSION=${DS_KUDO_VERSION}" \
   --privileged --network host -v /var/run/docker.sock:/var/run/docker.sock \
   "${INTEGRATION_TESTS_DOCKER_IMAGE}" \
   bash -c "make kind-test"
