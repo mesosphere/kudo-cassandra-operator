@@ -5,7 +5,7 @@ RUN  apt-get update && apt-get install ca-certificates
 ENV GO111MODULE=on
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o bootstrap
 
-FROM cassandra:3.11.6
+FROM cassandra:3.11.7
 
 RUN set -eux; \
   apt-get update; \

@@ -1,9 +1,9 @@
 apiVersion: kudo.dev/v1beta1
 name: "cassandra"
-operatorVersion: "1.0.1"
-kudoVersion: "0.15.0-rc1"
+operatorVersion: "1.0.2"
+kudoVersion: "0.16.0"
 kubernetesVersion: "1.16.0"
-appVersion: "3.11.6"
+appVersion: "3.11.7"
 maintainers:
   - name: Zain Malik
     email: zmalik@D2iQ.com
