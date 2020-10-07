@@ -1,84 +1,178 @@
 apiVersion: kudo.dev/v1beta1
+groups:
+  - name: general
+    displayName: "General Settings"
+
+  - name: liveness-checks
+    displayName: "Liveness checks"
+    description: "Parameters to configure the liveness of a Cassandra Node. When a Node fails liveness checks, it is automatically restarted by Kubernetes"
+
+  - name: readiness-checks
+    displayName: "Readiness checks"
+    description: "Parameters to configure the readiness of a Cassandra Node. When a Node fails readiness checks, it is automatically removed from the service by Kubernetes"
+
+  - name: backup
+    displayName: "Backup and Restore"
+    description: "Configuration related to backup and restore of the Cassandra Cluster"
+
+
 parameters:
   ################################################################################
   ############################### Operator settings ##############################
   ################################################################################
 
   - name: NODE_COUNT
-    description: "Number of Cassandra nodes."
+    description: "The number of Cassandra nodes to create for the cluster. Should be an odd number of nodes and at least 3 to create a useful quorum."
     default: "3"
+    displayName: "Node Count"
+    hint: "Number of Cassandra nodes"
+    type: integer
+    group: general
 
   - name: NODE_CPU_MC
     description: "CPU request (in millicores) for the Cassandra node containers."
     default: "1000"
+    displayName: "CPU"
+    hint: "Allowed CPU usage in millicores"
+    type: integer
+    group: general
 
   - name: NODE_CPU_LIMIT_MC
     description: "CPU limit (in millicores) for the Cassandra node containers."
     default: "1000"
+    displayName: "CPU Limit"
+    hint: "Temporary allowed CPU limit in millicores"
+    type: integer
+    group: general
 
   - name: NODE_MEM_MIB
     description: "Memory request (in MiB) for the Cassandra node containers."
     default: "4096"
+    displayName: "Memory"
+    hint: "Allowed Memory usage in MiB"
+    type: integer
+    group: general
 
   - name: NODE_MEM_LIMIT_MIB
     description: "Memory limit (in MiB) for the Cassandra node containers."
     default: "4096"
+    displayName: "Memory Limit"
+    hint: "Temporary allowed Memory limit in MiB"
+    type: integer
+    group: general
 
   - name: NODE_DISK_SIZE_GIB
     description: "Disk size (in GiB) for the Cassandra node containers."
     default: "20"
+    displayName: "Disk Size"
+    hint: "Peristent memory in GiB"
+    type: integer
+    group: general
 
   - name: NODE_STORAGE_CLASS
     description: "The storage class to be used in volumeClaimTemplates. By default, it is not required and the default storage class is used."
     required: false
+    advanced: true
+    group: general
+    displayName: "Storage Class"
 
   - name: NODE_DOCKER_IMAGE
     description: "Cassandra node Docker image."
     default: "${CASSANDRA_DOCKER_IMAGE}"
+    advanced: true
+    group: general
+    displayName: "Main Docker Image"
 
   - name: NODE_DOCKER_IMAGE_PULL_POLICY
     description: "Cassandra node Docker image pull policy."
     default: "Always"
+    advanced: true
+    group: general
+    displayName: "Main Docker Image Pull Policy"
+    enum:
+      - "Always"
+      - "IfNotPresent"
+      - "Never"
 
   - name: NODE_READINESS_PROBE_INITIAL_DELAY_S
     description: "Number of seconds after the container has started before the readiness probe is initiated."
     default: "0"
+    type: integer
+    displayName: "Initial Delay"
+    hint: "Number of seconds"
+    group: readiness-checks
 
   - name: NODE_READINESS_PROBE_PERIOD_S
     description: "How often (in seconds) to perform the readiness probe."
     default: "5"
+    type: integer
+    displayName: "Repeat Period"
+    hint: "Number of seconds"
+    group: readiness-checks
 
   - name: NODE_READINESS_PROBE_TIMEOUT_S
     description: "How long (in seconds) to wait for a readiness probe to succeed."
     default: "60"
+    type: integer
+    displayName: "Timeout"
+    hint: "Number of seconds"
+    group: readiness-checks
 
   - name: NODE_READINESS_PROBE_SUCCESS_THRESHOLD
     description: "Minimum consecutive successes for the readiness probe to be considered successful after having failed."
     default: "1"
+    type: integer
+    displayName: "Success Threshold"
+    hint: "Number of successes after failure"
+    group: readiness-checks
 
   - name: NODE_READINESS_PROBE_FAILURE_THRESHOLD
     description: "When a pod starts and the readiness probe fails, `failure_threshold` attempts will be made before marking the pod as 'unready'."
     default: "3"
+    type: integer
+    displayName: "Failure Threshold"
+    hint: "Number of failures"
+    group: readiness-checks
 
   - name: NODE_LIVENESS_PROBE_INITIAL_DELAY_S
     description: "Number of seconds after the container has started before the liveness probe is initiated."
     default: "15"
+    type: integer
+    displayName: "Initial Delay"
+    hint: "Number of seconds"
+    group: liveness-checks
 
   - name: NODE_LIVENESS_PROBE_PERIOD_S
     description: "How often (in seconds) to perform the liveness probe."
     default: "20"
+    type: integer
+    displayName: "Repeat Period"
+    hint: "Number of seconds"
+    group: liveness-checks
 
   - name: NODE_LIVENESS_PROBE_TIMEOUT_S
     description: "How long (in seconds) to wait for a liveness probe to succeed."
     default: "60"
+    type: integer
+    displayName: "Timeout"
+    hint: "Number of seconds"
+    group: liveness-checks
 
   - name: NODE_LIVENESS_PROBE_SUCCESS_THRESHOLD
     description: "Minimum consecutive successes for the liveness probe to be considered successful after having failed."
     default: "1"
+    type: integer
+    displayName: "Success Threshold"
+    hint: "Number of successes after failure"
+    group: liveness-checks
 
   - name: NODE_LIVENESS_PROBE_FAILURE_THRESHOLD
     description: "When a pod starts and the liveness probe fails, `failure_threshold` attempts will be made before restarting the pod."
     default: "3"
+    type: integer
+    displayName: "Failure Threshold"
+    hint: "Number of failures"
+    group: liveness-checks
 
   - name: NODE_TOLERATIONS
     description: A list of kubernetes tolerations to let pods get scheduled on tainted nodes
@@ -131,53 +225,78 @@ parameters:
 
   - name: BACKUP_RESTORE_ENABLED
     description: "Global flag that enables the medusa sidecar for backups"
+    type: boolean
+    group: backup
+    displayName: "Enable Backup and Restore"
     default: "false"
 
   - name: BACKUP_TRIGGER
     description: "Trigger parameter to start a backup. Simply needs to be changed from the current value to start a backup"
     default: "1"
+    group: backup
     trigger: backup
 
   - name: BACKUP_AWS_CREDENTIALS_SECRET
     description: If set, can be used to provide the access_key, secret_key and security_token with a secret
     required: false
+    group: backup
 
   - name: BACKUP_AWS_S3_BUCKET_NAME
     description: The name of the AWS S3 bucket to store the backups
     required: false
+    group: backup
 
   - name: BACKUP_AWS_S3_STORAGE_PROVIDER
     description: Should be one of the s3_* values from https://github.com/apache/libcloud/blob/trunk/libcloud/storage/types.py
     required: false
     default: s3_us_west_oregon
+    group: backup
 
   - name: BACKUP_PREFIX
     description: A prefix to be used inside the S3 bucket
     required: false
+    group: backup
 
   - name: BACKUP_MEDUSA_CPU_MC
     description: "CPU request (in millicores) for the Medusa backup containers."
     default: "100"
+    advanced: true
+    group: backup
 
   - name: BACKUP_MEDUSA_CPU_LIMIT_MC
     description: "CPU limit (in millicores) for the Medusa backup containers."
     default: "500"
+    advanced: true
+    group: backup
 
   - name: BACKUP_MEDUSA_MEM_MIB
     description: "Memory request (in MiB) for the Medusa backup containers."
     default: "256"
+    advanced: true
+    group: backup
 
   - name: BACKUP_MEDUSA_MEM_LIMIT_MIB
     description: "Memory limit (in MiB) for the Medusa backup containers."
     default: "512"
+    advanced: true
+    group: backup
 
   - name: BACKUP_MEDUSA_DOCKER_IMAGE
     description: "Medusa backup Docker image."
     default: "${MEDUSA_BACKUP_DOCKER_IMAGE}"
+    advanced: true
+    group: backup
 
   - name: BACKUP_MEDUSA_DOCKER_IMAGE_PULL_POLICY
-    description: "Medusa backup Docker image pull policy."
+    displayName: "Medusa Docker Image Pull Policy"
     default: "Always"
+    advanced: true
+    group: backup
+    advanced: true
+    enum:
+      - "Always"
+      - "IfNotPresent"
+      - "Never"
 
   - name: BACKUP_NAME
     description: "The name of the backup to create or restore"
@@ -252,6 +371,11 @@ parameters:
   - name: PROMETHEUS_EXPORTER_DOCKER_IMAGE_PULL_POLICY
     description: "Prometheus exporter Docker image pull policy."
     default: "Always"
+    advanced: true
+    enum:
+      - "Always"
+      - "IfNotPresent"
+      - "Never"
 
   - name: PROMETHEUS_EXPORTER_CUSTOM_CONFIG_CM_NAME
     displayName: "custom prometheus configuration configmap name"
@@ -819,7 +943,7 @@ parameters:
     default: ""
 
   - name: COMMITLOG_DIRECTORY
-    description: "When running on magnetic HDD, this should be a separate spindle than the data directories. If not set, the default directory is $CASSANDRA_HOME/data/commitlog."
+    description: "When running on magnetic HDD, this should be a separate spindle than the data directories. If not set, the default directory is $$CASSANDRA_HOME/data/commitlog."
     default: ""
 
   - name: CDC_RAW_DIRECTORY
@@ -831,7 +955,7 @@ parameters:
     default: ""
 
   - name: SAVED_CACHES_DIRECTORY
-    description: "saved caches If not set, the default directory is $CASSANDRA_HOME/data/saved_caches."
+    description: "saved caches If not set, the default directory is $$CASSANDRA_HOME/data/saved_caches."
     default: ""
 
   - name: INTERNODE_SEND_BUFF_SIZE_IN_BYTES
@@ -1015,6 +1139,11 @@ parameters:
   - name: RECOVERY_CONTROLLER_DOCKER_IMAGE_PULL_POLICY
     description: "Recovery controller Docker image pull policy."
     default: "Always"
+    advanced: true
+    enum:
+      - "Always"
+      - "IfNotPresent"
+      - "Never"
 
   - name: RECOVERY_CONTROLLER_CPU_MC
     description: "CPU request (in millicores) for the Recovery controller container."
