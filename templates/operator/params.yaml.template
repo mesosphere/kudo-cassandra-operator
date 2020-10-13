@@ -3,6 +3,10 @@ groups:
   - name: general
     displayName: "General Settings"
 
+  - name: nodes
+    displayName: "Nodes"
+    description: "Detailed configuration for Cassandra Nodes"
+
   - name: liveness-checks
     displayName: "Liveness checks"
     description: "Parameters to configure the liveness of a Cassandra Node. When a Node fails liveness checks, it is automatically restarted by Kubernetes"
@@ -15,6 +19,25 @@ groups:
     displayName: "Backup and Restore"
     description: "Configuration related to backup and restore of the Cassandra Cluster"
 
+  - name: restore
+    displayName: "Restore"
+    description: "Options only required if a backup should be restored on installation"
+
+  - name: external
+    displayName: "External Cluster Access"
+    description: "Allow access to the Cassandra Cluster from outside Kubernetes"
+
+  - name: metrics
+    displayName: "Metrics Export"
+    description: "Metrics can be exported with the Prometheus Metrics Exporter"
+
+  - name: recovery
+    displayName: "Recovery Controller"
+    description: "The Recovery Controller allows the Cluster to autoheal when a Kubernetes node fails"
+
+  - name: advanced
+    displayName: "Advanced Configuration"
+    description: "Advanced configuration that is only available for very advanced users"
 
 parameters:
   ################################################################################
@@ -30,34 +53,34 @@ parameters:
     group: general
 
   - name: NODE_CPU_MC
-    description: "CPU request (in millicores) for the Cassandra node containers."
-    default: "1000"
-    displayName: "CPU"
+    displayName: "CPU Request"
     hint: "Allowed CPU usage in millicores"
+    description: "CPU request for the Cassandra node containers."
     type: integer
+    default: "1000"
     group: general
 
   - name: NODE_CPU_LIMIT_MC
-    description: "CPU limit (in millicores) for the Cassandra node containers."
-    default: "1000"
     displayName: "CPU Limit"
     hint: "Temporary allowed CPU limit in millicores"
+    description: "CPU limit for the Cassandra node containers."
+    default: "1000"
     type: integer
     group: general
 
   - name: NODE_MEM_MIB
-    description: "Memory request (in MiB) for the Cassandra node containers."
-    default: "4096"
-    displayName: "Memory"
+    displayName: "Memory Request"
+    description: "Memory request for the Cassandra node containers."
     hint: "Allowed Memory usage in MiB"
+    default: "4096"
     type: integer
     group: general
 
   - name: NODE_MEM_LIMIT_MIB
-    description: "Memory limit (in MiB) for the Cassandra node containers."
-    default: "4096"
     displayName: "Memory Limit"
+    description: "Memory limit for the Cassandra node containers."
     hint: "Temporary allowed Memory limit in MiB"
+    default: "4096"
     type: integer
     group: general
 
@@ -77,18 +100,19 @@ parameters:
     displayName: "Storage Class"
 
   - name: NODE_DOCKER_IMAGE
+    displayName: "Main Docker Image"
     description: "Cassandra node Docker image."
+    hint: "Docker Image for Cassandra"
     default: "${CASSANDRA_DOCKER_IMAGE}"
     advanced: true
     group: general
-    displayName: "Main Docker Image"
 
   - name: NODE_DOCKER_IMAGE_PULL_POLICY
+    displayName: "Main Docker Image Pull Policy"
     description: "Cassandra node Docker image pull policy."
     default: "Always"
     advanced: true
     group: general
-    displayName: "Main Docker Image Pull Policy"
     enum:
       - "Always"
       - "IfNotPresent"
@@ -176,48 +200,86 @@ parameters:
 
   - name: NODE_TOLERATIONS
     description: A list of kubernetes tolerations to let pods get scheduled on tainted nodes
+    displayName: "Node Tolerations"
+    hint: "YAML definition of node tolerations"
     type: array
+    advanced: true
+    required: false
+    group: nodes
 
   - name: OVERRIDE_CLUSTER_NAME
+    displayName: "Cluster Name Override"
+    hint: "Uniqe cluster name to separate multiple clusters"
+    type: string
     description: "Override the name of the Cassandra cluster set by the operator. This shouldn't be explicit set, unless you know what you're doing."
     default: ""
+    advanced: true
+    group: general
 
   - name: EXTERNAL_SERVICE
-    displayName: "Main toggle for external access"
+    displayName: "External access"
+    hint: "Main toggle for external access"
+    type: boolean
     description: "Needs to be true for either EXTERNAL_NATIVE_TRANSPORT or EXTERNAL_RPC to work"
     default: "false"
+    group: external
 
   - name: EXTERNAL_NATIVE_TRANSPORT
-    displayName: "Enable external native transport"
+    displayName: "Native transport"
+    hint: "Enable external native transport access"
+    type: boolean
     description: "This exposes the Cassandra cluster via an external service so it can be accessed from outside the Kubernetes cluster"
     default: "false"
+    group: external
 
   - name: EXTERNAL_RPC
-    displayName: "Enable external rpc"
+    displayName: "RPC"
+    hint: "Enable external RPC access"
+    type: boolean
     description: "This exposes the Cassandra cluster via an external service so it can be accessed from outside the Kubernetes cluster. Works only if START_RPC is true"
     default: "false"
+    group: external
 
   - name: EXTERNAL_NATIVE_TRANSPORT_PORT
-    displayName: "External advertised native transport port"
+    displayName: "Native Transport Port"
+    hint: "External advertised native transport port"
+    type: integer
     description: "The external port to use for Cassandra native transport protocol."
     default: "9042"
+    group: external
 
   - name: EXTERNAL_RPC_PORT
-    displayName: "External advertised rpc port"
+    displayName: "RPC Port"
+    hint: "External advertised rpc port"
+    type: integer
     description: "The external port to use for Cassandra rpc protocol."
     default: "9160"
+    group: external
 
   - name: BOOTSTRAP_TIMEOUT
-    description: "Timeout for the bootstrap binary to join the cluster with the new IP. Valid time units are 'ns', 'us', 'ms', 's', 'm', 'h'."
+    displayName: "Bootstrap Timeout"
+    hint: "Timeout, Valid units are 'ns', 'us', 'ms', 's', 'm', 'h'"
+    description: "Timeout for the bootstrap binary to join the cluster with the new IP. "
     default: "12h30m"
+    advanced: true
+    group: advanced
 
   - name: SHUTDOWN_OLD_REACHABLE_NODE
+    displayName: "Shutdown old reachable Nodes"
+    type: boolean
     description: "When a node replace is done, try to connect to the old node and shut it down before starting up the old node"
     default: false
+    advanced: true
+    group: advanced
 
   - name: JOLOKIA_PORT
+    displayName: Jolokia Port
+    hint: "Change only in case of port conflicts"
+    type: integer
     description: "The internal port for the Jolokia Agent. This port is not exposed, but can be changed if it conflicts with another port."
-    default: 7777
+    default: "7777"
+    advanced: true
+    group: advanced
 
   ################################################################################
   ########################## Backup and Restore settings #########################
@@ -231,88 +293,140 @@ parameters:
     default: "false"
 
   - name: BACKUP_TRIGGER
+    displayName: "Trigger Backup"
+    type: string
+    hint: "Do not set this on installation. Used to trigger a backup."
     description: "Trigger parameter to start a backup. Simply needs to be changed from the current value to start a backup"
-    default: "1"
     group: backup
     trigger: backup
+    advanced: true
+    required: false
 
   - name: BACKUP_AWS_CREDENTIALS_SECRET
+    displayName: "AWS Credentials Secret"
+    hint: "Name of a Kubernetes Secret"
+    type: string
     description: If set, can be used to provide the access_key, secret_key and security_token with a secret
     required: false
     group: backup
 
   - name: BACKUP_AWS_S3_BUCKET_NAME
+    displayName: "AWS S3 Bucket"
+    hint: "Name of an S3 bucket"
+    type: string
     description: The name of the AWS S3 bucket to store the backups
     required: false
     group: backup
 
   - name: BACKUP_AWS_S3_STORAGE_PROVIDER
+    displayName: "AWS Storage Provider"
+    hint: "A Storage Provider Type"
+    type: string
     description: Should be one of the s3_* values from https://github.com/apache/libcloud/blob/trunk/libcloud/storage/types.py
     required: false
     default: s3_us_west_oregon
     group: backup
 
   - name: BACKUP_PREFIX
-    description: A prefix to be used inside the S3 bucket
+    displayName: "Backup Prefix"
+    hint: "A prefix to be used inside the S3 bucket"
+    type: string
+    description: "If a prefix is given, multiple different backups can be stored in the same S3 bucket"
     required: false
     group: backup
 
   - name: BACKUP_MEDUSA_CPU_MC
-    description: "CPU request (in millicores) for the Medusa backup containers."
+    displayName: "CPU request"
+    hint: "CPU request in millicores"
+    type: integer
+    description: "CPU request for the Medusa backup containers."
     default: "100"
     advanced: true
     group: backup
 
   - name: BACKUP_MEDUSA_CPU_LIMIT_MC
-    description: "CPU limit (in millicores) for the Medusa backup containers."
+    displayName: "CPU limit"
+    hint: "CPU limit in millicores"
+    type: integer
+    description: "CPU limit for the Medusa backup containers."
     default: "500"
     advanced: true
     group: backup
 
   - name: BACKUP_MEDUSA_MEM_MIB
-    description: "Memory request (in MiB) for the Medusa backup containers."
+    displayName: "Memory request"
+    hint: "Memory request in MiB"
+    type: integer
+    description: "Memory request for the Medusa backup containers."
     default: "256"
     advanced: true
     group: backup
 
   - name: BACKUP_MEDUSA_MEM_LIMIT_MIB
-    description: "Memory limit (in MiB) for the Medusa backup containers."
+    displayName: "Memory limit"
+    hint: "Memory limit in MiB"
+    type: integer
+    description: "Memory limit for the Medusa backup containers."
     default: "512"
     advanced: true
     group: backup
 
   - name: BACKUP_MEDUSA_DOCKER_IMAGE
-    description: "Medusa backup Docker image."
+    displayName: "Docker Image"
+    hint: "The Medusa Docker Image"
+    description: "Medusa backup Docker image which is used to make backups"
+    type: string
     default: "${MEDUSA_BACKUP_DOCKER_IMAGE}"
     advanced: true
     group: backup
 
   - name: BACKUP_MEDUSA_DOCKER_IMAGE_PULL_POLICY
-    displayName: "Medusa Docker Image Pull Policy"
+    displayName: "Pull Policy"
+    hint: "The Docker Image Pull Policy"
+    description: "The Pull policy for the Medusa Docker Image"
+    type: string
     default: "Always"
     advanced: true
     group: backup
-    advanced: true
     enum:
       - "Always"
       - "IfNotPresent"
       - "Never"
 
   - name: BACKUP_NAME
+    displayName: "Backup Name"
+    hint: "Do not use on installation"
+    type: string
     description: "The name of the backup to create or restore"
+    required: false
     default: ""
 
   - name: RESTORE_FLAG
-    description: "If true, a restore is done on installation"
+    displayName: "Restore"
+    hint: "If true, an existing backup is restored on installation!"
+    type: boolean
+    description: "When this is true, all backup configuration must point to an existing backup which is restored as a new cluster"
     default: "false"
+    advanced: true
+    group: restore
 
   - name: RESTORE_OLD_NAMESPACE
+    displayName: "Old Namespace for Restore"
+    hint: "The Namespace that was used when creating the backup"
+    type: string
     description: "The namespace from the operator that was used to create the backup"
+    advanced: true
     default: ""
+    group: restore
 
   - name: RESTORE_OLD_NAME
+    displayName: "Old Name for Restore"
+    hint: "The Instance Name that was used when creating the backup"
+    type: string
     description: "The instance name from the operator that was used to create the backup"
+    advanced: true
     default: ""
+    group: restore
 
   ################################################################################
   ######################### Datacenter and Rack awareness ########################
@@ -343,32 +457,44 @@ parameters:
   - name: PROMETHEUS_EXPORTER_ENABLED
     description: "A toggle to enable the prometheus metrics exporter."
     default: "false"
+    group: metrics
 
   - name: PROMETHEUS_EXPORTER_PORT
     description: "Prometheus exporter port."
     default: "7200"
+    group: metrics
 
   - name: PROMETHEUS_EXPORTER_CPU_MC
     description: "CPU request (in millicores) for the Prometheus exporter containers."
     default: "500"
+    group: metrics
 
   - name: PROMETHEUS_EXPORTER_CPU_LIMIT_MC
     description: "CPU limit (in millicores) for the Prometheus exporter containers."
     default: "1000"
+    group: metrics
 
   - name: PROMETHEUS_EXPORTER_MEM_MIB
     description: "Memory request (in MiB) for the Prometheus exporter containers."
     default: "512"
+    group: metrics
 
   - name: PROMETHEUS_EXPORTER_MEM_LIMIT_MIB
     description: "Memory limit (in MiB) for the Prometheus exporter containers."
     default: "512"
+    group: metrics
 
   - name: PROMETHEUS_EXPORTER_DOCKER_IMAGE
-    description: "Prometheus exporter Docker image."
+    displayName: "Docker Image"
+    hint: "Prometheus Docker Image"
+    description: "The docker image of the Prometheus exporter"
     default: "${PROMETHEUS_EXPORTER_DOCKER_IMAGE}"
+    advanced: true
+    group: metrics
 
   - name: PROMETHEUS_EXPORTER_DOCKER_IMAGE_PULL_POLICY
+    displayName: "Pull Policy"
+    hint: "Docker Image Pull Policy"
     description: "Prometheus exporter Docker image pull policy."
     default: "Always"
     advanced: true
@@ -376,11 +502,13 @@ parameters:
       - "Always"
       - "IfNotPresent"
       - "Never"
+    group: metrics
 
   - name: PROMETHEUS_EXPORTER_CUSTOM_CONFIG_CM_NAME
     displayName: "custom prometheus configuration configmap name"
     description: "The properties present in this configmap will be appended to the prometheus configuration properties"
     required: false
+    group: metrics
 
   ################################################################################
   ########################### Cassandra node settings ############################
@@ -1128,35 +1256,60 @@ parameters:
   ################################################################################
 
   - name: RECOVERY_CONTROLLER
-    displayName: "Enables or disables the recovery controller"
+    displayName: "Recovery Controller Enabled"
+    type: boolean
     description: "Needs to be true for automatic failure recovery and node eviction"
     default: "false"
+    group: recovery
 
   - name: RECOVERY_CONTROLLER_DOCKER_IMAGE
-    description: "Recovery controller Docker image."
+    displayName: "Docker Image"
+    hint: "Docker image for the recovery controller"
+    type: string
     default: "${RECOVERY_CONTROLLER_DOCKER_IMAGE}"
+    group: recovery
 
   - name: RECOVERY_CONTROLLER_DOCKER_IMAGE_PULL_POLICY
+    displayName: "Pull Policy"
     description: "Recovery controller Docker image pull policy."
+    hint: "Pull Policy for the docker image"
+    type: string
     default: "Always"
     advanced: true
     enum:
       - "Always"
       - "IfNotPresent"
       - "Never"
+    group: recovery
 
   - name: RECOVERY_CONTROLLER_CPU_MC
-    description: "CPU request (in millicores) for the Recovery controller container."
+    displayName: "CPU Request"
+    hint: "Allowed CPU usage in millicores"
+    description: "CPU request for the Recovery controller container."
+    type: integer
     default: "50"
+    group: recovery
 
   - name: RECOVERY_CONTROLLER_CPU_LIMIT_MC
-    description: "CPU limit (in millicores) for the Recovery controller container."
+    displayName: "CPU Limit"
+    hint: "Allowed CPU limit in millicores"
+    description: "CPU limit for the Recovery controller container."
+    type: integer
     default: "200"
+    group: recovery
 
   - name: RECOVERY_CONTROLLER_MEM_MIB
-    description: "Memory request (in MiB) for the Recovery controller container."
+    displayName: "Memory Request"
+    description: "Memory request for the Recovery controller container."
+    hint: "Allowed Memory usage in MiB"
     default: "50"
+    type: integer
+    group: recovery
 
   - name: RECOVERY_CONTROLLER_MEM_LIMIT_MIB
-    description: "Memory limit (in MiB) for the Recovery controller container."
+    displayName: "Memory Limit"
+    description: "Memory limit for the Recovery controller container."
+    hint: "Temporary allowed Memory limit in MiB"
     default: "256"
+    type: integer
+    group: recovery
