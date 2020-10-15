@@ -385,7 +385,9 @@ data:
     # NOTE: if you reduce the size, you may not get you hottest keys loaded on startup.
     #
     # Default value is empty to make it "auto" (min(5% of Heap (in MB), 100MB)). Set to 0 to disable key cache.
+    {{ if .Params.KEY_CACHE_SIZE_IN_MB }}
     key_cache_size_in_mb: {{ .Params.KEY_CACHE_SIZE_IN_MB }}
+    {{ end }}
 
     # Duration in seconds after which Cassandra should
     # save the key cache. Caches are saved to saved_caches_directory as
@@ -434,7 +436,9 @@ data:
     # has limited use.
     #
     # Default is 0 to disable saving the row cache.
+    {{ if .Params.ROW_CACHE_SAVE_PERIOD }}
     row_cache_save_period: {{ .Params.ROW_CACHE_SAVE_PERIOD }}
+    {{ end }}
 
     # Number of keys from the row cache to save.
     # Specify 0 (which is the default), meaning all keys are going to be saved
@@ -455,7 +459,9 @@ data:
     #
     # Default value is empty to make it "auto" (min(2.5% of Heap (in MB), 50MB)). Set to 0 to disable counter cache.
     # NOTE: if you perform counter deletes and rely on low gcgs, you should disable the counter cache.
+    {{ if .Params.COUNTER_CACHE_SIZE_IN_MB }}
     counter_cache_size_in_mb: {{ .Params.COUNTER_CACHE_SIZE_IN_MB }}
+    {{ end }}
 
     # Duration in seconds after which Cassandra should
     # save the counter cache (keys only). Caches are saved to saved_caches_directory as
