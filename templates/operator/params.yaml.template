@@ -79,6 +79,10 @@ groups:
     displayName: "Java Virtual Machine Settings"
     description: "TODO."
 
+  - name: directories
+    displayName: "Directories"
+    description: "TODO."
+
 parameters:
   ################################################################################
   ############################### Operator settings ##############################
@@ -674,6 +678,7 @@ parameters:
 
   - name: NATIVE_TRANSPORT_MAX_CONCURRENT_CONNECTIONS_PER_IP
     displayName: "Native Transport Max Concurrent Connections per IP"
+    type: integer
     description: "The maximum number of concurrent client connections per source IP address. Defaults to -1, meaning unlimited."
     hint: "native_transport_max_concurrent_connections_per_ip - unlimited if not set."
     required: false
@@ -1069,6 +1074,7 @@ parameters:
 
   - name: ROW_CACHE_KEYS_TO_SAVE
     displayName: "Row Cache Save Number"
+    type: integer
     description: "The number of keys from the row cache to save."
     hint: "row_cache_keys_to_save - Number of Keys. Defaults to 'all' if not set."
     required: false
@@ -1088,15 +1094,6 @@ parameters:
     hint: "Java Class name."
     type: string
     required: false
-    group: caches
-
-  - name: SAVED_CACHES_DIRECTORY
-    displayName: "Saved Caches Directory"
-    type: string
-    description: "Saved caches. If not set, the default directory is $$CASSANDRA_HOME/data/saved_caches."
-    hint: "saved_caches_directory - Shouldn't normally be changed."
-    required: false
-    advanced: true
     group: caches
 
   - name: BUFFER_POOL_USE_HEAP_IF_EXHAUSTED
@@ -1244,6 +1241,7 @@ parameters:
 
   - name: INTERNODE_SEND_BUFF_SIZE_IN_BYTES
     displayName: "Internode Send Buffer Size"
+    type: integer
     description: "Set socket buffer size for internode communication Note that when setting this, the buffer size is limited by net.core.wmem_max and when not setting it it is defined by net.ipv4.tcp_wm."
     hint: "internode_send_buff_size_in_bytes - In Bytes. System dependent if not set."
     required: false
@@ -1251,6 +1249,7 @@ parameters:
 
   - name: INTERNODE_RECV_BUFF_SIZE_IN_BYTES
     displayName: "Internode Receive Buffer Size"
+    type: integer
     description: "Set socket buffer size for internode communication Note that when setting this, the buffer size is limited by net.core.wmem_max and when not setting it it is defined by net.ipv4.tcp_wmem."
     hint: "internode_recv_buff_size_in_bytes - In Bytes. System dependent if not set."
     required: false
@@ -1468,37 +1467,54 @@ parameters:
     group: timeouts
 
   - name: DYNAMIC_SNITCH_UPDATE_INTERVAL_IN_MS
+    displayName: "Dynamic Snitch Update Interval"
     type: integer
     description: "The time, in ms, the snitch will wait before updating node scores."
+    hint: "dynamic_snitch_update_interval_in_ms - In milliseconds. Defaults to 100."
     default: "100"
 
   - name: DYNAMIC_SNITCH_RESET_INTERVAL_IN_MS
+    displayName: "Dynamic Snitch Reset Interval"
     type: integer
     description: "The time, in ms, the snitch will wait before resetting node scores allowing bad nodes to recover."
+    hint: "dynamic_snitch_reset_interval_in_ms - In milliseconds. Defaults to 600000."
     default: "600000"
 
   - name: DYNAMIC_SNITCH_BADNESS_THRESHOLD
+    displayName: "Dynamic Snitch Badness Threshold"
     type: number
     description: "Sets the performance threshold for dynamically routing client requests away from a poorly performing node."
+    hint: "dynamic_snitch_badness_threshold - A percentage from 0 to 1."
     default: "0.1"
 
   - name: MAX_HINTS_FILE_SIZE_IN_MB
+    displayName: "Hints Max File Size"
     type: integer
-    description: "The maximum size of the hints file in Mb."
+    description: "The maximum size of a single hints file in Mb."
+    hint: "max_hints_file_size_in_mb - In MB. Defaults to 128."
     default: "128"
 
   - name: HINTS_FLUSH_PERIOD_IN_MS
+    displayName: "Hints Flush Period"
     type: integer
     description: "The time, in ms, for the period in which hints are flushed to disk."
+    hint: "hints_flush_period_in_ms - In milliseconds. Defaults to 10000."
     default: "10000"
 
   - name: COMMITLOG_TOTAL_SPACE_IN_MB
+    displayName: "Commitlog Total Size"
+    type: integer
     description: "The total size of the commit log in Mb."
-    default: ""
+    hint: "commitlog_total_space_in_mb - In Mb. Auto if not set."
+    required: false
 
   - name: AUTO_SNAPSHOT
+    displayName: "Auto Snapshot"
+    type: boolean
     description: "Take a snapshot of the data before truncating a keyspace or dropping a table."
+    hint: "auto_snapshot - Defaults to true."
     default: "true"
+    group: node-advanced
 
   - name: MEMTABLE_HEAP_SPACE_IN_MB
     description: "The amount of on-heap memory allocated for memtables."
@@ -1598,9 +1614,19 @@ parameters:
     default: ""
 
   - name: ENDPOINT_SNITCH
+    displayName: "Snitch Type"
     type: string
     description: "Set to a class that implements the IEndpointSnitch interface. Cassandra uses the snitch to locate nodes and route requests."
+    hint: "endpoint_snitch - Java Class Name."
     default: "SimpleSnitch"
+    enum:
+      - "SimpleSnitch"
+      - "GossipingPropertyFileSnitch"
+      - "PropertyFileSnitch"
+      - "Ec2Snitch"
+      - "Ec2MultiRegionSnitch"
+      - "RackInferringSnitch"
+    group: node-advanced
 
   - name: DISK_FAILURE_POLICY
     displayName: "Disk Failure Policy"
@@ -1614,64 +1640,119 @@ parameters:
       - "stop"
       - "best_effort"
       - "ignore"
+    group: node-advanced
 
   - name: ENABLE_USER_DEFINED_FUNCTIONS
+    displayName: "User Defined Functions"
     type: boolean
     description: " User defined functions (UDFs) present a security risk, since they are executed on the server side. UDFs are executed in a sandbox to contain the execution of malicious code."
+    hint: "enable_user_defined_functions - May be a security risk."
     default: "false"
+    group: node-advanced
 
   - name: ENABLE_SCRIPTED_USER_DEFINED_FUNCTIONS
+    displayName: "Scripted User Defined Functions"
     type: boolean
     description: "Java UDFs are always enabled, if enable_user_defined_functions is true. Enable this option to use UDFs with language javascript or any custom JSR-223 provider. This option has no effect if enable_user_defined_functions is false."
+    hint: "enable_scripted_user_defined_functions - May be a security risk"
     default: "false"
+    group: node-advanced
 
   - name: ENABLE_MATERIALIZED_VIEWS
+    displayName: "Materialized Views"
     type: boolean
     description: "Enables materialized view creation on this node. Materialized views are considered experimental and are not recommended for production use."
+    hint: "enable_materialized_views - EXPERIMENTAL."
     default: "false"
+    group: node-advanced
 
   - name: CDC_ENABLED
+    displayName: "CDC - Changed Data Capture"
     type: boolean
     description: "Enable / disable CDC functionality on a per-node basis. This modifies the logic used for write path allocation rejection."
+    hint: "cdc_enabled - "
     default: "false"
+    group: node-advanced
 
   - name: CDC_TOTAL_SPACE_IN_MB
+    displayName: "CDC Total Space"
+    type: integer
     description: "Total space to use for change-data-capture (CDC) logs on disk. ."
-    default: ""
+    hint: "cdc_total_space_in_mb - In MB. Auto if not set."
+    required: false
+    group: node-advanced
 
   - name: CDC_FREE_SPACE_CHECK_INTERVAL_MS
+    displayName: "CDC Free Space Check Interval"
+    type: integer
     description: "Interval between checks for new available space for CDC-tracked tables when the cdc_total_space_in_mb threshold is reached and the CDCCompactor is running behind or experiencing back pressure."
-    default: ""
+    hint: "cdc_free_space_check_interval_ms - In milliseconds. Auto if not set."
+    required: false
+    group: node-advanced
 
   - name: COLUMN_INDEX_SIZE_IN_KB
+    displayName: "Column Index Size"
     type: integer
     description: "The granularity of the index of rows within a partition. For huge rows, decrease this setting to improve seek time. If you use key cache, be careful not to make this setting too large because key cache will be overwhelmed."
+    hint: "column_index_size_in_kb - In KB. Defaults to 64."
     default: "64"
-
+    group: node-advanced
 
   - name: ALLOCATE_TOKENS_FOR_KEYSPACE
+    displayName: "Allocate Tokens for Keyspace"
+    type: string
     description: "Triggers automatic allocation of num_tokens tokens for this node. The allocation algorithm attempts to choose tokens in a way that optimizes replicated load over the nodes in the datacenter for the replication strategy used by the specified keyspace."
-    default: ""
+    hint: "allocate_tokens_for_keyspace - The name of a keyspace."
+    required: false
+    group: node-advanced
 
   - name: HINTS_DIRECTORY
+    displayName: "Hints Directory"
+    type: string
     description: "Directory where Cassandra should store hints."
-    default: ""
+    hint: "hints_directory - A directory."
+    required: false
+    advanced: true
+    group: directories
 
   - name: COMMITLOG_DIRECTORY
+    displayName: "Commitlog Directory"
+    type: string
     description: "When running on magnetic HDD, this should be a separate spindle than the data directories. If not set, the default directory is $$CASSANDRA_HOME/data/commitlog."
-    default: ""
+    hint: "commitlog_directory - A directory."
+    required: false
+    advanced: true
+    group: directories
 
   - name: CDC_RAW_DIRECTORY
+    displayName: "CDC Raw Directory"
+    type: string
     description: "CommitLogSegments are moved to this directory on flush if cdc_enabled: true and the segment contains mutations for a CDC-enabled table."
-    default: ""
+    hint: "cdc_raw_directory - A directory."
+    required: false
+    advanced: true
+    group: directories
+
+  - name: SAVED_CACHES_DIRECTORY
+    displayName: "Saved Caches Directory"
+    type: string
+    description: "Saved caches. If not set, the default directory is $$CASSANDRA_HOME/data/saved_caches."
+    hint: "saved_caches_directory - A directory."
+    required: false
+    advanced: true
+    group: directories
 
   - name: REPAIR_SESSION_MAX_TREE_DEPTH
     description: "Limits the maximum Merkle tree depth to avoid consuming too much memory during repairs."
     default: ""
+    group: node-advanced
 
   - name: ENABLE_SASI_INDEXES
+    type: string
     description: "Enables SASI index creation on this node. SASI indexes are considered experimental and are not recommended for production use."
-    default: ""
+    hint: "enable_sasi_indexes - EXPERIMENTAL."
+    required: false
+    group: node-advanced
 
   - name: CUSTOM_CASSANDRA_YAML_BASE64
     displayName: "Custom cassandra.yaml properties"
