@@ -362,7 +362,9 @@ data:
     # Constantly re-preparing statements is a performance penalty.
     #
     # Default value ("auto") is 1/256th of the heap or 10MB, whichever is greater
+    {{ if .Params.PREPARED_STATEMENTS_CACHE_SIZE_MB }}
     prepared_statements_cache_size_mb: {{ .Params.PREPARED_STATEMENTS_CACHE_SIZE_MB }}
+    {{ end }}
 
     # Maximum size of the Thrift prepared statement cache
     #
@@ -371,7 +373,9 @@ data:
     # See description of 'prepared_statements_cache_size_mb' above for more information.
     #
     # Default value ("auto") is 1/256th of the heap or 10MB, whichever is greater
+    {{ if .Params.THRIFT_PREPARED_STATEMENTS_CACHE_SIZE_MB }}
     thrift_prepared_statements_cache_size_mb: {{ .Params.THRIFT_PREPARED_STATEMENTS_CACHE_SIZE_MB }}
+    {{ end }}
 
     # Maximum size of the key cache in memory.
     #
@@ -822,7 +826,7 @@ data:
 
     # The maximum number of concurrent client connections per source ip.
     # The default is -1, which means unlimited.
-    {{ if .Params.NATIVE_TRANSPORT_MAX_FRAME_SIZE_IN_MB }}
+    {{ if .Params.NATIVE_TRANSPORT_MAX_CONCURRENT_CONNECTIONS_PER_IP }}
     native_transport_max_concurrent_connections_per_ip: {{ .Params.NATIVE_TRANSPORT_MAX_CONCURRENT_CONNECTIONS_PER_IP }}
     {{ end }}
 
@@ -1361,7 +1365,9 @@ data:
     # GC Pauses greater than gc_warn_threshold_in_ms will be logged at WARN level
     # Adjust the threshold based on your application throughput requirement
     # By default, Cassandra logs GC Pauses greater than 200 ms at INFO level
+    {{ if .Params.GC_WARN_THRESHOLD_IN_MS }}
     gc_warn_threshold_in_ms: {{ .Params.GC_WARN_THRESHOLD_IN_MS }}
+    {{ end }}
 
     # Maximum size of any value in SSTables. Safety measure to detect SSTable corruption
     # early. Any value size larger than this threshold will result into marking an SSTable
