@@ -265,7 +265,9 @@ data:
     -XX:CMSInitiatingOccupancyFraction={{ .Params.JVM_OPT_CMS_INITIATING_OCCUPANCY_FRACTION }}
     {{ end }}
 
+    {{ if .Params.JVM_OPT_USE_CMS_INITIATING_OCCUPANCY_ONLY }}
     -XX:+UseCMSInitiatingOccupancyOnly
+    {{ end }}
 
     {{ if .Params.JVM_OPT_CMS_WAIT_DURATION }}
     -XX:CMSWaitDuration={{ .Params.JVM_OPT_CMS_WAIT_DURATION }}

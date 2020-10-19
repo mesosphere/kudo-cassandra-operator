@@ -718,7 +718,9 @@ data:
     # shrink their index summaries in order to meet this limit.  However, this
     # is a best-effort process. In extreme conditions Cassandra may need to use
     # more than this amount of memory.
+    {{ if .Params.INDEX_SUMMARY_CAPACITY_IN_MB }}
     index_summary_capacity_in_mb: {{ .Params.INDEX_SUMMARY_CAPACITY_IN_MB }}
+    {{ end }}
 
     # How frequently index summaries should be resampled.  This is done
     # periodically to redistribute memory from the fixed-size pool to sstables
@@ -1278,11 +1280,17 @@ data:
     # Disabling it will result in larger (but fewer) network packets being sent,
     # reducing overhead from the TCP protocol itself, at the cost of increasing
     # latency if you block for cross-datacenter responses.
+    {{ if .Params.INTER_DC_TCP_NODELAY }}
     inter_dc_tcp_nodelay: {{ .Params.INTER_DC_TCP_NODELAY }}
+    {{ end }}
 
     # TTL for different trace types used during logging of the repair process.
+    {{ if .Params.TRACETYPE_QUERY_TTL }}
     tracetype_query_ttl: {{ .Params.TRACETYPE_QUERY_TTL }}
+    {{ end }}
+    {{ if .Params.TRACETYPE_REPAIR_TTL }}
     tracetype_repair_ttl: {{ .Params.TRACETYPE_REPAIR_TTL }}
+    {{ end }}
 
     # By default, Cassandra logs GC Pauses greater than 200 ms at INFO level
     # This threshold can be adjusted to minimize logging if necessary

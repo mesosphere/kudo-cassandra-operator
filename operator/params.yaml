@@ -2,10 +2,11 @@ apiVersion: kudo.dev/v1beta1
 groups:
   - name: general
     displayName: "General Settings"
+    description: "Common settings for the Operator."
 
   - name: nodes
     displayName: "Nodes"
-    description: "Detailed configuration for Cassandra Nodes."
+    description: "Common configuration for Cassandra Nodes."
 
   - name: liveness-checks
     displayName: "Liveness checks"
@@ -45,23 +46,23 @@ groups:
 
   - name: node-advanced
     displayName: "Advanced Nodes"
-    description: "TODO."
+    description: "Advanced configuration options for Cassandra nodes. These are not-commonly modifed settings. See https://cassandra.apache.org/doc/latest/configuration/cassandra_config_file.html and other Cassandra documentation for details on parameters."
 
   - name: security
     displayName: "Security"
-    description: "TODO."
+    description: "Security related settings."
 
   - name: caches
     displayName: "Caches"
-    description: "TODO."
+    description: "Cache related settings."
 
   - name: racks_and_dc
     displayName: "Racks and Datacenter Awareness"
-    description: "TODO."
+    description: "Options related to Rack Awareness and Multi-Datacenter options."
 
   - name: optimization
     displayName: "Optimization Settings"
-    description: "TODO."
+    description: "Settings to fine-tune the Cassandra cluster and optimize the performance."
 
   - name: safety_thresholds
     displayName: "Safety Thresholds"
@@ -69,19 +70,19 @@ groups:
 
   - name: network
     displayName: "Network"
-    description: "TODO."
+    description: "Network related settings."
 
   - name: timeouts
     displayName: "Timeouts"
-    description: "TODO."
+    description: "Timeouts."
 
   - name: jvm
     displayName: "Java Virtual Machine Settings"
-    description: "TODO."
+    description: "Settings related to the Java JVM and the Garbage Collector."
 
   - name: directories
     displayName: "Directories"
-    description: "TODO."
+    description: "Directory configurations. These should usually not be changed, as they probably require changes to the used docker image."
 
 parameters:
   ################################################################################
@@ -173,6 +174,7 @@ parameters:
     description: "Parallel startup may decrease the startup time of big clusters but lead to failing pods in the beginning when two nodes try to join at the very same time."
     type: string
     default: "OrderedReady"
+    group: general
     enum:
       - "OrderedReady"
       - "Parallel"
@@ -461,7 +463,7 @@ parameters:
     type: string
     description: "The name of the backup to create or restore."
     required: false
-    default: ""
+    group: backup
 
   - name: RESTORE_FLAG
     displayName: "Restore"
@@ -1472,6 +1474,7 @@ parameters:
     description: "The time, in ms, the snitch will wait before updating node scores."
     hint: "dynamic_snitch_update_interval_in_ms - In milliseconds. Defaults to 100."
     default: "100"
+    group: optimization
 
   - name: DYNAMIC_SNITCH_RESET_INTERVAL_IN_MS
     displayName: "Dynamic Snitch Reset Interval"
@@ -1479,6 +1482,7 @@ parameters:
     description: "The time, in ms, the snitch will wait before resetting node scores allowing bad nodes to recover."
     hint: "dynamic_snitch_reset_interval_in_ms - In milliseconds. Defaults to 600000."
     default: "600000"
+    group: optimization
 
   - name: DYNAMIC_SNITCH_BADNESS_THRESHOLD
     displayName: "Dynamic Snitch Badness Threshold"
@@ -1486,6 +1490,7 @@ parameters:
     description: "Sets the performance threshold for dynamically routing client requests away from a poorly performing node."
     hint: "dynamic_snitch_badness_threshold - A percentage from 0 to 1."
     default: "0.1"
+    group: optimization
 
   - name: MAX_HINTS_FILE_SIZE_IN_MB
     displayName: "Hints Max File Size"
@@ -1493,6 +1498,7 @@ parameters:
     description: "The maximum size of a single hints file in Mb."
     hint: "max_hints_file_size_in_mb - In MB. Defaults to 128."
     default: "128"
+    group: node-advanced
 
   - name: HINTS_FLUSH_PERIOD_IN_MS
     displayName: "Hints Flush Period"
@@ -1500,6 +1506,7 @@ parameters:
     description: "The time, in ms, for the period in which hints are flushed to disk."
     hint: "hints_flush_period_in_ms - In milliseconds. Defaults to 10000."
     default: "10000"
+    group: optimization
 
   - name: COMMITLOG_TOTAL_SPACE_IN_MB
     displayName: "Commitlog Total Size"
@@ -1507,6 +1514,7 @@ parameters:
     description: "The total size of the commit log in Mb."
     hint: "commitlog_total_space_in_mb - In Mb. Auto if not set."
     required: false
+    group: node-advanced
 
   - name: AUTO_SNAPSHOT
     displayName: "Auto Snapshot"
@@ -1517,52 +1525,99 @@ parameters:
     group: node-advanced
 
   - name: MEMTABLE_HEAP_SPACE_IN_MB
+    displayName: "Memtable Onheap Space"
+    type: integer
     description: "The amount of on-heap memory allocated for memtables."
-    default: ""
+    hint: "memtable_heap_space_in_mb - In MB - System dependent if not set."
+    required: false
+    group: node-advanced
 
   - name: MEMTABLE_OFFHEAP_SPACE_IN_MB
+    displayName: "Memtable Offheap Space"
+    type: integer
     description: "The total amount of off-heap memory allocated for memtables."
-    default: ""
+    hint: "memtable_offheap_space_in_mb - In MB - System dependent if not set."
+    required: false
+    group: node-advanced
 
   - name: MEMTABLE_CLEANUP_THRESHOLD
+    displayName: "Memtable Cleanup Threshold"
+    type: number
     description: "The ratio used for automatic memtable flush."
-    default: ""
+    hint: "memtable_cleanup_threshold - DEPRECATED - System dependent if not set."
+    required: false
+    group: optimization
 
   - name: MEMTABLE_FLUSH_WRITERS
+    displayName: "Memtable Flush Writers"
+    type: integer
     description: "The number of memtable flush writer threads."
-    default: ""
+    hint: "memtable_flush_writers - System dependent if not set."
+    required: false
+    group: optimization
 
   - name: LISTEN_ON_BROADCAST_ADDRESS
+    displayName: "Listen on Broadcast Adress"
+    type: boolean
     description: "Listen on the address set in broadcast_address property."
-    default: ""
+    hint: "listen_on_broadcast_address - false if not set."
+    required: false
+    group: network
 
   - name: INTERNODE_AUTHENTICATOR
+    displayName: "Internode Authenticator"
+    type: string
     description: "The internode authentication backend."
-    default: ""
+    hint: "internode_authenticator - Java ClassName - AllowAllInternodeAuthenticator if not set."
+    required: false
+    group: security
 
   - name: CONCURRENT_COMPACTORS
+    displayName: "Concurrent Compactors"
+    type: integer
     description: "The number of concurrent compaction processes allowed to run simultaneously on a node."
-    default: ""
+    hint: "concurrent_compactors - System dependent if not set."
+    required: false
+    group: optimization
 
   - name: STREAM_THROUGHPUT_OUTBOUND_MEGABITS_PER_SEC
+    displayName: "Stream Outbound Throughput Limit"
+    type: integer
     description: "The maximum throughput of all outbound streaming file transfers on a node."
-    default: ""
+    hint: "stream_throughput_outbound_megabits_per_sec - In Mbps - Defaults to 200 if unset."
+    required: false
+    group: network
 
   - name: INTER_DC_STREAM_THROUGHPUT_OUTBOUND_MEGABITS_PER_SEC
+    displayName: "Inter-DC Stream Outbound Throughput Limit"
+    type: integer
     description: "The maximum throughput of all streaming file transfers between datacenters."
-    default: ""
+    hint: "inter_dc_stream_throughput_outbound_megabits_per_sec - In Mbps - Defaults to 200 if unset."
+    required: false
+    group: network
 
   - name: STREAMING_KEEP_ALIVE_PERIOD_IN_SECS
+    displayName: "Streaming Keep-Alive Period"
+    type: integer
     description: "Interval to send keep-alive messages. The stream session fails when a keep-alive message is not received for 2 keep-alive cycles."
-    default: ""
+    hint: "streaming_keep_alive_period_in_secs - Defaults to 300 if not set."
+    required: false
+    group: node-advanced
 
   - name: PHI_CONVICT_THRESHOLD
+    displayName: "Phi Convict Threshold"
+    type: integer
     description: "The sensitivity of the failure detector on an exponential scale."
-    default: ""
+    hint: "phi_convict_threshold - Automatic if not set."
+    required: false
+    advanced: true
+    group: node-advanced
 
   - name: DISK_OPTIMIZATION_STRATEGY
+    displayName: "Disk optimization strategy"
+    type: string
     description: "The strategy for optimizing disk reads. (https://cassandra.apache.org/doc/latest/configuration/cassandra_config_file.html#disk-optimization-strategy)."
-    hint: "disk_optimization_strategy - Defaults to ssd if not set"
+    hint: "disk_optimization_strategy - Defaults to ssd if not set."
     required: false
     enum:
       - "ssd"
@@ -1570,48 +1625,73 @@ parameters:
     group: optimization
 
   - name: REQUEST_SCHEDULER
+    displayName: "Request Scheduler"
     type: string
     description: "The scheduler to handle incoming client requests according to a defined policy. This scheduler is useful for throttling client requests in single clusters containing multiple keyspaces."
+    hint: "request_scheduler - Java ClassName."
     default: "org.apache.cassandra.scheduler.NoScheduler"
+    group: node-advanced
 
   - name: INTER_DC_TCP_NODELAY
+    displayName: "Inter-DC TCP NoDelay"
     type: boolean
-    description: "Enable this property for inter-datacenter communication."
-    default: "false"
+    description: "Enable or disable tcp_nodelay for inter-dc communication. Disabling it will result in larger (but fewer) network packets being sent, reducing overhead from the TCP protocol itself, at the cost of increasing latency if you block for cross-datacenter responses."
+    hint: "inter_dc_tcp_nodelay - Defaults to false if not set."
+    required: false
+    group: racks_and_dc
 
   - name: TRACETYPE_QUERY_TTL
+    displayName: "Tracetype Query TTL"
     type: integer
     description: "TTL for different trace types used during logging of the query process."
-    default: "86400"
+    hint: "tracetype_query_ttl - Defaults to 86400 if not set."
+    required: false
+    group: optimization
 
   - name: TRACETYPE_REPAIR_TTL
+    displayName: "Tracetype Repair TTL"
     type: integer
     description: "TTL for different trace types used during logging of the repair process."
-    default: "604800"
+    hint: "tracetype_repair_ttl - Defaults to 604800 if not set."
+    required: false
+    group: optimization
 
   - name: INCREMENTAL_BACKUPS
+    displayName: "Incremental Backups"
     type: boolean
     description: "Backs up data updated since the last snapshot was taken. When enabled, Cassandra creates a hard link to each SSTable flushed or streamed locally in a backups subdirectory of the keyspace data."
+    hint: "incremental_backups - Defaults to false."
     default: "false"
+    group: node-advanced
 
   - name: SNAPSHOT_BEFORE_COMPACTION
+    displayName: "Snapshot before compaction"
     type: boolean
     description: "Enables or disables taking a snapshot before each compaction. A snapshot is useful to back up data when there is a data format change."
+    hint: "snapshot_before_compaction - Defaults to false."
     default: "false"
+    group: node-advanced
 
   - name: COMMIT_FAILURE_POLICY
+    displayName: "Commit Failure Policy"
     type: string
     description: "Policy for commit disk failures. (https://cassandra.apache.org/doc/latest/configuration/cassandra_config_file.html#commit-failure-policy)."
+    hint: "commit_failure_policy - Defaults to stop."
     default: "stop"
     enum:
       - "die"
       - "stop"
       - "stop_commit"
       - "ignore"
+    group: node-advanced
 
   - name: INDEX_SUMMARY_CAPACITY_IN_MB
+    displayName: "Index Summary Capacity"
+    type: integer
     description: "Fixed memory pool size in MB for SSTable index summaries."
-    default: ""
+    hint: "index_summary_capacity_in_mb - Defaults to 5% of heap if not set."
+    required: false
+    group: node-advanced
 
   - name: ENDPOINT_SNITCH
     displayName: "Snitch Type"
@@ -1654,7 +1734,7 @@ parameters:
     displayName: "Scripted User Defined Functions"
     type: boolean
     description: "Java UDFs are always enabled, if enable_user_defined_functions is true. Enable this option to use UDFs with language javascript or any custom JSR-223 provider. This option has no effect if enable_user_defined_functions is false."
-    hint: "enable_scripted_user_defined_functions - May be a security risk"
+    hint: "enable_scripted_user_defined_functions - May be a security risk."
     default: "false"
     group: node-advanced
 
@@ -1670,7 +1750,7 @@ parameters:
     displayName: "CDC - Changed Data Capture"
     type: boolean
     description: "Enable / disable CDC functionality on a per-node basis. This modifies the logic used for write path allocation rejection."
-    hint: "cdc_enabled - "
+    hint: "cdc_enabled - Defaults to false."
     default: "false"
     group: node-advanced
 
@@ -1743,11 +1823,15 @@ parameters:
     group: directories
 
   - name: REPAIR_SESSION_MAX_TREE_DEPTH
+    displayName: "Repair Session Max Tree Depth"
+    type: integer
     description: "Limits the maximum Merkle tree depth to avoid consuming too much memory during repairs."
-    default: ""
+    hint: "repair_session_max_tree_depth - Defaults to 18 if not set."
+    required: false
     group: node-advanced
 
   - name: ENABLE_SASI_INDEXES
+    displayName: "Enable SASI indexes"
     type: string
     description: "Enables SASI index creation on this node. SASI indexes are considered experimental and are not recommended for production use."
     hint: "enable_sasi_indexes - EXPERIMENTAL."
@@ -1775,49 +1859,99 @@ parameters:
   ################################################################################
 
   - name: JVM_OPT_AVAILABLE_PROCESSORS
+    displayName: "Available Processors"
+    type: integer
     description: "In a multi-instance deployment, multiple Cassandra instances will independently assume that all CPU processors are available to it. This setting allows you to specify a smaller set of processors and perhaps have affinity."
-    default: ""
+    hint: "-Dcassandra.available_processors - Auto detect if not set."
+    required: false
+    group: optimization
 
   - name: JVM_OPT_JOIN_RING
+    displayName: "Join Ring"
+    type: boolean
     description: "Set to false to start Cassandra on a node but not have the node join the cluster."
-    default: ""
+    hint: "-Dcassandra.join_ring - True if not set."
+    required: false
+    group: node-advanced
 
   - name: JVM_OPT_LOAD_RING_STATE
+    displayName: "Load Ring State"
+    type: boolean
     description: "Set to false to clear all gossip state for the node on restart. Use when you have changed node information in cassandra.yaml (such as listen_address)."
-    default: ""
+    hint: "-Dcassandra.load_ring_state - True if not set."
+    required: false
+    group: node-advanced
 
   - name: JVM_OPT_REPLAYLIST
+    displayName: "Replay List"
+    type: string
     description: "Allow restoring specific tables from an archived commit log."
-    default: ""
+    hint: "-Dcassandra.replayList - Name of a table."
+    required: false
+    advanced: true
+    group: node-advanced
 
   - name: JVM_OPT_RING_DELAY_MS
+    displayName: "Join Ring Delay"
+    type: integer
     description: "Allows overriding of the default RING_DELAY (30000ms), which is the amount of time a node waits before joining the ring."
-    default: ""
+    hint: "-Dcassandra.ring_delay_ms - In milliseconds - 30000 if not set."
+    required: false
+    group: node-advanced
 
   - name: JVM_OPT_TRIGGERS_DIR
+    displayName: "Trigger JAR directory"
+    type: string
     description: "Set the default location for the trigger JARs. (Default: conf/triggers)."
-    default: ""
+    hint: "-Dcassandra.triggers_dir - 'conf/triggers' if not set."
+    required: false
+    advanced: true
+    group: directories
 
   - name: JVM_OPT_WRITE_SURVEY
+    displayName: "Enable Write Survey"
+    type: boolean
     description: "For testing new compaction and compression strategies. It allows you to experiment with different strategies and benchmark write performance differences without affecting the production workload."
-    default: ""
+    hint: "-Dcassandra.write_survey - false if not set."
+    required: false
+    group: node-advanced
 
   - name: JVM_OPT_DISABLE_AUTH_CACHES_REMOTE_CONFIGURATION
+    displayName: "Disable Auth Cache Remote Configuration"
+    type: boolean
     description: "To disable configuration via JMX of auth caches (such as those for credentials, permissions and roles). This will mean those config options can only be set (persistently) in cassandra.yaml and will require a restart for new values to take effect."
-    default: ""
+    hint: "-Dcassandra.disable_auth_caches_remote_configuration - false if not set."
+    required: false
+    group: security
 
   - name: JVM_OPT_FORCE_DEFAULT_INDEXING_PAGE_SIZE
+    displayName: "Force Indexing Page Size"
+    type: boolean
     description: "To disable dynamic calculation of the page size used when indexing an entire partition (during initial index build/rebuild). If set to true, the page size will be fixed to the default of 10000 rows per page."
-    default: ""
+    hint: "-Dcassandra.force_default_indexing_page_size - false if not set."
+    required: false
+    group: node-advanced
+    advanced: true
 
   - name: JVM_OPT_PREFER_IPV4_STACK
+    displayName: "Prefer IPv4 Stack"
     type: boolean
     description: "Prefer binding to IPv4 network intefaces (when net.ipv6.bindv6only=1). See http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6342561 (short version: comment out this entry to enable IPv6 support)."
+    hint: "-Djava.net.preferIPv4Stack - Defaults to true."
     default: "true"
+    group: "network"
 
   - name: JVM_OPT_EXPIRATION_DATE_OVERFLOW_POLICY
-    description: "Defines how to handle INSERT requests with TTL exceeding the maximum supported expiration date."
-    default: ""
+    displayName: "Expiration Date Overflow Policy"
+    type: string
+    description: "Defines how to handle INSERT requests with TTL exceeding the maximum supported expiration date. (https://docs.datastax.com/en/dse/6.0/dse-dev/datastax_enterprise/config/cassandraSystemProperties.html)"
+    hint: "-Dcassandra.expiration_date_overflow_policy - REJECT if not set."
+    required: false
+    group: node-advanced
+    enum:
+      - REJECT
+      - CAP
+      - CAP-NOWARN
 
   - name: JVM_OPT_THREAD_PRIORITY_POLICY
     displayName: "Thread Priority Policy"
@@ -1831,7 +1965,7 @@ parameters:
     displayName: "Thread Stack Size"
     type: string
     description: "Per-thread stack size."
-    hint: "-Xss - Can have k, m, g postfix. Defaults to 256k"
+    hint: "-Xss - Can have k, m, g postfix. Defaults to 256k."
     default: "256k"
     group: jvm
 
@@ -1839,32 +1973,48 @@ parameters:
     displayName: "String Table Size"
     type: integer
     description: "Larger interned string table, for gossip's benefit (CASSANDRA-6410)."
-    hint: "-XX:StringTableSize"
+    hint: "-XX:StringTableSize - Number of Strings."
     default: "1000003"
     group: jvm
 
   - name: JVM_OPT_SURVIVOR_RATIO
+    displayName: "CMS: Survivor Ratio"
     type: integer
-    description: "CMS Settings: SurvivorRatio."
-    default: "8"
+    description: "The Ratio between eden and survivor space parts of the heap. A value of 6 sets the ratio between eden and a survivor space to 1:6. In other words, each survivor space will be one-sixth the size of eden, and thus one-eighth the size of the young generation (not one-seventh, because there are two survivor spaces)."
+    hint: "-XX:SurvivorRatio - JVM dependent if not set."
+    required: false
     group: jvm
 
   - name: JVM_OPT_MAX_TENURING_THRESHOLD
+    displayName: "CMS: Max Tenuring Threshold"
     type: integer
-    description: "CMS Settings: MaxTenuringThreshold."
-    default: "1"
+    description: "The number of times an object is moved between eden spaces before it is promoted to the survivor (old-gen) space."
+    hint: "-XX:MaxTenuringThreshold - JVM dependent if not set."
+    required: false
     group: jvm
 
   - name: JVM_OPT_CMS_INITIATING_OCCUPANCY_FRACTION
+    displayName: "CMS: InitiatingOccupancyFraction"
     type: integer
-    description: "CMS Settings: CMSInitiatingOccupancyFraction."
-    default: "75"
+    description: "The amount of heap that needs to be full before a CMS GC cycle is triggered."
+    hint: "-XX:CMSInitiatingOccupancyFraction - JVM dependent if not set."
+    required: false
+    group: jvm
+
+  - name: JVM_OPT_USE_CMS_INITIATING_OCCUPANCY_ONLY
+    displayName: "CMS: UseCMSInitiatingOccupancyOnly"
+    type: boolean
+    description: "If set to true, the GC will not autodetect when to trigger a GC cycle, only the defined CMSInitiatingOccupancyFraction."
+    hint: "-XX+UseCMSInitiatingOccupancyOnly - False if not set."
+    required: false
     group: jvm
 
   - name: JVM_OPT_CMS_WAIT_DURATION
+    displayName: "CMS: WaitDuration"
     type: integer
-    description: "CMS Settings: CMSWaitDuration."
-    default: "10000"
+    description: "Once CMS collection is triggered, it will wait for next young collection to perform initial mark right after. This parameter specifies how long CMS can wait for young collection."
+    hint: "-XX:CMSWaitDuration - JVM dependent if not set."
+    required: false
     group: jvm
 
   - name: JVM_OPT_PARALLEL_GC_THREADS
@@ -1895,7 +2045,7 @@ parameters:
     displayName: "GC Log File Size"
     type: string
     description: "GC logging options: GCLOGFILESIZE."
-    hint: "-XX:GCLogFileSize - Size of log files. Defaults to 10M"
+    hint: "-XX:GCLogFileSize - Size of log files. Defaults to 10M."
     default: "10M"
     group: jvm
 
@@ -1903,7 +2053,7 @@ parameters:
     displayName: "GC Log Directory"
     type: string
     description: "GC logging options: GC_LOG_DIRECTORY."
-    hint: "-Xloggc: - File name for GC logs. Use for debugging"
+    hint: "-Xloggc: - File name for GC logs. Use for debugging."
     advanced: true
     required: false
     group: jvm
