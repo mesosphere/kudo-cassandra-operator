@@ -63,7 +63,7 @@ for template in "${templates[@]}"; do
     fi
   else
     echo >&2 "compiling '${template}' to '${output_file}'"
-    envsubst "${ENV_VARS_STRING}" < "${template}" > "${output_file}"
+    envsubst -no-unset -no-empty "${ENV_VARS_STRING}" < "${template}" > "${output_file}"
   fi
 done
 exit ${ret}
