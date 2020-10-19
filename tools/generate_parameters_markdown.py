@@ -90,7 +90,6 @@ def gen_group(group, parameters, output):
     display_name = group.get("displayName", group.get("name"))
 
     output.write(f'## <a name="{group.get("name")}"></a>  {display_name} \n')
-    output.write(f'Name: {group.get("name")}  \n')
     if "description" in group:
         output.write(f'{group.get("description")}\n')
 
