@@ -1798,7 +1798,7 @@ parameters:
   - name: COMMITLOG_DIRECTORY
     displayName: "Commitlog Directory"
     type: string
-    description: "When running on magnetic HDD, this should be a separate spindle than the data directories. If not set, the default directory is $$CASSANDRA_HOME/data/commitlog."
+    description: "When running on magnetic HDD, this should be a separate spindle than the data directories. If not set, the default directory is $CASSANDRA_HOME/data/commitlog."
     hint: "commitlog_directory - A directory."
     required: false
     advanced: true
@@ -1816,7 +1816,7 @@ parameters:
   - name: SAVED_CACHES_DIRECTORY
     displayName: "Saved Caches Directory"
     type: string
-    description: "Saved caches. If not set, the default directory is $$CASSANDRA_HOME/data/saved_caches."
+    description: "Saved caches. If not set, the default directory is $CASSANDRA_HOME/data/saved_caches."
     hint: "saved_caches_directory - A directory."
     required: false
     advanced: true
