@@ -1,6 +1,7 @@
 # Groups
-|                      Group                      |                                                                                                                  Description                                                                                                                   |
-|-------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+
+| Group                                           | Description                                                                                                                                                                                                                                    |
+| ----------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [General Settings](#general)                    | Common settings for the Operator.                                                                                                                                                                                                              |
 | [Nodes](#nodes)                                 | Common configuration for Cassandra Nodes.                                                                                                                                                                                                      |
 | [Liveness checks](#liveness-checks)             | Parameters to configure the liveness of a Cassandra Node. When a Node fails liveness checks, it is automatically restarted by Kubernetes.                                                                                                      |
@@ -22,12 +23,13 @@
 | [Timeouts](#timeouts)                           | Timeouts.                                                                                                                                                                                                                                      |
 | [Java Virtual Machine Settings](#jvm)           | Settings related to the Java JVM and the Garbage Collector.                                                                                                                                                                                    |
 | [Directories](#directories)                     | Directory configurations. These should usually not be changed, as they probably require changes to the used docker image.                                                                                                                      |
-## <a name="general"></a>  General Settings 
+
+## <a name="general"></a> General Settings
+
 Common settings for the Operator.
 
-
-|               Name                |                                                                        Description                                                                         |              Default              |
-|-----------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------|
+| Name                              | Description                                                                                                                                                | Default                           |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------- |
 | **NODE_COUNT**                    | The number of Cassandra nodes to create for the cluster. Should be an odd number of nodes and at least 3 to create a useful quorum.                        | 3                                 |
 | **NODE_CPU_MC**                   | CPU request for the Cassandra node containers.                                                                                                             | 1000                              |
 | **NODE_CPU_LIMIT_MC**             | CPU limit for the Cassandra node containers.                                                                                                               | 1000                              |
@@ -39,80 +41,89 @@ Common settings for the Operator.
 | **NODE_DOCKER_IMAGE_PULL_POLICY** | Cassandra node Docker image pull policy.                                                                                                                   | Always                            |
 | **POD_MANAGEMENT_POLICY**         | Parallel startup may decrease the startup time of big clusters but lead to failing pods in the beginning when two nodes try to join at the very same time. | OrderedReady                      |
 | **OVERRIDE_CLUSTER_NAME**         | Override the name of the Cassandra cluster set by the operator. This shouldn't be explicit set, unless you know what you're doing.                         |                                   |
-## <a name="nodes"></a>  Nodes 
+
+## <a name="nodes"></a> Nodes
+
 Common configuration for Cassandra Nodes.
 
-
-|         Name         |                                 Description                                  | Default |
-|----------------------|------------------------------------------------------------------------------|---------|
+| Name                 | Description                                                                  | Default |
+| -------------------- | ---------------------------------------------------------------------------- | ------- |
 | **NODE_TOLERATIONS** | A list of kubernetes tolerations to let pods get scheduled on tainted nodes. |         |
-## <a name="liveness-checks"></a>  Liveness checks 
-Parameters to configure the liveness of a Cassandra Node. When a Node fails liveness checks, it is automatically restarted by Kubernetes.
 
+## <a name="liveness-checks"></a> Liveness checks
 
-|                   Name                    |                                                     Description                                                      | Default |
-|-------------------------------------------|----------------------------------------------------------------------------------------------------------------------|---------|
+Parameters to configure the liveness of a Cassandra Node. When a Node fails
+liveness checks, it is automatically restarted by Kubernetes.
+
+| Name                                      | Description                                                                                                          | Default |
+| ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------- | ------- |
 | **NODE_LIVENESS_PROBE_INITIAL_DELAY_S**   | Number of seconds after the container has started before the liveness probe is initiated.                            | 15      |
 | **NODE_LIVENESS_PROBE_PERIOD_S**          | How often (in seconds) to perform the liveness probe.                                                                | 20      |
 | **NODE_LIVENESS_PROBE_TIMEOUT_S**         | How long (in seconds) to wait for a liveness probe to succeed.                                                       | 60      |
 | **NODE_LIVENESS_PROBE_SUCCESS_THRESHOLD** | Minimum consecutive successes for the liveness probe to be considered successful after having failed.                | 1       |
 | **NODE_LIVENESS_PROBE_FAILURE_THRESHOLD** | When a pod starts and the liveness probe fails, `failure_threshold` attempts will be made before restarting the pod. | 3       |
-## <a name="readiness-checks"></a>  Readiness checks 
-Parameters to configure the readiness of a Cassandra Node. When a Node fails readiness checks, it is automatically removed from the service by Kubernetes.
 
+## <a name="readiness-checks"></a> Readiness checks
 
-|                    Name                    |                                                           Description                                                           | Default |
-|--------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------|---------|
+Parameters to configure the readiness of a Cassandra Node. When a Node fails
+readiness checks, it is automatically removed from the service by Kubernetes.
+
+| Name                                       | Description                                                                                                                     | Default |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------- | ------- |
 | **NODE_READINESS_PROBE_INITIAL_DELAY_S**   | Number of seconds after the container has started before the readiness probe is initiated.                                      | 0       |
 | **NODE_READINESS_PROBE_PERIOD_S**          | How often (in seconds) to perform the readiness probe.                                                                          | 5       |
 | **NODE_READINESS_PROBE_TIMEOUT_S**         | How long (in seconds) to wait for a readiness probe to succeed.                                                                 | 60      |
 | **NODE_READINESS_PROBE_SUCCESS_THRESHOLD** | Minimum consecutive successes for the readiness probe to be considered successful after having failed.                          | 1       |
 | **NODE_READINESS_PROBE_FAILURE_THRESHOLD** | When a pod starts and the readiness probe fails, `failure_threshold` attempts will be made before marking the pod as 'unready'. | 3       |
-## <a name="backup"></a>  Backup and Restore 
+
+## <a name="backup"></a> Backup and Restore
+
 Configuration related to backup and restore of the Cassandra Cluster.
 
+| Name                                       | Description                                                                                                       | Default                                      |
+| ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| **BACKUP_RESTORE_ENABLED**                 | Global flag that enables the medusa sidecar for backups.                                                          | False                                        |
+| **BACKUP_TRIGGER**                         | Trigger parameter to start a backup. Simply needs to be changed from the current value to start a backup.         |                                              |
+| **BACKUP_AWS_CREDENTIALS_SECRET**          | If set, can be used to provide the access_key, secret_key and security_token with a secret.                       |                                              |
+| **BACKUP_AWS_S3_BUCKET_NAME**              | The name of the AWS S3 bucket to store the backups.                                                               |                                              |
+| **BACKUP_AWS_S3_STORAGE_PROVIDER**         | Should be one of the s3\_\* values from https://github.com/apache/libcloud/blob/trunk/libcloud/storage/types.py . | s3_us_west_oregon                            |
+| **BACKUP_PREFIX**                          | If a prefix is given, multiple different backups can be stored in the same S3 bucket.                             |                                              |
+| **BACKUP_MEDUSA_CPU_MC**                   | CPU request for the Medusa backup containers.                                                                     | 100                                          |
+| **BACKUP_MEDUSA_CPU_LIMIT_MC**             | CPU limit for the Medusa backup containers.                                                                       | 500                                          |
+| **BACKUP_MEDUSA_MEM_MIB**                  | Memory request for the Medusa backup containers.                                                                  | 256                                          |
+| **BACKUP_MEDUSA_MEM_LIMIT_MIB**            | Memory limit for the Medusa backup containers.                                                                    | 512                                          |
+| **BACKUP_MEDUSA_DOCKER_IMAGE**             | Medusa backup Docker image which is used to make backups.                                                         | mesosphere/kudo-cassandra-medusa:0.6.0-1.0.2 |
+| **BACKUP_MEDUSA_DOCKER_IMAGE_PULL_POLICY** | The Pull policy for the Medusa Docker Image.                                                                      | Always                                       |
+| **BACKUP_NAME**                            | The name of the backup to create or restore.                                                                      |                                              |
 
-|                    Name                    |                                                   Description                                                   |                   Default                    |
-|--------------------------------------------|-----------------------------------------------------------------------------------------------------------------|----------------------------------------------|
-| **BACKUP_RESTORE_ENABLED**                 | Global flag that enables the medusa sidecar for backups.                                                        | False                                        |
-| **BACKUP_TRIGGER**                         | Trigger parameter to start a backup. Simply needs to be changed from the current value to start a backup.       |                                              |
-| **BACKUP_AWS_CREDENTIALS_SECRET**          | If set, can be used to provide the access_key, secret_key and security_token with a secret.                     |                                              |
-| **BACKUP_AWS_S3_BUCKET_NAME**              | The name of the AWS S3 bucket to store the backups.                                                             |                                              |
-| **BACKUP_AWS_S3_STORAGE_PROVIDER**         | Should be one of the s3_* values from https://github.com/apache/libcloud/blob/trunk/libcloud/storage/types.py . | s3_us_west_oregon                            |
-| **BACKUP_PREFIX**                          | If a prefix is given, multiple different backups can be stored in the same S3 bucket.                           |                                              |
-| **BACKUP_MEDUSA_CPU_MC**                   | CPU request for the Medusa backup containers.                                                                   | 100                                          |
-| **BACKUP_MEDUSA_CPU_LIMIT_MC**             | CPU limit for the Medusa backup containers.                                                                     | 500                                          |
-| **BACKUP_MEDUSA_MEM_MIB**                  | Memory request for the Medusa backup containers.                                                                | 256                                          |
-| **BACKUP_MEDUSA_MEM_LIMIT_MIB**            | Memory limit for the Medusa backup containers.                                                                  | 512                                          |
-| **BACKUP_MEDUSA_DOCKER_IMAGE**             | Medusa backup Docker image which is used to make backups.                                                       | mesosphere/kudo-cassandra-medusa:0.6.0-1.0.2 |
-| **BACKUP_MEDUSA_DOCKER_IMAGE_PULL_POLICY** | The Pull policy for the Medusa Docker Image.                                                                    | Always                                       |
-| **BACKUP_NAME**                            | The name of the backup to create or restore.                                                                    |                                              |
-## <a name="restore"></a>  Restore 
+## <a name="restore"></a> Restore
+
 Options only required if a backup should be restored on installation.
 
-
-|           Name            |                                                   Description                                                    | Default |
-|---------------------------|------------------------------------------------------------------------------------------------------------------|---------|
+| Name                      | Description                                                                                                      | Default |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------- | ------- |
 | **RESTORE_FLAG**          | When this is true, all backup configuration must point to an existing backup which is restored as a new cluster. | False   |
 | **RESTORE_OLD_NAMESPACE** | The namespace from the operator that was used to create the backup.                                              |         |
 | **RESTORE_OLD_NAME**      | The instance name from the operator that was used to create the backup.                                          |         |
-## <a name="external"></a>  External Cluster Access 
+
+## <a name="external"></a> External Cluster Access
+
 Allow access to the Cassandra Cluster from outside Kubernetes.
 
-
-|                Name                |                                                                      Description                                                                       | Default |
-|------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
+| Name                               | Description                                                                                                                                            | Default |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ------- |
 | **EXTERNAL_SERVICE**               | Needs to be true for either EXTERNAL_NATIVE_TRANSPORT or EXTERNAL_RPC to work.                                                                         | False   |
 | **EXTERNAL_NATIVE_TRANSPORT**      | This exposes the Cassandra cluster via an external service so it can be accessed from outside the Kubernetes cluster.                                  | False   |
 | **EXTERNAL_RPC**                   | This exposes the Cassandra cluster via an external service so it can be accessed from outside the Kubernetes cluster. Works only if START_RPC is true. | False   |
 | **EXTERNAL_NATIVE_TRANSPORT_PORT** | The external port to use for Cassandra native transport protocol.                                                                                      | 9042    |
 | **EXTERNAL_RPC_PORT**              | The external port to use for Cassandra rpc protocol.                                                                                                   | 9160    |
-## <a name="metrics"></a>  Metrics Export 
+
+## <a name="metrics"></a> Metrics Export
+
 Metrics can be exported with the Prometheus Metrics Exporter.
 
-
-|                       Name                       |                                              Description                                              |                       Default                        |
-|--------------------------------------------------|-------------------------------------------------------------------------------------------------------|------------------------------------------------------|
+| Name                                             | Description                                                                                           | Default                                              |
+| ------------------------------------------------ | ----------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
 | **PROMETHEUS_EXPORTER_ENABLED**                  | A toggle to enable the prometheus metrics exporter.                                                   | False                                                |
 | **PROMETHEUS_EXPORTER_CUSTOM_CONFIG_CM_NAME**    | The properties present in this configmap will be appended to the prometheus configuration properties. |                                                      |
 | **PROMETHEUS_EXPORTER_PORT**                     | Prometheus exporter port.                                                                             | 7200                                                 |
@@ -122,12 +133,14 @@ Metrics can be exported with the Prometheus Metrics Exporter.
 | **PROMETHEUS_EXPORTER_MEM_LIMIT_MIB**            | Memory limit for the Prometheus exporter containers.                                                  | 512                                                  |
 | **PROMETHEUS_EXPORTER_DOCKER_IMAGE**             | The docker image of the Prometheus exporter.                                                          | mesosphere/cassandra-prometheus-exporter:2.3.4-1.0.2 |
 | **PROMETHEUS_EXPORTER_DOCKER_IMAGE_PULL_POLICY** | Prometheus exporter Docker image pull policy.                                                         | Always                                               |
-## <a name="recovery"></a>  Recovery Controller 
-The Recovery Controller allows the Cluster to autoheal when a Kubernetes node fails.
 
+## <a name="recovery"></a> Recovery Controller
 
-|                       Name                       |                            Description                             |                    Default                     |
-|--------------------------------------------------|--------------------------------------------------------------------|------------------------------------------------|
+The Recovery Controller allows the Cluster to autoheal when a Kubernetes node
+fails.
+
+| Name                                             | Description                                                        | Default                                        |
+| ------------------------------------------------ | ------------------------------------------------------------------ | ---------------------------------------------- |
 | **RECOVERY_CONTROLLER**                          | Needs to be true for automatic failure recovery and node eviction. | False                                          |
 | **RECOVERY_CONTROLLER_DOCKER_IMAGE**             | Docker image for the recovery controller.                          | mesosphere/kudo-cassandra-recovery:0.0.2-1.0.2 |
 | **RECOVERY_CONTROLLER_DOCKER_IMAGE_PULL_POLICY** | Recovery controller Docker image pull policy.                      | Always                                         |
@@ -135,30 +148,36 @@ The Recovery Controller allows the Cluster to autoheal when a Kubernetes node fa
 | **RECOVERY_CONTROLLER_CPU_LIMIT_MC**             | CPU limit for the Recovery controller container.                   | 200                                            |
 | **RECOVERY_CONTROLLER_MEM_MIB**                  | Memory request for the Recovery controller container.              | 50                                             |
 | **RECOVERY_CONTROLLER_MEM_LIMIT_MIB**            | Memory limit for the Recovery controller container.                | 256                                            |
-## <a name="repair"></a>  Repair 
+
+## <a name="repair"></a> Repair
+
 Options to repair a node in the cluster.
 
-
-|      Name      |                        Description                        | Default |
-|----------------|-----------------------------------------------------------|---------|
+| Name           | Description                                               | Default |
+| -------------- | --------------------------------------------------------- | ------- |
 | **REPAIR_POD** | Name of the pod on which 'nodetool repair' should be run. |         |
-## <a name="advanced"></a>  Advanced Configuration 
+
+## <a name="advanced"></a> Advanced Configuration
+
 Advanced configuration that is only required for very advanced usecases.
 
-
-|               Name               |                                                       Description                                                        | Default |
-|----------------------------------|--------------------------------------------------------------------------------------------------------------------------|---------|
+| Name                             | Description                                                                                                              | Default |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------ | ------- |
 | **BOOTSTRAP_TIMEOUT**            | Timeout for the bootstrap binary to join the cluster with the new IP. .                                                  | 12h30m  |
 | **SHUTDOWN_OLD_REACHABLE_NODE**  | When a node replace is done, try to connect to the old node and shut it down before starting up the old node.            | False   |
 | **JOLOKIA_PORT**                 | The internal port for the Jolokia Agent. This port is not exposed, but can be changed if it conflicts with another port. | 7777    |
 | **CUSTOM_CASSANDRA_YAML_BASE64** | Base64-encoded Cassandra properties are appended to cassandra.yaml and overwrite the default values.                     |         |
 | **KUBECTL_VERSION**              | Version of 'bitnami/kubectl' image. This image is used for some functionality of the operator.                           | 1.18.4  |
-## <a name="node-advanced"></a>  Advanced Nodes 
-Advanced configuration options for Cassandra nodes. These are not-commonly modifed settings. See https://cassandra.apache.org/doc/latest/configuration/cassandra_config_file.html and other Cassandra documentation for details on parameters.
 
+## <a name="node-advanced"></a> Advanced Nodes
 
-|                          Name                          |                                                                                                                              Description                                                                                                                              |                     Default                     |
-|--------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------|
+Advanced configuration options for Cassandra nodes. These are not-commonly
+modifed settings. See
+https://cassandra.apache.org/doc/latest/configuration/cassandra_config_file.html
+and other Cassandra documentation for details on parameters.
+
+| Name                                                   | Description                                                                                                                                                                                                                                                           | Default                                         |
+| ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
 | **STORAGE_PORT**                                       | The port for inter-node communication.                                                                                                                                                                                                                                | 7000                                            |
 | **SSL_STORAGE_PORT**                                   | The port for inter-node communication over SSL.                                                                                                                                                                                                                       | 7001                                            |
 | **START_NATIVE_TRANSPORT**                             | If true, CQL is enabled.                                                                                                                                                                                                                                              | True                                            |
@@ -200,7 +219,7 @@ Advanced configuration options for Cassandra nodes. These are not-commonly modif
 | **INDEX_SUMMARY_CAPACITY_IN_MB**                       | Fixed memory pool size in MB for SSTable index summaries.                                                                                                                                                                                                             |                                                 |
 | **ENDPOINT_SNITCH**                                    | Set to a class that implements the IEndpointSnitch interface. Cassandra uses the snitch to locate nodes and route requests.                                                                                                                                           | SimpleSnitch                                    |
 | **DISK_FAILURE_POLICY**                                | The policy for how Cassandra responds to disk failure. (https://cassandra.apache.org/doc/latest/configuration/cassandra_config_file.html#disk-failure-policy).                                                                                                        | stop                                            |
-| **ENABLE_USER_DEFINED_FUNCTIONS**                      |  User defined functions (UDFs) present a security risk, since they are executed on the server side. UDFs are executed in a sandbox to contain the execution of malicious code.                                                                                        | False                                           |
+| **ENABLE_USER_DEFINED_FUNCTIONS**                      | User defined functions (UDFs) present a security risk, since they are executed on the server side. UDFs are executed in a sandbox to contain the execution of malicious code.                                                                                         | False                                           |
 | **ENABLE_SCRIPTED_USER_DEFINED_FUNCTIONS**             | Java UDFs are always enabled, if enable_user_defined_functions is true. Enable this option to use UDFs with language javascript or any custom JSR-223 provider. This option has no effect if enable_user_defined_functions is false.                                  | False                                           |
 | **ENABLE_MATERIALIZED_VIEWS**                          | Enables materialized view creation on this node. Materialized views are considered experimental and are not recommended for production use.                                                                                                                           | False                                           |
 | **CDC_ENABLED**                                        | Enable / disable CDC functionality on a per-node basis. This modifies the logic used for write path allocation rejection.                                                                                                                                             | False                                           |
@@ -217,12 +236,13 @@ Advanced configuration options for Cassandra nodes. These are not-commonly modif
 | **JVM_OPT_WRITE_SURVEY**                               | For testing new compaction and compression strategies. It allows you to experiment with different strategies and benchmark write performance differences without affecting the production workload.                                                                   |                                                 |
 | **JVM_OPT_FORCE_DEFAULT_INDEXING_PAGE_SIZE**           | To disable dynamic calculation of the page size used when indexing an entire partition (during initial index build/rebuild). If set to true, the page size will be fixed to the default of 10000 rows per page.                                                       |                                                 |
 | **JVM_OPT_EXPIRATION_DATE_OVERFLOW_POLICY**            | Defines how to handle INSERT requests with TTL exceeding the maximum supported expiration date. (https://docs.datastax.com/en/dse/6.0/dse-dev/datastax_enterprise/config/cassandraSystemProperties.html)                                                              |                                                 |
-## <a name="security"></a>  Security 
+
+## <a name="security"></a> Security
+
 Security related settings.
 
-
-|                         Name                         |                                                                                                                                                                Description                                                                                                                                                                |                                                                                              Default                                                                                              |
-|------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Name                                                 | Description                                                                                                                                                                                                                                                                                                                               | Default                                                                                                                                                                                           |
+| ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **TRANSPORT_ENCRYPTION_ENABLED**                     | Enable node-to-node encryption.                                                                                                                                                                                                                                                                                                           | False                                                                                                                                                                                             |
 | **TRANSPORT_ENCRYPTION_CLIENT_ENABLED**              | Enable client-to-node encryption.                                                                                                                                                                                                                                                                                                         | False                                                                                                                                                                                             |
 | **TRANSPORT_ENCRYPTION_CIPHERS**                     | Comma-separated list of JSSE Cipher Suite Names. Might require changes to the installed Java Runtime.                                                                                                                                                                                                                                     | TLS_RSA_WITH_AES_128_CBC_SHA,TLS_RSA_WITH_AES_256_CBC_SHA,TLS_DHE_RSA_WITH_AES_128_CBC_SHA,TLS_DHE_RSA_WITH_AES_256_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA |
@@ -236,18 +256,19 @@ Security related settings.
 | **ROLE_MANAGER**                                     | Part of the Authentication & Authorization backend that implements IRoleManager to maintain grants and memberships between roles, By default, the value set is Apache Cassandra's out of the box Role Manager: CassandraRoleManager. (https://cassandra.apache.org/doc/latest/operating/security.html#roles)                              | CassandraRoleManager                                                                                                                                                                              |
 | **ROLES_VALIDITY_IN_MS**                             | Validity period for roles cache; set to 0 to disable.                                                                                                                                                                                                                                                                                     | 2000                                                                                                                                                                                              |
 | **ROLES_UPDATE_INTERVAL_IN_MS**                      | After this interval, cache entries become eligible for refresh. Upon next access, Cassandra schedules an async reload, and returns the old value until the reload completes. If roles_validity_in_ms is non-zero, then this must be also.                                                                                                 |                                                                                                                                                                                                   |
-| **CREDENTIALS_VALIDITY_IN_MS**                       |  This cache is tightly coupled to the provided PasswordAuthenticator implementation of IAuthenticator. If another IAuthenticator implementation is configured, Cassandra does not use this cache, and these settings have no effect. Set to 0 to disable.                                                                                 | 2000                                                                                                                                                                                              |
+| **CREDENTIALS_VALIDITY_IN_MS**                       | This cache is tightly coupled to the provided PasswordAuthenticator implementation of IAuthenticator. If another IAuthenticator implementation is configured, Cassandra does not use this cache, and these settings have no effect. Set to 0 to disable.                                                                                  | 2000                                                                                                                                                                                              |
 | **CREDENTIALS_UPDATE_INTERVAL_IN_MS**                | After this interval, cache entries become eligible for refresh. The next time the cache is accessed, the system schedules an asynchronous reload of the cache. Until this cache reload is complete, the cache returns the old values. If credentials_validity_in_ms is nonzero, this property must also be nonzero.                       |                                                                                                                                                                                                   |
 | **PERMISSIONS_VALIDITY_IN_MS**                       | How many milliseconds permissions in cache remain valid. Fetching permissions can be resource intensive. To disable the cache, set this to 0.                                                                                                                                                                                             | 2000                                                                                                                                                                                              |
 | **PERMISSIONS_UPDATE_INTERVAL_IN_MS**                | If enabled, sets refresh interval for the permissions cache. After this interval, cache entries become eligible for refresh. On next access, Cassandra schedules an async reload and returns the old value until the reload completes. If permissions_validity_in_ms is nonzero, permissions_update_interval_in_ms must also be non-zero. |                                                                                                                                                                                                   |
 | **INTERNODE_AUTHENTICATOR**                          | The internode authentication backend.                                                                                                                                                                                                                                                                                                     |                                                                                                                                                                                                   |
 | **JVM_OPT_DISABLE_AUTH_CACHES_REMOTE_CONFIGURATION** | To disable configuration via JMX of auth caches (such as those for credentials, permissions and roles). This will mean those config options can only be set (persistently) in cassandra.yaml and will require a restart for new values to take effect.                                                                                    |                                                                                                                                                                                                   |
-## <a name="caches"></a>  Caches 
+
+## <a name="caches"></a> Caches
+
 Cache related settings.
 
-
-|                     Name                     |                                                                                                                Description                                                                                                                | Default |
-|----------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
+| Name                                         | Description                                                                                                                                                                                                                               | Default |
+| -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
 | **KEY_CACHE_SIZE_IN_MB**                     | A global cache setting for the maximum size of the key cache in memory (for all tables). .                                                                                                                                                |         |
 | **KEY_CACHE_SAVE_PERIOD**                    | The duration in seconds that keys are saved in cache. Saved caches greatly improve cold-start speeds and has relatively little effect on I/O.                                                                                             | 14400   |
 | **KEY_CACHE_KEYS_TO_SAVE**                   | The number of keys from the key cache to save.                                                                                                                                                                                            |         |
@@ -263,23 +284,25 @@ Cache related settings.
 | **PREPARED_STATEMENTS_CACHE_SIZE_MB**        | Maximum size of the native protocol prepared statement cache.                                                                                                                                                                             |         |
 | **THRIFT_PREPARED_STATEMENTS_CACHE_SIZE_MB** | Maximum size of the Thrift prepared statement cache. Leave empty if you do not use Thrift/RPC.                                                                                                                                            |         |
 | **COLUMN_INDEX_CACHE_SIZE_IN_KB**            | A threshold for the total size of all index entries for a partition that the database stores in the partition key cache.                                                                                                                  | 2       |
-## <a name="racks_and_dc"></a>  Racks and Datacenter Awareness 
+
+## <a name="racks_and_dc"></a> Racks and Datacenter Awareness
+
 Options related to Rack Awareness and Multi-Datacenter options.
 
-
-|            Name             |                                                                                                                             Description                                                                                                                             | Default |
-|-----------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
+| Name                        | Description                                                                                                                                                                                                                                                         | Default |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
 | **NODE_TOPOLOGY**           | This describes a multi-datacenter setup. When set it has precedence over NODE_COUNT. See docs/multidatacenter.md for more details.                                                                                                                                  |         |
 | **SERVICE_ACCOUNT_INSTALL** | If true, the operator automatically installs a cluster role, service account and role binding. This is required for advanced functionality of multi-datacenter setups.                                                                                              | False   |
 | **NODE_ANTI_AFFINITY**      | Ensure that every Cassandra node is deployed on a separate Kubernetes node. (https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity)                                                                         | False   |
 | **EXTERNAL_SEED_NODES**     | List of seed nodes external to this instance to add to the cluster. This allows clusters spanning multiple Kubernetes clusters.                                                                                                                                     |         |
 | **INTER_DC_TCP_NODELAY**    | Enable or disable tcp_nodelay for inter-dc communication. Disabling it will result in larger (but fewer) network packets being sent, reducing overhead from the TCP protocol itself, at the cost of increasing latency if you block for cross-datacenter responses. |         |
-## <a name="optimization"></a>  Optimization Settings 
+
+## <a name="optimization"></a> Optimization Settings
+
 Settings to fine-tune the Cassandra cluster and optimize the performance.
 
-
-|                     Name                     |                                                                                                                                                                                                        Description                                                                                                                                                                                                        |   Default    |
-|----------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------|
+| Name                                         | Description                                                                                                                                                                                                                                                                                                                                                                                                               | Default      |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ |
 | **COMMITLOG_SYNC**                           | The method that Cassandra uses to acknowledge writes in milliseconds.                                                                                                                                                                                                                                                                                                                                                     | periodic     |
 | **COMMITLOG_SYNC_PERIOD_IN_MS**              | The number of milliseconds between disk fsync calls.                                                                                                                                                                                                                                                                                                                                                                      | 5000         |
 | **COMMITLOG_SYNC_BATCH_WINDOW_IN_MS**        | Time to wait between batch fsyncs, if commitlog_sync is in batch mode then default value should be: 2.                                                                                                                                                                                                                                                                                                                    |              |
@@ -305,12 +328,13 @@ Settings to fine-tune the Cassandra cluster and optimize the performance.
 | **TRACETYPE_QUERY_TTL**                      | TTL for different trace types used during logging of the query process.                                                                                                                                                                                                                                                                                                                                                   |              |
 | **TRACETYPE_REPAIR_TTL**                     | TTL for different trace types used during logging of the repair process.                                                                                                                                                                                                                                                                                                                                                  |              |
 | **JVM_OPT_AVAILABLE_PROCESSORS**             | In a multi-instance deployment, multiple Cassandra instances will independently assume that all CPU processors are available to it. This setting allows you to specify a smaller set of processors and perhaps have affinity.                                                                                                                                                                                             |              |
-## <a name="safety_thresholds"></a>  Safety Thresholds 
+
+## <a name="safety_thresholds"></a> Safety Thresholds
+
 Warning and Failure Thresholds.
 
-
-|                        Name                         |                                                                                Description                                                                                | Default |
-|-----------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
+| Name                                                | Description                                                                                                                                                               | Default |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
 | **TOMBSTONE_WARN_THRESHOLD**                        | The maximum number of tombstones a query can scan before warning.                                                                                                         | 1000    |
 | **TOMBSTONE_FAILURE_THRESHOLD**                     | The maximum number of tombstones a query can scan before aborting.                                                                                                        | 100000  |
 | **BATCH_SIZE_WARN_THRESHOLD_IN_KB**                 | Warn the operator on a batch size exceeding this value in kilobytes. Caution should be taken on increasing the size of this threshold as it can lead to node instability. | 5       |
@@ -321,12 +345,13 @@ Warning and Failure Thresholds.
 | **GC_LOG_THRESHOLD_IN_MS**                          | GC Pauses greater than this interval will be logged at INFO level. This threshold can be adjusted to minimize logging if necessary.                                       | 200     |
 | **MAX_VALUE_SIZE_IN_MB**                            | The maximum size of any value in SSTables.                                                                                                                                |         |
 | **SLOW_QUERY_LOG_TIMEOUT_IN_MS**                    | How long before a node logs slow queries. Select queries that exceed this value generate an aggregated log message to identify slow queries. To disable, set to 0.        | 500     |
-## <a name="network"></a>  Network 
+
+## <a name="network"></a> Network
+
 Network related settings.
 
-
-|                           Name                           |                                                                                              Description                                                                                              | Default |
-|----------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
+| Name                                                     | Description                                                                                                                                                                                           | Default |
+| -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
 | **THRIFT_FRAMED_TRANSPORT_SIZE_IN_MB**                   | Frame size (maximum field length) for Thrift.                                                                                                                                                         | 15      |
 | **INTERNODE_SEND_BUFF_SIZE_IN_BYTES**                    | Set socket buffer size for internode communication Note that when setting this, the buffer size is limited by net.core.wmem_max and when not setting it it is defined by net.ipv4.tcp_wm.             |         |
 | **INTERNODE_RECV_BUFF_SIZE_IN_BYTES**                    | Set socket buffer size for internode communication Note that when setting this, the buffer size is limited by net.core.wmem_max and when not setting it it is defined by net.ipv4.tcp_wmem.           |         |
@@ -339,12 +364,13 @@ Network related settings.
 | **STREAM_THROUGHPUT_OUTBOUND_MEGABITS_PER_SEC**          | The maximum throughput of all outbound streaming file transfers on a node.                                                                                                                            |         |
 | **INTER_DC_STREAM_THROUGHPUT_OUTBOUND_MEGABITS_PER_SEC** | The maximum throughput of all streaming file transfers between datacenters.                                                                                                                           |         |
 | **JVM_OPT_PREFER_IPV4_STACK**                            | Prefer binding to IPv4 network intefaces (when net.ipv6.bindv6only=1). See http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6342561 (short version: comment out this entry to enable IPv6 support). | True    |
-## <a name="timeouts"></a>  Timeouts 
+
+## <a name="timeouts"></a> Timeouts
+
 Timeouts.
 
-
-|                  Name                   |                                          Description                                           | Default |
-|-----------------------------------------|------------------------------------------------------------------------------------------------|---------|
+| Name                                    | Description                                                                                    | Default |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------- | ------- |
 | **READ_REQUEST_TIMEOUT_IN_MS**          | The time that the coordinator waits for read operations to complete in ms.                     | 5000    |
 | **RANGE_REQUEST_TIMEOUT_IN_MS**         | The time that the coordinator waits for range scans complete in ms.                            | 10000   |
 | **WRITE_REQUEST_TIMEOUT_IN_MS**         | The time that the coordinator waits for write operations to complete in ms.                    | 2000    |
@@ -353,12 +379,13 @@ Timeouts.
 | **TRUNCATE_REQUEST_TIMEOUT_IN_MS**      | The time that the coordinator waits for truncate operations to complete in ms.                 | 60000   |
 | **REQUEST_TIMEOUT_IN_MS**               | The default timeout for all other requests in ms.                                              | 10000   |
 | **CROSS_NODE_TIMEOUT**                  | Operation timeout information exchange between nodes (to accurately measure request timeouts). | False   |
-## <a name="jvm"></a>  Java Virtual Machine Settings 
+
+## <a name="jvm"></a> Java Virtual Machine Settings
+
 Settings related to the Java JVM and the Garbage Collector.
 
-
-|                     Name                      |                                                                                                                                                        Description                                                                                                                                                        | Default |
-|-----------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
+| Name                                          | Description                                                                                                                                                                                                                                                                                                               | Default |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
 | **NODE_MIN_HEAP_SIZE_MB**                     | The minimum JVM heap size in MB. This has a smart default and doesn't need to be explicitly set.                                                                                                                                                                                                                          |         |
 | **NODE_MAX_HEAP_SIZE_MB**                     | The maximum JVM heap size in MB. This has a smart default and doesn't need to be explicitly set.                                                                                                                                                                                                                          |         |
 | **NODE_NEW_GENERATION_HEAP_SIZE_MB**          | The JVM new generation heap size in MB.                                                                                                                                                                                                                                                                                   |         |
@@ -377,20 +404,24 @@ Settings related to the Java JVM and the Garbage Collector.
 | **JVM_OPT_GC_LOG_DIRECTORY**                  | GC logging options: GC_LOG_DIRECTORY.                                                                                                                                                                                                                                                                                     |         |
 | **JVM_OPT_PRINT_FLS_STATISTICS**              | GC logging options: PrintFLSStatistics.                                                                                                                                                                                                                                                                                   |         |
 | **CUSTOM_JVM_OPTIONS_BASE64**                 | Base64-encoded JVM options are appended to the default jvm.options and overwrite existing values there.                                                                                                                                                                                                                   |         |
-## <a name="directories"></a>  Directories 
-Directory configurations. These should usually not be changed, as they probably require changes to the used docker image.
 
+## <a name="directories"></a> Directories
 
-|            Name            |                                                                           Description                                                                           | Default |
-|----------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
-| **HINTS_DIRECTORY**        | Directory where Cassandra should store hints.                                                                                                                   |         |
-| **COMMITLOG_DIRECTORY**    | When running on magnetic HDD, this should be a separate spindle than the data directories. If not set, the default directory is $CASSANDRA_HOME/data/commitlog. |         |
-| **CDC_RAW_DIRECTORY**      | CommitLogSegments are moved to this directory on flush if cdc_enabled: true and the segment contains mutations for a CDC-enabled table.                         |         |
-| **SAVED_CACHES_DIRECTORY** | Saved caches. If not set, the default directory is $CASSANDRA_HOME/data/saved_caches.                                                                           |         |
-| **JVM_OPT_TRIGGERS_DIR**   | Set the default location for the trigger JARs. (Default: conf/triggers).                                                                                        |         |
-## <a name=""></a>  Ungrouped Parameters 
+Directory configurations. These should usually not be changed, as they probably
+require changes to the used docker image.
+
+| Name                       | Description                                                                                                                                                      | Default |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| **HINTS_DIRECTORY**        | Directory where Cassandra should store hints.                                                                                                                    |         |
+| **COMMITLOG_DIRECTORY**    | When running on magnetic HDD, this should be a separate spindle than the data directories. If not set, the default directory is \$CASSANDRA_HOME/data/commitlog. |         |
+| **CDC_RAW_DIRECTORY**      | CommitLogSegments are moved to this directory on flush if cdc_enabled: true and the segment contains mutations for a CDC-enabled table.                          |         |
+| **SAVED_CACHES_DIRECTORY** | Saved caches. If not set, the default directory is \$CASSANDRA_HOME/data/saved_caches.                                                                           |         |
+| **JVM_OPT_TRIGGERS_DIR**   | Set the default location for the trigger JARs. (Default: conf/triggers).                                                                                         |         |
+
+## <a name=""></a> Ungrouped Parameters
+
 All parameters that are not assigned to a specific group.
 
+| Name | Description | Default |
+| ---- | ----------- | ------- |
 
-|  Name   | Description | Default |
-|---------|-------------|---------|
