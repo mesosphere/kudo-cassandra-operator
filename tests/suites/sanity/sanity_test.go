@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/kudobuilder/kudo/pkg/apis/kudo/v1beta1"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/kudobuilder/test-tools/pkg/client"
 	"github.com/kudobuilder/test-tools/pkg/debug"
@@ -192,6 +193,8 @@ var _ = Describe(TestName, func() {
 		)
 
 		configuration, err = cassandra.NodeJVMOptions(Client, Operator.Instance)
+
+		log.Infof("JVMOptions: %v", configuration)
 
 		Expect(err).To(BeNil())
 		Expect(configuration[parameter]).To(Equal(initialValue))
