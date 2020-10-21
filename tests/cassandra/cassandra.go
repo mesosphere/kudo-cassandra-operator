@@ -309,8 +309,6 @@ func configurationFromNodeLogs(
 		return nil, err
 	}
 
-	log.Infof("Got Configuration: %s", string(logs))
-
 	scanner := bufio.NewScanner(bytes.NewReader(logs))
 	configurationLinePattern := regexp.MustCompile(regex)
 

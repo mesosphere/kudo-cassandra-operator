@@ -186,7 +186,6 @@ var _ = Describe(TestName, func() {
 
 		By("Configuring Cassandra JVM options through custom options")
 		parameter = "-XX:CMSWaitDuration"
-		initialValue = "10000"
 		desiredValue = "11000"
 		desiredEncodedProperties = base64.StdEncoding.EncodeToString(
 			[]byte(parameter + "=" + desiredValue),
@@ -197,7 +196,7 @@ var _ = Describe(TestName, func() {
 		log.Infof("JVMOptions: %v", configuration)
 
 		Expect(err).To(BeNil())
-		Expect(configuration[parameter]).To(Equal(initialValue))
+		Expect(configuration[parameter]).To(BeNil())
 
 		err = Operator.Instance.UpdateParameters(map[string]string{
 			"CUSTOM_JVM_OPTIONS_BASE64": desiredEncodedProperties,
