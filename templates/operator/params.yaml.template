@@ -3,86 +3,107 @@ groups:
   - name: general
     displayName: "General Settings"
     description: "Common settings for the Operator."
+    prio: 10
 
   - name: nodes
     displayName: "Nodes"
     description: "Common configuration for Cassandra Nodes."
+    prio: 20
 
   - name: liveness-checks
     displayName: "Liveness checks"
     description: "Parameters to configure the liveness of a Cassandra Node. When a Node fails liveness checks, it is automatically restarted by Kubernetes."
+    prio: 30
 
   - name: readiness-checks
     displayName: "Readiness checks"
     description: "Parameters to configure the readiness of a Cassandra Node. When a Node fails readiness checks, it is automatically removed from the service by Kubernetes."
+    prio: 40
 
   - name: backup
     displayName: "Backup and Restore"
     description: "Configuration related to backup and restore of the Cassandra Cluster."
+    prio: 50
 
   - name: restore
     displayName: "Restore"
     description: "Options only required if a backup should be restored on installation."
+    prio: 60
 
   - name: external
     displayName: "External Cluster Access"
     description: "Allow access to the Cassandra Cluster from outside Kubernetes."
+    prio: 70
 
   - name: metrics
     displayName: "Metrics Export"
     description: "Metrics can be exported with the Prometheus Metrics Exporter."
+    prio: 80
 
   - name: recovery
     displayName: "Recovery Controller"
     description: "The Recovery Controller allows the Cluster to autoheal when a Kubernetes node fails."
+    prio: 90
 
   - name: repair
     displayName: "Repair"
     description: "Options to repair a node in the cluster."
+    prio: 100
 
   - name: advanced
     displayName: "Advanced Configuration"
     description: "Advanced configuration that is only required for very advanced usecases."
+    prio: 110
 
   - name: node-advanced
     displayName: "Advanced Nodes"
     description: "Advanced configuration options for Cassandra nodes. These are not-commonly modifed settings. See https://cassandra.apache.org/doc/latest/configuration/cassandra_config_file.html and other Cassandra documentation for details on parameters."
+    prio: 120
 
   - name: security
     displayName: "Security"
     description: "Security related settings."
+    prio: 130
 
   - name: caches
     displayName: "Caches"
     description: "Cache related settings."
+    prio: 140
 
   - name: racks_and_dc
     displayName: "Racks and Datacenter Awareness"
     description: "Options related to Rack Awareness and Multi-Datacenter options."
+    prio: 150
 
   - name: optimization
     displayName: "Optimization Settings"
     description: "Settings to fine-tune the Cassandra cluster and optimize the performance."
+    prio: 160
 
   - name: safety_thresholds
     displayName: "Safety Thresholds"
     description: "Warning and Failure Thresholds."
+    prio: 170
 
   - name: network
     displayName: "Network"
     description: "Network related settings."
+    prio: 180
 
   - name: timeouts
     displayName: "Timeouts"
     description: "Timeouts."
+    prio: 190
 
   - name: jvm
     displayName: "Java Virtual Machine Settings"
     description: "Settings related to the Java JVM and the Garbage Collector."
+    prio: 200
 
   - name: directories
     displayName: "Directories"
     description: "Directory configurations. These should usually not be changed, as they probably require changes to the used docker image."
+    prio: 210
 
 parameters:
   ################################################################################
@@ -91,7 +112,6 @@ parameters:
 
   - name: NODE_COUNT
     description: "The number of Cassandra nodes to create for the cluster. Should be an odd number of nodes and at least 3 to create a useful quorum."
-    default: "3"
     displayName: "Node Count"
     hint: "Number of Cassandra nodes."
     type: integer
