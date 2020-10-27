@@ -112,6 +112,7 @@ parameters:
 
   - name: NODE_COUNT
     description: "The number of Cassandra nodes to create for the cluster. Should be an odd number of nodes and at least 3 to create a useful quorum."
+    default: "3"
     displayName: "Node Count"
     hint: "Number of Cassandra nodes."
     type: integer
