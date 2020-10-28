@@ -1,1033 +1,2179 @@
 apiVersion: kudo.dev/v1beta1
+groups:
+  - name: general
+    displayName: "General Settings"
+    description: "Common settings for the Operator."
+    prio: 10
+
+  - name: nodes
+    displayName: "Nodes"
+    description: "Common configuration for Cassandra Nodes."
+    prio: 20
+
+  - name: liveness-checks
+    displayName: "Liveness checks"
+    description: "Parameters to configure the liveness of a Cassandra Node. When a Node fails liveness checks, it is automatically restarted by Kubernetes."
+    prio: 30
+
+  - name: readiness-checks
+    displayName: "Readiness checks"
+    description: "Parameters to configure the readiness of a Cassandra Node. When a Node fails readiness checks, it is automatically removed from the service by Kubernetes."
+    prio: 40
+
+  - name: backup
+    displayName: "Backup and Restore"
+    description: "Configuration related to backup and restore of the Cassandra Cluster."
+    prio: 50
+
+  - name: restore
+    displayName: "Restore"
+    description: "Options only required if a backup should be restored on installation."
+    prio: 60
+
+  - name: external
+    displayName: "External Cluster Access"
+    description: "Allow access to the Cassandra Cluster from outside Kubernetes."
+    prio: 70
+
+  - name: metrics
+    displayName: "Metrics Export"
+    description: "Metrics can be exported with the Prometheus Metrics Exporter."
+    prio: 80
+
+  - name: recovery
+    displayName: "Recovery Controller"
+    description: "The Recovery Controller allows the Cluster to autoheal when a Kubernetes node fails."
+    prio: 90
+
+  - name: repair
+    displayName: "Repair"
+    description: "Options to repair a node in the cluster."
+    prio: 100
+
+  - name: advanced
+    displayName: "Advanced Configuration"
+    description: "Advanced configuration that is only required for very advanced usecases."
+    prio: 110
+
+  - name: node-advanced
+    displayName: "Advanced Nodes"
+    description: "Advanced configuration options for Cassandra nodes. These are not-commonly modifed settings. See https://cassandra.apache.org/doc/latest/configuration/cassandra_config_file.html and other Cassandra documentation for details on parameters."
+    prio: 120
+
+  - name: security
+    displayName: "Security"
+    description: "Security related settings."
+    prio: 130
+
+  - name: caches
+    displayName: "Caches"
+    description: "Cache related settings."
+    prio: 140
+
+  - name: racks_and_dc
+    displayName: "Racks and Datacenter Awareness"
+    description: "Options related to Rack Awareness and Multi-Datacenter options."
+    prio: 150
+
+  - name: optimization
+    displayName: "Optimization Settings"
+    description: "Settings to fine-tune the Cassandra cluster and optimize the performance."
+    prio: 160
+
+  - name: safety_thresholds
+    displayName: "Safety Thresholds"
+    description: "Warning and Failure Thresholds."
+    prio: 170
+
+  - name: network
+    displayName: "Network"
+    description: "Network related settings."
+    prio: 180
+
+  - name: timeouts
+    displayName: "Timeouts"
+    description: "Timeouts."
+    prio: 190
+
+  - name: jvm
+    displayName: "Java Virtual Machine Settings"
+    description: "Settings related to the Java JVM and the Garbage Collector."
+    prio: 200
+
+  - name: directories
+    displayName: "Directories"
+    description: "Directory configurations. These should usually not be changed, as they probably require changes to the used docker image."
+    prio: 210
+
 parameters:
   ################################################################################
   ############################### Operator settings ##############################
   ################################################################################
 
   - name: NODE_COUNT
-    description: "Number of Cassandra nodes."
+    description: "The number of Cassandra nodes to create for the cluster. Should be an odd number of nodes and at least 3 to create a useful quorum."
     default: "3"
+    displayName: "Node Count"
+    hint: "Number of Cassandra nodes."
+    type: integer
+    group: general
 
   - name: NODE_CPU_MC
-    description: "CPU request (in millicores) for the Cassandra node containers."
+    displayName: "CPU Request"
+    hint: "Allowed CPU usage in millicores."
+    description: "CPU request for the Cassandra node containers."
+    type: integer
     default: "1000"
+    group: general
 
   - name: NODE_CPU_LIMIT_MC
-    description: "CPU limit (in millicores) for the Cassandra node containers."
+    displayName: "CPU Limit"
+    hint: "Temporary allowed CPU limit in millicores."
+    description: "CPU limit for the Cassandra node containers."
     default: "1000"
+    type: integer
+    group: general
 
   - name: NODE_MEM_MIB
-    description: "Memory request (in MiB) for the Cassandra node containers."
+    displayName: "Memory Request"
+    description: "Memory request for the Cassandra node containers."
+    hint: "Allowed Memory usage in MiB."
     default: "4096"
+    type: integer
+    group: general
 
   - name: NODE_MEM_LIMIT_MIB
-    description: "Memory limit (in MiB) for the Cassandra node containers."
+    displayName: "Memory Limit"
+    description: "Memory limit for the Cassandra node containers."
+    hint: "Temporary allowed Memory limit in MiB."
     default: "4096"
+    type: integer
+    group: general
 
   - name: NODE_DISK_SIZE_GIB
     description: "Disk size (in GiB) for the Cassandra node containers."
     default: "20"
+    displayName: "Disk Size"
+    hint: "Peristent memory in GiB."
+    type: integer
+    group: general
 
   - name: NODE_STORAGE_CLASS
+    displayName: "Storage Class"
+    type: string
     description: "The storage class to be used in volumeClaimTemplates. By default, it is not required and the default storage class is used."
+    hint: "The kubernetes storage class."
     required: false
+    advanced: true
+    group: general
 
   - name: NODE_DOCKER_IMAGE
+    displayName: "Main Docker Image"
+    type: string
     description: "Cassandra node Docker image."
+    hint: "Docker Image for Cassandra."
     default: "${CASSANDRA_DOCKER_IMAGE}"
+    advanced: true
+    group: general
 
   - name: NODE_DOCKER_IMAGE_PULL_POLICY
+    displayName: "Main Docker Image Pull Policy"
+    type: string
     description: "Cassandra node Docker image pull policy."
+    hint: "Pull policy."
     default: "Always"
+    advanced: true
+    group: general
+    enum:
+      - "Always"
+      - "IfNotPresent"
+      - "Never"
+
+  - name: POD_MANAGEMENT_POLICY
+    displayName: "Pod Management Policy"
+    hint: "Whether to start pods in order or parallel."
+    description: "Parallel startup may decrease the startup time of big clusters but lead to failing pods in the beginning when two nodes try to join at the very same time."
+    type: string
+    default: "OrderedReady"
+    group: general
+    enum:
+      - "OrderedReady"
+      - "Parallel"
 
   - name: NODE_READINESS_PROBE_INITIAL_DELAY_S
     description: "Number of seconds after the container has started before the readiness probe is initiated."
     default: "0"
+    type: integer
+    displayName: "Initial Delay"
+    hint: "Number of seconds."
+    group: readiness-checks
 
   - name: NODE_READINESS_PROBE_PERIOD_S
     description: "How often (in seconds) to perform the readiness probe."
     default: "5"
+    type: integer
+    displayName: "Repeat Period"
+    hint: "Number of seconds."
+    group: readiness-checks
 
   - name: NODE_READINESS_PROBE_TIMEOUT_S
     description: "How long (in seconds) to wait for a readiness probe to succeed."
     default: "60"
+    type: integer
+    displayName: "Timeout"
+    hint: "Number of seconds."
+    group: readiness-checks
 
   - name: NODE_READINESS_PROBE_SUCCESS_THRESHOLD
     description: "Minimum consecutive successes for the readiness probe to be considered successful after having failed."
     default: "1"
+    type: integer
+    displayName: "Success Threshold"
+    hint: "Number of successes after failure."
+    group: readiness-checks
 
   - name: NODE_READINESS_PROBE_FAILURE_THRESHOLD
     description: "When a pod starts and the readiness probe fails, `failure_threshold` attempts will be made before marking the pod as 'unready'."
     default: "3"
+    type: integer
+    displayName: "Failure Threshold"
+    hint: "Number of failures."
+    group: readiness-checks
 
   - name: NODE_LIVENESS_PROBE_INITIAL_DELAY_S
     description: "Number of seconds after the container has started before the liveness probe is initiated."
     default: "15"
+    type: integer
+    displayName: "Initial Delay"
+    hint: "Number of seconds."
+    group: liveness-checks
 
   - name: NODE_LIVENESS_PROBE_PERIOD_S
     description: "How often (in seconds) to perform the liveness probe."
     default: "20"
+    type: integer
+    displayName: "Repeat Period"
+    hint: "Number of seconds."
+    group: liveness-checks
 
   - name: NODE_LIVENESS_PROBE_TIMEOUT_S
     description: "How long (in seconds) to wait for a liveness probe to succeed."
     default: "60"
+    type: integer
+    displayName: "Timeout"
+    hint: "Number of seconds."
+    group: liveness-checks
 
   - name: NODE_LIVENESS_PROBE_SUCCESS_THRESHOLD
     description: "Minimum consecutive successes for the liveness probe to be considered successful after having failed."
     default: "1"
+    type: integer
+    displayName: "Success Threshold"
+    hint: "Number of successes after failure."
+    group: liveness-checks
 
   - name: NODE_LIVENESS_PROBE_FAILURE_THRESHOLD
     description: "When a pod starts and the liveness probe fails, `failure_threshold` attempts will be made before restarting the pod."
     default: "3"
+    type: integer
+    displayName: "Failure Threshold"
+    hint: "Number of failures."
+    group: liveness-checks
 
   - name: NODE_TOLERATIONS
-    description: A list of kubernetes tolerations to let pods get scheduled on tainted nodes
+    description: "A list of kubernetes tolerations to let pods get scheduled on tainted nodes."
+    displayName: "Node Tolerations"
+    hint: "YAML definition of node tolerations."
     type: array
+    advanced: true
+    required: false
+    group: nodes
 
   - name: OVERRIDE_CLUSTER_NAME
+    displayName: "Cluster Name Override"
+    hint: "Uniqe cluster name to separate multiple clusters."
+    type: string
     description: "Override the name of the Cassandra cluster set by the operator. This shouldn't be explicit set, unless you know what you're doing."
     default: ""
+    advanced: true
+    group: general
 
   - name: EXTERNAL_SERVICE
-    displayName: "Main toggle for external access"
-    description: "Needs to be true for either EXTERNAL_NATIVE_TRANSPORT or EXTERNAL_RPC to work"
+    displayName: "External access"
+    hint: "Main toggle for external access."
+    type: boolean
+    description: "Needs to be true for either EXTERNAL_NATIVE_TRANSPORT or EXTERNAL_RPC to work."
     default: "false"
+    group: external
 
   - name: EXTERNAL_NATIVE_TRANSPORT
-    displayName: "Enable external native transport"
-    description: "This exposes the Cassandra cluster via an external service so it can be accessed from outside the Kubernetes cluster"
+    displayName: "Native transport"
+    hint: "Enable external native transport access."
+    type: boolean
+    description: "This exposes the Cassandra cluster via an external service so it can be accessed from outside the Kubernetes cluster."
     default: "false"
+    group: external
 
   - name: EXTERNAL_RPC
-    displayName: "Enable external rpc"
-    description: "This exposes the Cassandra cluster via an external service so it can be accessed from outside the Kubernetes cluster. Works only if START_RPC is true"
+    displayName: "RPC"
+    hint: "Enable external RPC access."
+    type: boolean
+    description: "This exposes the Cassandra cluster via an external service so it can be accessed from outside the Kubernetes cluster. Works only if START_RPC is true."
     default: "false"
+    group: external
 
   - name: EXTERNAL_NATIVE_TRANSPORT_PORT
-    displayName: "External advertised native transport port"
+    displayName: "Native Transport Port"
+    hint: "External advertised native transport port."
+    type: integer
     description: "The external port to use for Cassandra native transport protocol."
     default: "9042"
+    group: external
 
   - name: EXTERNAL_RPC_PORT
-    displayName: "External advertised rpc port"
+    displayName: "RPC Port"
+    hint: "External advertised rpc port."
+    type: integer
     description: "The external port to use for Cassandra rpc protocol."
     default: "9160"
+    group: external
 
   - name: BOOTSTRAP_TIMEOUT
-    description: "Timeout for the bootstrap binary to join the cluster with the new IP. Valid time units are 'ns', 'us', 'ms', 's', 'm', 'h'."
+    displayName: "Bootstrap Timeout"
+    type: string
+    hint: "Timeout, Valid units are 'ns', 'us', 'ms', 's', 'm', 'h'."
+    description: "Timeout for the bootstrap binary to join the cluster with the new IP. ."
     default: "12h30m"
+    advanced: true
+    group: advanced
 
   - name: SHUTDOWN_OLD_REACHABLE_NODE
-    description: "When a node replace is done, try to connect to the old node and shut it down before starting up the old node"
+    displayName: "Shutdown old reachable Nodes"
+    type: boolean
+    description: "When a node replace is done, try to connect to the old node and shut it down before starting up the old node."
+    hint: "Experimental flag to shutdown a Cassandra node that was replaced."
     default: false
+    advanced: true
+    group: advanced
 
   - name: JOLOKIA_PORT
+    displayName: Jolokia Port
+    hint: "Change only in case of port conflicts."
+    type: integer
     description: "The internal port for the Jolokia Agent. This port is not exposed, but can be changed if it conflicts with another port."
-    default: 7777
+    default: "7777"
+    advanced: true
+    group: advanced
 
   ################################################################################
   ########################## Backup and Restore settings #########################
   ################################################################################
 
   - name: BACKUP_RESTORE_ENABLED
-    description: "Global flag that enables the medusa sidecar for backups"
+    displayName: "Enable Backup and Restore"
+    description: "Global flag that enables the medusa sidecar for backups."
+    hint: "Start the Medusa Container."
+    type: boolean
+    group: backup
     default: "false"
 
   - name: BACKUP_TRIGGER
-    description: "Trigger parameter to start a backup. Simply needs to be changed from the current value to start a backup"
-    default: "1"
+    displayName: "Trigger Backup"
+    type: string
+    hint: "Do not set this on installation. Used to trigger a backup."
+    description: "Trigger parameter to start a backup. Simply needs to be changed from the current value to start a backup."
+    group: backup
     trigger: backup
+    advanced: true
+    required: false
 
   - name: BACKUP_AWS_CREDENTIALS_SECRET
-    description: If set, can be used to provide the access_key, secret_key and security_token with a secret
+    displayName: "AWS Credentials Secret"
+    hint: "Name of a Kubernetes Secret."
+    type: string
+    description: "If set, can be used to provide the access_key, secret_key and security_token with a secret."
     required: false
+    group: backup
 
   - name: BACKUP_AWS_S3_BUCKET_NAME
-    description: The name of the AWS S3 bucket to store the backups
+    displayName: "AWS S3 Bucket"
+    hint: "Name of an S3 bucket."
+    type: string
+    description: "The name of the AWS S3 bucket to store the backups."
     required: false
+    group: backup
 
   - name: BACKUP_AWS_S3_STORAGE_PROVIDER
-    description: Should be one of the s3_* values from https://github.com/apache/libcloud/blob/trunk/libcloud/storage/types.py
+    displayName: "AWS Storage Provider"
+    hint: "A Storage Provider Type."
+    type: string
+    description: "Should be one of the s3_* values from https://github.com/apache/libcloud/blob/trunk/libcloud/storage/types.py ."
     required: false
     default: s3_us_west_oregon
+    group: backup
 
   - name: BACKUP_PREFIX
-    description: A prefix to be used inside the S3 bucket
+    displayName: "Backup Prefix"
+    hint: "A prefix to be used inside the S3 bucket."
+    type: string
+    description: "If a prefix is given, multiple different backups can be stored in the same S3 bucket."
     required: false
+    group: backup
 
   - name: BACKUP_MEDUSA_CPU_MC
-    description: "CPU request (in millicores) for the Medusa backup containers."
+    displayName: "CPU request"
+    hint: "CPU request in millicores."
+    type: integer
+    description: "CPU request for the Medusa backup containers."
     default: "100"
+    advanced: true
+    group: backup
 
   - name: BACKUP_MEDUSA_CPU_LIMIT_MC
-    description: "CPU limit (in millicores) for the Medusa backup containers."
+    displayName: "CPU limit"
+    hint: "CPU limit in millicores."
+    type: integer
+    description: "CPU limit for the Medusa backup containers."
     default: "500"
+    advanced: true
+    group: backup
 
   - name: BACKUP_MEDUSA_MEM_MIB
-    description: "Memory request (in MiB) for the Medusa backup containers."
+    displayName: "Memory request"
+    hint: "Memory request in MiB."
+    type: integer
+    description: "Memory request for the Medusa backup containers."
     default: "256"
+    advanced: true
+    group: backup
 
   - name: BACKUP_MEDUSA_MEM_LIMIT_MIB
-    description: "Memory limit (in MiB) for the Medusa backup containers."
+    displayName: "Memory limit"
+    hint: "Memory limit in MiB."
+    type: integer
+    description: "Memory limit for the Medusa backup containers."
     default: "512"
+    advanced: true
+    group: backup
 
   - name: BACKUP_MEDUSA_DOCKER_IMAGE
-    description: "Medusa backup Docker image."
+    displayName: "Docker Image"
+    hint: "The Medusa Docker Image."
+    description: "Medusa backup Docker image which is used to make backups."
+    type: string
     default: "${MEDUSA_BACKUP_DOCKER_IMAGE}"
+    advanced: true
+    group: backup
 
   - name: BACKUP_MEDUSA_DOCKER_IMAGE_PULL_POLICY
-    description: "Medusa backup Docker image pull policy."
+    displayName: "Pull Policy"
+    hint: "The Docker Image Pull Policy."
+    description: "The Pull policy for the Medusa Docker Image."
+    type: string
     default: "Always"
+    advanced: true
+    group: backup
+    enum:
+      - "Always"
+      - "IfNotPresent"
+      - "Never"
 
   - name: BACKUP_NAME
-    description: "The name of the backup to create or restore"
-    default: ""
+    displayName: "Backup Name"
+    hint: "Do not use on installation."
+    type: string
+    description: "The name of the backup to create or restore."
+    required: false
+    group: backup
 
   - name: RESTORE_FLAG
-    description: "If true, a restore is done on installation"
+    displayName: "Restore"
+    hint: "If true, an existing backup is restored on installation."
+    type: boolean
+    description: "When this is true, all backup configuration must point to an existing backup which is restored as a new cluster."
     default: "false"
+    advanced: true
+    group: restore
 
   - name: RESTORE_OLD_NAMESPACE
-    description: "The namespace from the operator that was used to create the backup"
+    displayName: "Old Namespace for Restore"
+    hint: "The Namespace that was used when creating the backup."
+    type: string
+    description: "The namespace from the operator that was used to create the backup."
+    advanced: true
     default: ""
+    group: restore
 
   - name: RESTORE_OLD_NAME
-    description: "The instance name from the operator that was used to create the backup"
+    displayName: "Old Name for Restore"
+    hint: "The Instance Name that was used when creating the backup."
+    type: string
+    description: "The instance name from the operator that was used to create the backup."
+    advanced: true
     default: ""
+    group: restore
 
   ################################################################################
   ######################### Datacenter and Rack awareness ########################
   ################################################################################
 
   - name: NODE_TOPOLOGY
+    displayName: "Node Topology"
     description: "This describes a multi-datacenter setup. When set it has precedence over NODE_COUNT. See docs/multidatacenter.md for more details."
+    hint: "A list of node-topology yaml values."
     default:
     type: array
-
-  - name: NODE_ANTI_AFFINITY
-    description: "Ensure that every Cassandra node is deployed on separate hosts."
-    default: "false"
+    group: racks_and_dc
 
   - name: SERVICE_ACCOUNT_INSTALL
-    description: "This flag can be set to true to automatic installation of a cluster role, service account and role binding."
+    displayName: "ServiceAccount Install"
+    description: "If true, the operator automatically installs a cluster role, service account and role binding. This is required for advanced functionality of multi-datacenter setups."
+    hint: "Automatically install RBAC elements."
+    type: boolean
+    default: "false"
+    group: racks_and_dc
+
+  - name: NODE_ANTI_AFFINITY
+    displayName: "Node Anti-Affinity"
+    description: "Ensure that every Cassandra node is deployed on a separate Kubernetes node. (https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity)"
+    hint: "Deploy on separate Kubernetes nodes."
+    type: boolean
+    group: racks_and_dc
     default: "false"
 
   - name: EXTERNAL_SEED_NODES
+    displayName: "External Seed Nodes"
     description: "List of seed nodes external to this instance to add to the cluster. This allows clusters spanning multiple Kubernetes clusters."
+    hint: "List of IP-Adresses or host names."
     default:
     type: array
+    group: racks_and_dc
 
   ################################################################################
   ######################### Prometheus exporter settings #########################
   ################################################################################
 
   - name: PROMETHEUS_EXPORTER_ENABLED
+    displayName: "Metrics Enabled"
+    hint: "Global toggle for metrics exporter."
     description: "A toggle to enable the prometheus metrics exporter."
+    type: boolean
     default: "false"
-
-  - name: PROMETHEUS_EXPORTER_PORT
-    description: "Prometheus exporter port."
-    default: "7200"
-
-  - name: PROMETHEUS_EXPORTER_CPU_MC
-    description: "CPU request (in millicores) for the Prometheus exporter containers."
-    default: "500"
-
-  - name: PROMETHEUS_EXPORTER_CPU_LIMIT_MC
-    description: "CPU limit (in millicores) for the Prometheus exporter containers."
-    default: "1000"
-
-  - name: PROMETHEUS_EXPORTER_MEM_MIB
-    description: "Memory request (in MiB) for the Prometheus exporter containers."
-    default: "512"
-
-  - name: PROMETHEUS_EXPORTER_MEM_LIMIT_MIB
-    description: "Memory limit (in MiB) for the Prometheus exporter containers."
-    default: "512"
-
-  - name: PROMETHEUS_EXPORTER_DOCKER_IMAGE
-    description: "Prometheus exporter Docker image."
-    default: "${PROMETHEUS_EXPORTER_DOCKER_IMAGE}"
-
-  - name: PROMETHEUS_EXPORTER_DOCKER_IMAGE_PULL_POLICY
-    description: "Prometheus exporter Docker image pull policy."
-    default: "Always"
+    group: metrics
 
   - name: PROMETHEUS_EXPORTER_CUSTOM_CONFIG_CM_NAME
-    displayName: "custom prometheus configuration configmap name"
-    description: "The properties present in this configmap will be appended to the prometheus configuration properties"
+    displayName: "Custom prometheus configuration configmap name"
+    description: "The properties present in this configmap will be appended to the prometheus configuration properties."
+    hint: "Name of a config map."
+    type: string
     required: false
+    group: metrics
+
+  - name: PROMETHEUS_EXPORTER_PORT
+    displayName: "Port"
+    hint: "Port used for prometheus exporter."
+    type: integer
+    description: "Prometheus exporter port."
+    default: "7200"
+    advanced: true
+    group: metrics
+
+  - name: PROMETHEUS_EXPORTER_CPU_MC
+    displayName: "CPU Request"
+    hint: "Allowed CPU usage in millicores."
+    description: "CPU request for the Prometheus exporter containers."
+    type: integer
+    default: "500"
+    advanced: true
+    group: metrics
+
+  - name: PROMETHEUS_EXPORTER_CPU_LIMIT_MC
+    displayName: "CPU Limit"
+    hint: "Allowed CPU limit in millicores."
+    description: "CPU limit for the Prometheus exporter containers."
+    type: integer
+    default: "1000"
+    advanced: true
+    group: metrics
+
+  - name: PROMETHEUS_EXPORTER_MEM_MIB
+    displayName: "Memory Request"
+    description: "Memory request for the Prometheus exporter containers."
+    hint: "Allowed Memory usage in MiB."
+    default: "512"
+    type: integer
+    advanced: true
+    group: metrics
+
+  - name: PROMETHEUS_EXPORTER_MEM_LIMIT_MIB
+    displayName: "Memory Limit"
+    description: "Memory limit for the Prometheus exporter containers."
+    hint: "Temporary allowed Memory limit in MiB."
+    default: "512"
+    type: integer
+    advanced: true
+    group: metrics
+
+  - name: PROMETHEUS_EXPORTER_DOCKER_IMAGE
+    displayName: "Docker Image"
+    type: string
+    hint: "Prometheus Docker Image."
+    description: "The docker image of the Prometheus exporter."
+    default: "${PROMETHEUS_EXPORTER_DOCKER_IMAGE}"
+    advanced: true
+    group: metrics
+
+  - name: PROMETHEUS_EXPORTER_DOCKER_IMAGE_PULL_POLICY
+    displayName: "Pull Policy"
+    type: string
+    hint: "Docker Image Pull Policy."
+    description: "Prometheus exporter Docker image pull policy."
+    default: "Always"
+    advanced: true
+    enum:
+      - "Always"
+      - "IfNotPresent"
+      - "Never"
+    group: metrics
 
   ################################################################################
   ########################### Cassandra node settings ############################
   ################################################################################
 
   - name: STORAGE_PORT
+    displayName: "Storage Port"
+    hint: "A port number over 1024."
+    type: integer
     description: "The port for inter-node communication."
     default: "7000"
+    group: node-advanced
 
   - name: SSL_STORAGE_PORT
+    displayName: "SSL Storage Port"
+    hint: "A port number over 1024."
+    type: integer
     description: "The port for inter-node communication over SSL."
     default: "7001"
-
-  - name: NATIVE_TRANSPORT_PORT
-    description: "The port for CQL communication."
-    default: "9042"
-
-  - name: RPC_PORT
-    description: "The port for Thrift RPC communication."
-    default: "9160"
-
-  - name: JMX_PORT
-    description: "The JMX port that will be used to interface with the Cassandra application."
-    default: "7199"
-
-  - name: RMI_PORT
-    description: "The RMI port that will be used to interface with the Cassandra application when TRANSPORT_ENCRYPTION_ENABLED is set."
-    default: "7299"
-
-  - name: JMX_LOCAL_ONLY
-    description: "If true, the JMX port will only be opened on localhost and not be available to the cluster"
-    default: "true"
-
-  - name: TRANSPORT_ENCRYPTION_ENABLED
-    description: "Enable node-to-node encryption."
-    default: "false"
-
-  - name: TRANSPORT_ENCRYPTION_CLIENT_ENABLED
-    description: "Enable client-to-node encryption."
-    default: "false"
-
-  - name: TRANSPORT_ENCRYPTION_CIPHERS
-    description: "Comma-separated list of JSSE Cipher Suite Names."
-    default: "TLS_RSA_WITH_AES_128_CBC_SHA,TLS_RSA_WITH_AES_256_CBC_SHA,TLS_DHE_RSA_WITH_AES_128_CBC_SHA,TLS_DHE_RSA_WITH_AES_256_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA"
-
-  - name: TRANSPORT_ENCRYPTION_CLIENT_ALLOW_PLAINTEXT
-    description: "Enable Server-Client plaintext communication alongside encrypted traffic."
-    default: "false"
-
-  - name: TRANSPORT_ENCRYPTION_REQUIRE_CLIENT_AUTH
-    description: "Enable client certificate authentication on node-to-node transport encryption."
-    default: "true"
-
-  - name: TRANSPORT_ENCRYPTION_CLIENT_REQUIRE_CLIENT_AUTH
-    description: "Enable client certificate authentication on client-to-node transport encryption."
-    default: "true"
-
-  - name: TLS_SECRET_NAME
-    description: "The TLS secret that contains the self-signed certificate (cassandra.crt) and the private key (cassandra.key). The secret will be mounted as a volume to make the artifacts available."
-    default: "cassandra-tls"
-
-  - name: NODE_MIN_HEAP_SIZE_MB
-    description: "The minimum JVM heap size in MB. This has a smart default and doesn't need to be explicitly set."
-    default: ""
-
-  - name: NODE_MAX_HEAP_SIZE_MB
-    description: "The maximum JVM heap size in MB. This has a smart default and doesn't need to be explicitly set."
-    default: ""
-
-  - name: NODE_NEW_GENERATION_HEAP_SIZE_MB
-    description: "The JVM new generation heap size in MB."
-    default: ""
-
-  - name: SEED_PROVIDER_CLASS
-    description: "The class within Cassandra that handles the seed logic."
-    default: "org.apache.cassandra.locator.SimpleSeedProvider"
-
-  - name: NUM_TOKENS
-    description: "The number of tokens assigned to each node."
-    default: "256"
-
-  - name: HINTED_HANDOFF_ENABLED
-    description: "If true, hinted handoff is enabled for the cluster."
-    default: "true"
-
-  - name: MAX_HINT_WINDOW_IN_MS
-    description: "The maximum amount of time, in ms, that hints are generated for an unresponsive node."
-    default: "10800000"
-
-  - name: HINTED_HANDOFF_THROTTLE_IN_KB
-    description: "The maximum throttle per delivery thread in KBs per second."
-    default: "1024"
-
-  - name: MAX_HINTS_DELIVERY_THREADS
-    description: "The maximum number of delivery threads for hinted handoff."
-    default: "2"
-
-  - name: BATCHLOG_REPLAY_THROTTLE_IN_KB
-    description: "The total maximum throttle for replaying failed logged batches in KBs per second."
-    default: "1024"
-
-  - name: AUTHENTICATOR
-    description: "Authentication backend, implementing IAuthenticator; used to identify users."
-    default: "AllowAllAuthenticator"
-
-  - name: AUTHENTICATION_SECRET_NAME
-    description: "Name of the secret containing the credentials used by the operator when running 'nodetool' for its functionality. Only relevant if AUTHENTICATOR is set to 'PasswordAuthenticator'. The secret needs to have a 'username' and a 'password' entry."
-    default: ""
-
-  - name: AUTHORIZER
-    description: "Authorization backend, implementing IAuthorizer; used to limit access/provide permissions."
-    default: "AllowAllAuthorizer"
-
-  - name: ROLE_MANAGER
-    description: "Part of the Authentication & Authorization backend that implements IRoleManager to maintain grants and memberships between roles, By default, the value set is Apache Cassandra's out of the box Role Manager: CassandraRoleManager"
-    default: "CassandraRoleManager"
-
-  - name: ROLES_VALIDITY_IN_MS
-    description: "Validity period for roles cache; set to 0 to disable"
-    default: "2000"
-
-  - name: ROLES_UPDATE_INTERVAL_IN_MS
-    description: "After this interval, cache entries become eligible for refresh. Upon next access, Cassandra schedules an async reload, and returns the old value until the reload completes. If roles_validity_in_ms is non-zero, then this must be also."
-    default: ""
-
-  - name: CREDENTIALS_VALIDITY_IN_MS
-    description: " This cache is tightly coupled to the provided PasswordAuthenticator implementation of IAuthenticator. If another IAuthenticator implementation is configured, Cassandra does not use this cache, and these settings have no effect. Set to 0 to disable."
-    default: "2000"
-
-  - name: CREDENTIALS_UPDATE_INTERVAL_IN_MS
-    description: "After this interval, cache entries become eligible for refresh. The next time the cache is accessed, the system schedules an asynchronous reload of the cache. Until this cache reload is complete, the cache returns the old values. If credentials_validity_in_ms is nonzero, this property must also be nonzero."
-    default: ""
-
-  - name: PERMISSIONS_VALIDITY_IN_MS
-    description: "How many milliseconds permissions in cache remain valid. Fetching permissions can be resource intensive. To disable the cache, set this to 0."
-    default: "2000"
-
-  - name: PERMISSIONS_UPDATE_INTERVAL_IN_MS
-    description: "If enabled, sets refresh interval for the permissions cache. After this interval, cache entries become eligible for refresh. On next access, Cassandra schedules an async reload and returns the old value until the reload completes. If permissions_validity_in_ms is nonzero, permissions_update_interval_in_ms must also be non-zero."
-    default: ""
-
-  - name: PARTITIONER
-    description: "The partitioner used to distribute rows across the cluster. Murmur3Partitioner is the recommended setting. RandomPartitioner and ByteOrderedPartitioner are supported for legacy applications."
-    default: "org.apache.cassandra.dht.Murmur3Partitioner"
-
-  - name: KEY_CACHE_SAVE_PERIOD
-    description: "The duration in seconds that keys are saved in cache. Saved caches greatly improve cold-start speeds and has relatively little effect on I/O."
-    default: "14400"
-
-  - name: ROW_CACHE_SIZE_IN_MB
-    description: "Maximum size of the row cache in memory. Row cache can save more time than key_cache_size_in_mb, but is space-intensive because it contains the entire row. Use the row cache only for hot rows or static rows. 0 disables the row cache."
-    default: "0"
-
-  - name: ROW_CACHE_SAVE_PERIOD
-    description: "Duration in seconds that rows are saved in cache. 0 disables caching."
-    default: "0"
-
-  - name: COMMITLOG_SYNC_PERIOD_IN_MS
-    description: "The number of milliseconds between disk fsync calls."
-    default: "10000"
-
-  - name: COMMITLOG_SYNC_BATCH_WINDOW_IN_MS
-    description: "Time to wait between batch fsyncs, if commitlog_sync is in batch mode then default value should be: 2"
-    default: ""
-
-  - name: COMMITLOG_SEGMENT_SIZE_IN_MB
-    description: "The size of each commit log segment in Mb."
-    default: "32"
-
-  - name: CONCURRENT_READS
-    description: "For workloads with more data than can fit in memory, the bottleneck is reads fetching data from disk. Setting to (16 times the number of drives) allows operations to queue low enough in the stack so that the OS and drives can reorder them."
-    default: "16"
-
-  - name: CONCURRENT_WRITES
-    description: "Writes in Cassandra are rarely I/O bound, so the ideal number of concurrent writes depends on the number of CPU cores in your system. The recommended value is 8 times the number of cpu cores."
-    default: "32"
-
-  - name: CONCURRENT_COUNTER_WRITES
-    description: "Counter writes read the current values before incrementing and writing them back. The recommended value is (16 times the number of drives) ."
-    default: "16"
-
-  - name: MEMTABLE_ALLOCATION_TYPE
-    description: "The type of allocations for the Cassandra memtable. heap_buffers keep all data on the JVM heap. offheap_buffers may reduce heap utilization for large string or binary values. offheap_objects may improve heap size for small integers or UUIDs as well. Both off heap options will increase read latency."
-    default: "heap_buffers"
-
-  - name: INDEX_SUMMARY_RESIZE_INTERVAL_IN_MINUTES
-    description: "How frequently index summaries should be re-sampled in minutes. This is done periodically to redistribute memory from the fixed-size pool to SSTables proportional their recent read rates."
-    default: "60"
+    group: node-advanced
 
   - name: START_NATIVE_TRANSPORT
+    displayName: "Enable Native Transport"
+    type: boolean
     description: "If true, CQL is enabled."
+    hint: "start_native_transport - CQL. Defaults to true."
     default: "true"
+    group: node-advanced
 
-  - name: START_RPC
-    description: "If true, Thrift RPC is enabled. This is deprecated but may be necessary for legacy applications."
-    default: "false"
-
-  - name: RPC_KEEPALIVE
-    description: "Enables or disables keepalive on client connections (RPC or native)."
-    default: "true"
-
-  - name: THRIFT_FRAMED_TRANSPORT_SIZE_IN_MB
-    description: "Frame size (maximum field length) for Thrift."
-    default: "15"
-
-  - name: TOMBSTONE_WARN_THRESHOLD
-    description: "The maximum number of tombstones a query can scan before warning."
-    default: "1000"
-
-  - name: TOMBSTONE_FAILURE_THRESHOLD
-    description: "The maximum number of tombstones a query can scan before aborting."
-    default: "100000"
-
-  - name: COLUMN_INDEX_SIZE_IN_KB
-    description: "The granularity of the index of rows within a partition. For huge rows, decrease this setting to improve seek time. If you use key cache, be careful not to make this setting too large because key cache will be overwhelmed."
-    default: "64"
-
-  - name: BATCH_SIZE_WARN_THRESHOLD_IN_KB
-    description: "Warn the operator on a batch size exceeding this value in kilobytes. Caution should be taken on increasing the size of this threshold as it can lead to node instability."
-    default: "5"
-
-  - name: BATCH_SIZE_FAIL_THRESHOLD_IN_KB
-    description: "Fail batch sizes exceeding this value in kilobytes. Caution should be taken on increasing the size of this threshold as it can lead to node instability."
-    default: "50"
-
-  - name: COMPACTION_THROUGHPUT_MB_PER_SEC
-    description: "Throttles compaction to the specified total throughput across the node. Compaction frequency varies with direct proportion to write throughput and is necessary to limit the SSTable size. The recommended value is 16 to 32 times the rate of write throughput (in MB/second)."
-    default: "16"
-
-  - name: SSTABLE_PREEMPTIVE_OPEN_INTERVAL_IN_MB
-    description: "When compacting, the replacement opens SSTables before they are completely written and uses in place of the prior SSTables for any range previously written. This setting helps to smoothly transfer reads between the SSTables by reducing page cache churn and keeps hot rows hot."
-    default: "50"
-
-  - name: READ_REQUEST_TIMEOUT_IN_MS
-    description: "The time that the coordinator waits for read operations to complete in ms."
-    default: "5000"
-
-  - name: RANGE_REQUEST_TIMEOUT_IN_MS
-    description: "The time that the coordinator waits for range scans complete in ms."
-    default: "10000"
-
-  - name: WRITE_REQUEST_TIMEOUT_IN_MS
-    description: "The time that the coordinator waits for write operations to complete in ms."
-    default: "2000"
-
-  - name: COUNTER_WRITE_REQUEST_TIMEOUT_IN_MS
-    description: "The time that the coordinator waits for counter write operations to complete in ms."
-    default: "5000"
-
-  - name: CAS_CONTENTION_TIMEOUT_IN_MS
-    description: "The time for which the coordinator will retry CAS operations on the same row in ms."
-    default: "1000"
-
-  - name: TRUNCATE_REQUEST_TIMEOUT_IN_MS
-    description: "The time that the coordinator waits for truncate operations to complete in ms."
-    default: "60000"
-
-  - name: REQUEST_TIMEOUT_IN_MS
-    description: "The default timeout for all other requests in ms."
-    default: "10000"
-
-  - name: DYNAMIC_SNITCH_UPDATE_INTERVAL_IN_MS
-    description: "The time, in ms, the snitch will wait before updating node scores."
-    default: "100"
-
-  - name: DYNAMIC_SNITCH_RESET_INTERVAL_IN_MS
-    description: "The time, in ms, the snitch will wait before resetting node scores allowing bad nodes to recover."
-    default: "600000"
-
-  - name: DYNAMIC_SNITCH_BADNESS_THRESHOLD
-    description: "Sets the performance threshold for dynamically routing client requests away from a poorly performing node."
-    default: "0.1"
-
-  - name: INTERNODE_COMPRESSION
-    description: "Controls whether traffic between nodes is compressed. all compresses all traffic. none compresses no traffic. dc compresses between datacenters."
-    default: "dc"
-
-  - name: MAX_HINTS_FILE_SIZE_IN_MB
-    description: "The maximum size of the hints file in Mb."
-    default: "128"
-
-  - name: HINTS_FLUSH_PERIOD_IN_MS
-    description: "The time, in ms, for the period in which hints are flushed to disk."
-    default: "10000"
-
-  - name: CONCURRENT_MATERIALIZED_VIEW_WRITES
-    description: "The maximum number of concurrent writes to materialized views."
-    default: "32"
-
-  - name: COMMITLOG_TOTAL_SPACE_IN_MB
-    description: "The total size of the commit log in Mb."
-    default: ""
-
-  - name: AUTO_SNAPSHOT
-    description: "Take a snapshot of the data before truncating a keyspace or dropping a table"
-    default: "true"
-
-  - name: KEY_CACHE_KEYS_TO_SAVE
-    description: "The number of keys from the key cache to save"
-    default: ""
-
-  - name: ROW_CACHE_KEYS_TO_SAVE
-    description: "The number of keys from the row cache to save"
-    default: ""
-
-  - name: COUNTER_CACHE_KEYS_TO_SAVE
-    description: "The number of keys from the counter cache to save"
-    default: ""
-
-  - name: FILE_CACHE_SIZE_IN_MB
-    description: "The total memory to use for SSTable-reading buffers"
-    default: ""
-
-  - name: MEMTABLE_HEAP_SPACE_IN_MB
-    description: "The amount of on-heap memory allocated for memtables"
-    default: ""
-
-  - name: MEMTABLE_OFFHEAP_SPACE_IN_MB
-    description: "The total amount of off-heap memory allocated for memtables"
-    default: ""
-
-  - name: MEMTABLE_CLEANUP_THRESHOLD
-    description: "The ratio used for automatic memtable flush"
-    default: ""
-
-  - name: MEMTABLE_FLUSH_WRITERS
-    description: "The number of memtable flush writer threads"
-    default: ""
-
-  - name: LISTEN_ON_BROADCAST_ADDRESS
-    description: "Listen on the address set in broadcast_address property"
-    default: ""
-
-  - name: INTERNODE_AUTHENTICATOR
-    description: "The internode authentication backend"
-    default: ""
+  - name: NATIVE_TRANSPORT_PORT
+    displayName: "Native Transport Port"
+    hint: "A port number over 1024."
+    type: integer
+    description: "The port for CQL communication."
+    default: "9042"
+    group: node-advanced
 
   - name: NATIVE_TRANSPORT_MAX_THREADS
-    description: "The maximum number of thread handling requests"
-    default: ""
+    displayName: "Native Transport Max Threads"
+    type: integer
+    description: "The maximum number of thread handling requests."
+    hint: "native_transport_max_threads - Number of Threads. 128 if not set."
+    required: false
+    advanced: true
+    group: node-advanced
 
   - name: NATIVE_TRANSPORT_MAX_FRAME_SIZE_IN_MB
-    description: "The maximum allowed size of a frame"
-    default: ""
+    displayName: "Native Transport Max Frame Size"
+    type: integer
+    description: "The maximum allowed size of a frame. If you're changing this parameter, you may want to adjust max_value_size_in_mb accordingly. This should be positive and less than 2048."
+    hint: "native_transport_max_frame_size_in_mb - In MB. 256 if not set."
+    required: false
+    advanced: true
+    group: node-advanced
 
   - name: NATIVE_TRANSPORT_MAX_CONCURRENT_CONNECTIONS
-    description: "The maximum number of concurrent client connections"
-    default: ""
+    displayName: "Native Transport Max Concurrent Connections"
+    type: integer
+    description: "The maximum number of concurrent client connections. Defaults to -1, meaning unlimited."
+    hint: "native_transport_max_concurrent_connections - unlimited if not set."
+    required: false
+    advanced: true
+    group: node-advanced
 
   - name: NATIVE_TRANSPORT_MAX_CONCURRENT_CONNECTIONS_PER_IP
-    description: "The maximum number of concurrent client connections per source IP address"
-    default: ""
+    displayName: "Native Transport Max Concurrent Connections per IP"
+    type: integer
+    description: "The maximum number of concurrent client connections per source IP address. Defaults to -1, meaning unlimited."
+    hint: "native_transport_max_concurrent_connections_per_ip - unlimited if not set."
+    required: false
+    advanced: true
+    group: node-advanced
 
-  - name: RPC_MIN_THREADS
-    description: "The minimum thread pool size for remote procedure calls"
-    default: ""
+  - name: RPC_PORT
+    displayName: "RPC Port"
+    type: integer
+    hint: "A port number over 1024."
+    description: "The port for Thrift RPC communication."
+    default: "9160"
+    group: node-advanced
 
-  - name: RPC_MAX_THREADS
-    description: "The maximum thread pool size for remote procedure calls"
-    default: ""
+  - name: JMX_PORT
+    displayName: "JMX Port"
+    type: integer
+    description: "The JMX port that will be used to interface with the Cassandra application."
+    hint: "A port number over 1024."
+    default: "7199"
+    group: node-advanced
 
-  - name: RPC_SEND_BUFF_SIZE_IN_BYTES
-    description: "The sending socket buffer size in bytes for remote procedure calls"
-    default: ""
+  - name: RMI_PORT
+    displayName: "JMX RMI Port"
+    type: integer
+    description: "The RMI port that will be used to interface with the Cassandra application when TRANSPORT_ENCRYPTION_ENABLED is set."
+    hint: "A port number over 1024."
+    default: "7299"
+    group: node-advanced
 
-  - name: RPC_RECV_BUFF_SIZE_IN_BYTES
-    description: "The receiving socket buffer size for remote procedure calls"
-    default: ""
+  - name: JMX_LOCAL_ONLY
+    displayName: "JMX Local Only"
+    type: boolean
+    description: "If true, the JMX port will only be opened on localhost and not be available inside the Kubernetes cluster."
+    hint: "Start JMX on localhost only."
+    default: "true"
+    group: node-advanced
 
-  - name: CONCURRENT_COMPACTORS
-    description: "The number of concurrent compaction processes allowed to run simultaneously on a node"
-    default: ""
-
-  - name: STREAM_THROUGHPUT_OUTBOUND_MEGABITS_PER_SEC
-    description: "The maximum throughput of all outbound streaming file transfers on a node"
-    default: ""
-
-  - name: INTER_DC_STREAM_THROUGHPUT_OUTBOUND_MEGABITS_PER_SEC
-    description: "The maximum throughput of all streaming file transfers between datacenters"
-    default: ""
-
-  - name: STREAMING_KEEP_ALIVE_PERIOD_IN_SECS
-    description: "Interval to send keep-alive messages. The stream session fails when a keep-alive message is not received for 2 keep-alive cycles."
-    default: ""
-
-  - name: PHI_CONVICT_THRESHOLD
-    description: "The sensitivity of the failure detector on an exponential scale"
-    default: ""
-
-  - name: BUFFER_POOL_USE_HEAP_IF_EXHAUSTED
-    description: "Allocate on-heap memory when the SSTable buffer pool is exhausted"
-    default: ""
-
-  - name: DISK_OPTIMIZATION_STRATEGY
-    description: "The strategy for optimizing disk reads"
-    default: ""
-
-  - name: MAX_VALUE_SIZE_IN_MB
-    description: "The maximum size of any value in SSTables"
-    default: ""
-
-  - name: OTC_COALESCING_STRATEGY
-    description: "The strategy to use for coalescing network messages. Values can be: fixed, movingaverage, timehorizon, disabled (default)"
-    default: ""
-
-  - name: UNLOGGED_BATCH_ACROSS_PARTITIONS_WARN_THRESHOLD
-    description: "Causes Cassandra to log a WARN message on any batches not of type LOGGED that span across more partitions than this limit."
-    default: "10"
-
-  - name: COMPACTION_LARGE_PARTITION_WARNING_THRESHOLD_MB
-    description: "Cassandra logs a warning when compacting partitions larger than the set value."
-    default: "100"
-
-  - name: REQUEST_SCHEDULER
-    description: "The scheduler to handle incoming client requests according to a defined policy. This scheduler is useful for throttling client requests in single clusters containing multiple keyspaces."
-    default: "org.apache.cassandra.scheduler.NoScheduler"
-
-  - name: INTER_DC_TCP_NODELAY
-    description: "Enable this property for inter-datacenter communication."
+  - name: START_RPC
+    displayName: "Start Thrift RPC"
+    type: boolean
+    description: "If true, Thrift RPC is enabled. This is deprecated but may be necessary for legacy applications."
+    hint: "start_rpc - Defaults to false."
     default: "false"
-
-  - name: TRACETYPE_QUERY_TTL
-    description: "TTL for different trace types used during logging of the query process."
-    default: "86400"
-
-  - name: TRACETYPE_REPAIR_TTL
-    description: "TTL for different trace types used during logging of the repair process."
-    default: "604800"
-
-  - name: GC_WARN_THRESHOLD_IN_MS
-    description: "Any GC pause longer than this interval is logged at the WARN level."
-    default: "1000"
-
-  - name: WINDOWS_TIMER_INTERVAL
-    description: "The default Windows kernel timer and scheduling resolution is 15.6ms for power conservation. Lowering this value on Windows can provide much tighter latency and better throughput, however some virtualized environments may see a negative performance impact from changing this setting below their system default."
-    default: "1"
-
-  - name: COUNTER_CACHE_SAVE_PERIOD
-    description: "the amount of time after which Cassandra saves the counter cache (keys only)."
-    default: "7200"
-
-  - name: TRICKLE_FSYNC_INTERVAL_IN_KB
-    description: "The size of the fsync in kilobytes."
-    default: "10240"
-
-  - name: TRICKLE_FSYNC
-    description: "When set to true, causes fsync to force the operating system to flush the dirty buffers at the set interval "
-    default: "false"
-
-  - name: INCREMENTAL_BACKUPS
-    description: "Backs up data updated since the last snapshot was taken. When enabled, Cassandra creates a hard link to each SSTable flushed or streamed locally in a backups subdirectory of the keyspace data."
-    default: "false"
-
-  - name: SNAPSHOT_BEFORE_COMPACTION
-    description: "Enables or disables taking a snapshot before each compaction. A snapshot is useful to back up data when there is a data format change."
-    default: "false"
-
-  - name: CROSS_NODE_TIMEOUT
-    description: "operation timeout information exchange between nodes (to accurately measure request timeouts)."
-    default: "false"
-
-  - name: COMMIT_FAILURE_POLICY
-    description: "Policy for commit disk failures."
-    default: "stop"
-
-  - name: KEY_CACHE_SIZE_IN_MB
-    description: "A global cache setting for the maximum size of the key cache in memory (for all tables). "
-    default: ""
-
-  - name: COUNTER_CACHE_SIZE_IN_MB
-    description: "When no value is set, Cassandra uses the smaller of minimum of 2.5% of Heap or 50MB."
-    default: ""
-
-  - name: COMMITLOG_SYNC
-    description: "The method that Cassandra uses to acknowledge writes in milliseconds"
-    default: "periodic"
-
-  - name: INDEX_SUMMARY_CAPACITY_IN_MB
-    description: "Fixed memory pool size in MB for SSTable index summaries."
-    default: ""
+    group: node-advanced
 
   - name: RPC_SERVER_TYPE
-    description: "Cassandra provides three options for the RPC server. sync and hsha performance is about the same, but hsha uses less memory."
+    displayName: "RPC Server Type"
+    type: string
+    description: "Cassandra provides two options for the RPC server. sync and hsha performance is about the same, but hsha uses less memory. (https://docs.datastax.com/en/dse/5.1/dse-dev/datastax_enterprise/config/configCassandra_yaml.html#configCassandra_yaml__rpc_server_type)."
+    hint: "rpc_server_type - Type RPC server type."
     default: "sync"
+    enum:
+      - "sync"
+      - "hsha"
+    group: node-advanced
 
-  - name: ENDPOINT_SNITCH
-    description: "Set to a class that implements the IEndpointSnitch interface. Cassandra uses the snitch to locate nodes and route requests."
-    default: "SimpleSnitch"
+  - name: RPC_KEEPALIVE
+    displayName: "Connection Keepalive"
+    type: boolean
+    description: "Enables or disables keepalive on client connections (RPC or native)."
+    hint: "rpc_keepalive - Defaults to true."
+    default: "true"
+    group: node-advanced
 
-  - name: DISK_FAILURE_POLICY
-    description: "The policy for how Cassandra responds to disk failure"
-    default: "stop"
+  - name: RPC_MIN_THREADS
+    displayName: "RPC Min Threads"
+    type: integer
+    description: "The minimum thread pool size for remote procedure calls."
+    hint: "rpc_min_threads - Number of threads. 16 if not set."
+    required: false
+    group: node-advanced
 
-  - name: ENABLE_USER_DEFINED_FUNCTIONS
-    description: " User defined functions (UDFs) present a security risk, since they are executed on the server side. UDFs are executed in a sandbox to contain the execution of malicious code."
+  - name: RPC_MAX_THREADS
+    displayName: "RPC Max Threads"
+    type: integer
+    description: "The maximum thread pool size for remote procedure calls."
+    hint: "rpc_max_threads - Number of Threads. unlimited if not set."
+    required: false
+    group: node-advanced
+
+  - name: RPC_SEND_BUFF_SIZE_IN_BYTES
+    displayName: "RPC Send Buffer Socket Size"
+    type: integer
+    description: "The sending socket buffer size in bytes for remote procedure calls."
+    hint: "rpc_send_buff_size_in_bytes - In Bytes. System dependent if not set."
+    required: false
+    group: node-advanced
+
+  - name: RPC_RECV_BUFF_SIZE_IN_BYTES
+    displayName: "RPC Receive Buffer Socket Size"
+    type: integer
+    description: "The receiving socket buffer size for remote procedure calls."
+    hint: "rpc_recv_buff_size_in_bytes - In Bytes. System dependent if not set."
+    required: false
+    group: node-advanced
+
+  - name: PARTITIONER
+    displayName: "Partitioner"
+    type: string
+    description: "The partitioner used to distribute rows across the cluster. Murmur3Partitioner is the recommended setting. RandomPartitioner and ByteOrderedPartitioner are supported for legacy applications."
+    hint: "partitioner - Java Class Name."
+    default: "org.apache.cassandra.dht.Murmur3Partitioner"
+    group: node-advanced
+
+  - name: TRANSPORT_ENCRYPTION_ENABLED
+    displayName: "Transport Encryption"
+    type: boolean
+    description: "Enable node-to-node encryption."
+    hint: "Node-to-Node encryption."
     default: "false"
+    group: security
 
-  - name: ENABLE_SCRIPTED_USER_DEFINED_FUNCTIONS
-    description: "Java UDFs are always enabled, if enable_user_defined_functions is true. Enable this option to use UDFs with language javascript or any custom JSR-223 provider. This option has no effect if enable_user_defined_functions is false"
+  - name: TRANSPORT_ENCRYPTION_CLIENT_ENABLED
+    displayName: "Client Transport Encryption"
+    type: boolean
+    description: "Enable client-to-node encryption."
+    hint: "Client-to-Node encryption."
     default: "false"
+    group: security
 
-  - name: ENABLE_MATERIALIZED_VIEWS
-    description: "Enables materialized view creation on this node. Materialized views are considered experimental and are not recommended for production use."
+  - name: TRANSPORT_ENCRYPTION_CIPHERS
+    displayName: "Encryption Ciphers"
+    type: string
+    description: "Comma-separated list of JSSE Cipher Suite Names. Might require changes to the installed Java Runtime."
+    hint: "JSSE Cipher Suite Names."
+    default: "TLS_RSA_WITH_AES_128_CBC_SHA,TLS_RSA_WITH_AES_256_CBC_SHA,TLS_DHE_RSA_WITH_AES_128_CBC_SHA,TLS_DHE_RSA_WITH_AES_256_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA"
+    advanced: true
+    group: security
+
+  - name: TRANSPORT_ENCRYPTION_CLIENT_ALLOW_PLAINTEXT
+    displayName: "Allow Plaintext Transport"
+    hint: "Allow both plaintext and secure."
+    type: boolean
+    description: "Enable Server-Client plaintext communication alongside encrypted traffic."
     default: "false"
+    group: security
 
-  - name: CDC_ENABLED
-    description: "Enable / disable CDC functionality on a per-node basis. This modifies the logic used for write path allocation rejection"
-    default: "false"
+  - name: TRANSPORT_ENCRYPTION_REQUIRE_CLIENT_AUTH
+    displayName: "Client Auth for Node-To-Node"
+    type: boolean
+    description: "Enable client certificate authentication on node-to-node transport encryption."
+    hint: "For Node-to-Node transport encryption."
+    default: "true"
+    group: security
 
-  - name: CDC_TOTAL_SPACE_IN_MB
-    description: "Total space to use for change-data-capture (CDC) logs on disk. "
-    default: ""
+  - name: TRANSPORT_ENCRYPTION_CLIENT_REQUIRE_CLIENT_AUTH
+    displayName: "Client Auth for Client-To-Node"
+    type: boolean
+    description: "Enable client certificate authentication on client-to-node transport encryption."
+    hint: "For Client-to-Node transport encryption."
+    default: "true"
+    group: security
 
-  - name: CDC_FREE_SPACE_CHECK_INTERVAL_MS
-    description: "Interval between checks for new available space for CDC-tracked tables when the cdc_total_space_in_mb threshold is reached and the CDCCompactor is running behind or experiencing back pressure."
-    default: ""
+  - name: TLS_SECRET_NAME
+    displayName: "ConfigMap with TLS Secret"
+    description: "The TLS secret that contains the self-signed certificate (cassandra.crt) and the private key (cassandra.key). The secret will be mounted as a volume to make the artifacts available."
+    hint: "Name of a ConfigMap installed by the user."
+    type: string
+    default: "cassandra-tls"
+    group: security
 
-  - name: PREPARED_STATEMENTS_CACHE_SIZE_MB
-    description: "Maximum size of the native protocol prepared statement cache"
-    default: ""
+  - name: NODE_MIN_HEAP_SIZE_MB
+    displayName: "Node Min Heap Size"
+    type: integer
+    description: "The minimum JVM heap size in MB. This has a smart default and doesn't need to be explicitly set."
+    hint: "-Xms - In MB. Should be the same as Max Heap Size."
+    required: false
+    group: jvm
 
-  - name: THRIFT_PREPARED_STATEMENTS_CACHE_SIZE_MB
-    description: "Maximum size of the Thrift prepared statement cache. Leave empty if you do not use Thrift."
-    default: ""
+  - name: NODE_MAX_HEAP_SIZE_MB
+    displayName: "Node Max Heap Size"
+    type: integer
+    description: "The maximum JVM heap size in MB. This has a smart default and doesn't need to be explicitly set."
+    hint: "-Xmx - In MB. Should be the same as Min Heap Size."
+    required: false
+    group: jvm
 
-  - name: COLUMN_INDEX_CACHE_SIZE_IN_KB
-    description: "A threshold for the total size of all index entries for a partition that the database stores in the partition key cache."
+  - name: NODE_NEW_GENERATION_HEAP_SIZE_MB
+    displayName: "New Generation Heap Size"
+    type: integer
+    description: "The JVM new generation heap size in MB."
+    hint: "-Xmn - In MB. Automatic if not set."
+    required: false
+    group: jvm
+
+  - name: SEED_PROVIDER_CLASS
+    displayName: "Seed Provider Class"
+    type: string
+    description: "The class within Cassandra that handles the seed logic. (https://cassandra.apache.org/doc/latest/configuration/cassandra_config_file.html#seed-provider)"
+    hint: "Name of a Java Class."
+    default: "org.apache.cassandra.locator.SimpleSeedProvider"
+    group: node-advanced
+
+  - name: NUM_TOKENS
+    displayName: "Number of Tokens"
+    hint: "num_tokens - Can only be set at installation."
+    type: integer
+    description: "The number of tokens assigned to each node."
+    default: "256"
+    immutable: true
+    group: node-advanced
+
+  - name: HINTED_HANDOFF_ENABLED
+    displayName: "Hinted Handoff"
+    type: boolean
+    description: "If true, hinted handoff is enabled for the cluster. (https://cassandra.apache.org/doc/latest/operating/hints.html#hinted-handoff)"
+    hint: "hinted_handoff_enabled - Only change in advanced usecases."
+    default: "true"
+    group: node-advanced
+
+  - name: MAX_HINT_WINDOW_IN_MS
+    displayName: "Max Hint Window"
+    type: integer
+    description: "The maximum amount of time, in ms, that hints are generated for an unresponsive node."
+    hint: "max_hint_window_in_ms - In milliseconds."
+    default: "10800000"
+    group: node-advanced
+
+  - name: HINTED_HANDOFF_THROTTLE_IN_KB
+    displayName: "Hinted Handoff Throttle"
+    type: integer
+    description: "The maximum throttle per delivery thread in KBs per second."
+    hint: "hinted_handoff_throttle_in_kb - In kB."
+    default: "1024"
+    group: node-advanced
+
+  - name: MAX_HINTS_DELIVERY_THREADS
+    displayName: "Max Hints Delivery Threads"
+    type: integer
+    description: "The maximum number of delivery threads for hinted handoff."
+    hint: "max_hints_delivery_threads - Number of threads."
     default: "2"
+    group: node-advanced
 
-  - name: SLOW_QUERY_LOG_TIMEOUT_IN_MS
-    description: "How long before a node logs slow queries. Select queries that exceed this value generate an aggregated log message to identify slow queries. To disable, set to 0."
-    default: "500"
+  - name: BATCHLOG_REPLAY_THROTTLE_IN_KB
+    displayName: "Batchlog Replay Throttle"
+    type: integer
+    description: "The total maximum throttle for replaying failed logged batches in KBs per second."
+    hint: "batchlog_replay_throttle_in_kb - In kB."
+    default: "1024"
+    group: node-advanced
 
-  - name: BACK_PRESSURE_ENABLED
-    description: "Enable for the coordinator to apply the specified back pressure strategy to each mutation that is sent to replicas."
-    default: "false"
+  - name: AUTHENTICATOR
+    displayName: "Authenticator"
+    description: "Authentication backend, implementing IAuthenticator; used to identify users. (https://cassandra.apache.org/doc/latest/operating/security.html#authentication)"
+    hint: "Authentication backend."
+    type: string
+    default: "AllowAllAuthenticator"
+    group: security
+    enum:
+      - AllowAllAuthenticator
+      - PasswordAuthenticator
 
-  - name: BACK_PRESSURE_STRATEGY_CLASS_NAME
-    description: "The back-pressure strategy applied. The default implementation, RateBasedBackPressure, takes three arguments: high ratio, factor, and flow type, and uses the ratio between incoming mutation responses and outgoing mutation requests."
-    default: "org.apache.cassandra.net.RateBasedBackPressure"
-
-  - name: BACK_PRESSURE_STRATEGY_HIGH_RATIO
-    description: "When outgoing mutations are below this value, they are rate limited according to the incoming rate decreased by the factor. When above this value, the rate limiting is increased by the factor."
-    default: "0.9"
-
-  - name: BACK_PRESSURE_STRATEGY_FACTOR
-    description: "A number between 1 and 10. Increases or decreases rate limiting."
-    default: "5"
-
-  - name: BACK_PRESSURE_STRATEGY_FLOW
-    description: "The flow speed to apply rate limiting: FAST - rate limited to the speed of the fastest replica. SLOW - rate limit to the speed of the slowest replica."
-    default: "FAST"
-
-  - name: ALLOCATE_TOKENS_FOR_KEYSPACE
-    description: "Triggers automatic allocation of num_tokens tokens for this node. The allocation algorithm attempts to choose tokens in a way that optimizes replicated load over the nodes in the datacenter for the replication strategy used by the specified keyspace."
+  - name: AUTHENTICATION_SECRET_NAME
+    displayName: "NodeTool Authentication Secret"
+    description: "The secret must contain the credentials used by the operator when running 'nodetool' for its functionality. Only relevant if AUTHENTICATOR is set to 'PasswordAuthenticator'. The secret needs to have a 'username' and a 'password' entry."
+    hint: "Name of a Kubernetes Secret."
     default: ""
+    type: string
+    group: security
 
-  - name: HINTS_DIRECTORY
-    description: "Directory where Cassandra should store hints."
-    default: ""
+  - name: AUTHORIZER
+    displayName: "Authorization"
+    description: "Authorization backend, implementing IAuthorizer; used to limit access/provide permissions. (https://cassandra.apache.org/doc/latest/operating/security.html#authorization)"
+    hint: "Authorization backend."
+    default: "AllowAllAuthorizer"
+    group: security
+    type: string
+    enum:
+      - AllowAllAuthorizer
+      - CassandraAuthorizer
 
-  - name: COMMITLOG_DIRECTORY
-    description: "When running on magnetic HDD, this should be a separate spindle than the data directories. If not set, the default directory is $CASSANDRA_HOME/data/commitlog."
-    default: ""
+  - name: ROLE_MANAGER
+    displayName: "Role Manager"
+    description: "Part of the Authentication & Authorization backend that implements IRoleManager to maintain grants and memberships between roles, By default, the value set is Apache Cassandra's out of the box Role Manager: CassandraRoleManager. (https://cassandra.apache.org/doc/latest/operating/security.html#roles)"
+    hint: "Java Class of the Role Manager."
+    type: string
+    default: "CassandraRoleManager"
+    group: security
 
-  - name: CDC_RAW_DIRECTORY
-    description: "CommitLogSegments are moved to this directory on flush if cdc_enabled: true and the segment contains mutations for a CDC-enabled table"
-    default: ""
+  - name: ROLES_VALIDITY_IN_MS
+    displayName: "Role Validity Period"
+    type: integer
+    description: "Validity period for roles cache; set to 0 to disable."
+    hint: "roles_validity_in_ms - Cache time in milliseconds."
+    default: "2000"
+    group: security
+
+  - name: ROLES_UPDATE_INTERVAL_IN_MS
+    displayName: "Role Update Interval"
+    type: integer
+    description: "After this interval, cache entries become eligible for refresh. Upon next access, Cassandra schedules an async reload, and returns the old value until the reload completes. If roles_validity_in_ms is non-zero, then this must be also."
+    hint: "roles_update_interval_in_ms - Update interval in milliseconds."
+    required: false
+    group: security
+
+  - name: CREDENTIALS_VALIDITY_IN_MS
+    displayName: "Credentials Validity Period"
+    type: integer
+    description: " This cache is tightly coupled to the provided PasswordAuthenticator implementation of IAuthenticator. If another IAuthenticator implementation is configured, Cassandra does not use this cache, and these settings have no effect. Set to 0 to disable."
+    hint: "credentials_validity_in_ms - Cache time in milliseconds."
+    default: "2000"
+    group: security
+
+  - name: CREDENTIALS_UPDATE_INTERVAL_IN_MS
+    displayName: "Credentials Update Interval"
+    type: integer
+    description: "After this interval, cache entries become eligible for refresh. The next time the cache is accessed, the system schedules an asynchronous reload of the cache. Until this cache reload is complete, the cache returns the old values. If credentials_validity_in_ms is nonzero, this property must also be nonzero."
+    hint: "credentials_update_interval_in_ms - Update interval in milliseconds."
+    required: false
+    group: security
+
+  - name: PERMISSIONS_VALIDITY_IN_MS
+    displayName: "Permissions Validity Period"
+    type: integer
+    description: "How many milliseconds permissions in cache remain valid. Fetching permissions can be resource intensive. To disable the cache, set this to 0."
+    hint: "permissions_validity_in_ms - Cache time in milliseconds."
+    default: "2000"
+    group: security
+
+  - name: PERMISSIONS_UPDATE_INTERVAL_IN_MS
+    displayName: "Permissions Update Interval"
+    type: integer
+    description: "If enabled, sets refresh interval for the permissions cache. After this interval, cache entries become eligible for refresh. On next access, Cassandra schedules an async reload and returns the old value until the reload completes. If permissions_validity_in_ms is nonzero, permissions_update_interval_in_ms must also be non-zero."
+    hint: "permissions_update_interval_in_ms -  Update interval in milliseconds."
+    required: false
+    group: security
+
+  - name: KEY_CACHE_SIZE_IN_MB
+    displayName: "Key Cache Size"
+    type: integer
+    description: "A global cache setting for the maximum size of the key cache in memory (for all tables). ."
+    hint: "key_cache_size_in_mb - In MB. Keep empty for automatic."
+    required: false
+    group: caches
+
+  - name: KEY_CACHE_SAVE_PERIOD
+    displayName: "Key Cache Save Period"
+    type: integer
+    description: "The duration in seconds that keys are saved in cache. Saved caches greatly improve cold-start speeds and has relatively little effect on I/O."
+    hint: "key_cache_save_period - In seconds."
+    default: "14400"
+    group: caches
+
+  - name: KEY_CACHE_KEYS_TO_SAVE
+    displayName: "Key Cache Save Number"
+    type: integer
+    description: "The number of keys from the key cache to save."
+    hint: "key_cache_keys_to_save - Number of Keys. Defaults to 'all' if not set."
+    required: false
+    group: caches
+
+  - name: COUNTER_CACHE_SIZE_IN_MB
+    displayName: "Counter Cache Size"
+    type: integer
+    description: "Maximum size of the counter cache in memory. When no value is set, Cassandra uses the smaller of minimum of 2.5% of Heap or 50MB."
+    hint: "counter_cache_size_in_mb - In MB. Keep empty for automatic."
+    required: false
+    group: caches
+
+  - name: COUNTER_CACHE_SAVE_PERIOD
+    displayName: "Counter Cache Save Period"
+    type: integer
+    description: "The amount of time after which Cassandra saves the counter cache (keys only)."
+    hint: "counter_cache_save_period - In seconds."
+    default: "7200"
+    group: caches
+
+  - name: COUNTER_CACHE_KEYS_TO_SAVE
+    displayName: "Counter Cache Save Number"
+    type: integer
+    description: "The number of keys from the counter cache to save."
+    hint: "counter_cache_keys_to_save - Number of Keys. Defaults to 'all' if not set."
+    required: false
+    group: caches
+
+  - name: ROW_CACHE_SIZE_IN_MB
+    displayName: "Row Cache Size"
+    type: integer
+    description: "Maximum size of the row cache in memory. Row cache can save more time than key_cache_size_in_mb, but is space-intensive because it contains the entire row. Use the row cache only for hot rows or static rows. 0 disables the row cache."
+    hint: "row_cache_size_in_mb - In MB. 0 to disable row caching."
+    default: "0"
+    group: caches
+
+  - name: ROW_CACHE_SAVE_PERIOD
+    displayName: "Row Cache Save Period"
+    type: integer
+    description: "Duration in seconds that rows are saved in cache. 0 disables saving ."
+    hint: "row_cache_save_period - In Seconds. 0 to disable saving."
+    default: "0"
+    group: caches
+
+  - name: ROW_CACHE_KEYS_TO_SAVE
+    displayName: "Row Cache Save Number"
+    type: integer
+    description: "The number of keys from the row cache to save."
+    hint: "row_cache_keys_to_save - Number of Keys. Defaults to 'all' if not set."
+    required: false
+    group: caches
+
+  - name: FILE_CACHE_SIZE_IN_MB
+    displayName: "File Cache Size"
+    type: integer
+    description: "The total memory to use for SSTable-reading buffers. Defaults to the smaller of 1/4 of heap or 512MB."
+    hint: "file_cache_size_in_mb - In MB."
+    required: false
+    group: caches
 
   - name: ROW_CACHE_CLASS_NAME
-    description: "Row cache implementation class name."
-    default: ""
+    displayName: "Row Cache ClassName"
+    description: "Row cache implementation class name. Can be 'org.apache.cassandra.cache.OHCProvider' (default) or 'org.apache.cassandra.cache.SerializingCacheProvider'."
+    hint: "Java Class name."
+    type: string
+    required: false
+    group: caches
 
-  - name: SAVED_CACHES_DIRECTORY
-    description: "saved caches If not set, the default directory is $CASSANDRA_HOME/data/saved_caches."
-    default: ""
+  - name: BUFFER_POOL_USE_HEAP_IF_EXHAUSTED
+    displayName: "Use On-Heap Memory for Buffer Pool"
+    type: boolean
+    description: "Allocate on-heap memory when the SSTable buffer pool is exhausted."
+    hint: "buffer_pool_use_heap_if_exhausted - Defaults to true if not set."
+    required: false
+    group: caches
+
+  - name: PREPARED_STATEMENTS_CACHE_SIZE_MB
+    displayName: "Native Prepared Statements Cache Size"
+    type: integer
+    description: "Maximum size of the native protocol prepared statement cache."
+    hint: "prepared_statements_cache_size_mb - In MB. Auto if unset."
+    required: false
+    group: caches
+
+  - name: THRIFT_PREPARED_STATEMENTS_CACHE_SIZE_MB
+    displayName: "Thrift Prepared Statements Cache Size"
+    type: integer
+    description: "Maximum size of the Thrift prepared statement cache. Leave empty if you do not use Thrift/RPC."
+    hint: "thrift_prepared_statements_cache_size_mb - In MB. Auto if unset."
+    required: false
+    group: caches
+
+  - name: COLUMN_INDEX_CACHE_SIZE_IN_KB
+    displayName: "Column Index Cache Size"
+    type: integer
+    description: "A threshold for the total size of all index entries for a partition that the database stores in the partition key cache."
+    hint: "column_index_cache_size_in_kb - In KB. Defaults to 2."
+    default: "2"
+    group: caches
+
+  - name: COMMITLOG_SYNC
+    displayName: "Commitlog Sync"
+    type: string
+    description: "The method that Cassandra uses to acknowledge writes in milliseconds."
+    hint: "commitlog_sync - Type of sync."
+    default: "periodic"
+    enum:
+      - "periodic"
+      - "batch"
+    group: optimization
+
+  - name: COMMITLOG_SYNC_PERIOD_IN_MS
+    displayName: "Commitlog Sync Period"
+    type: integer
+    description: "The number of milliseconds between disk fsync calls."
+    hint: "commitlog_sync_period_in_ms - In milliseconds."
+    default: "5000"
+    group: optimization
+
+  - name: COMMITLOG_SYNC_BATCH_WINDOW_IN_MS
+    displayName: "Commitlog Sync Batch Window"
+    type: integer
+    description: "Time to wait between batch fsyncs, if commitlog_sync is in batch mode then default value should be: 2."
+    hint: "commitlog_sync_batch_window_in_ms - In milliseconds."
+    required: false
+    group: optimization
+
+  - name: COMMITLOG_SEGMENT_SIZE_IN_MB
+    displayName: "Commitlog Segment Size"
+    type: integer
+    description: "The size of each commit log segment in Mb."
+    hint: "commitlog_segment_size_in_mb - In MB. Defaults to 32."
+    default: "32"
+    group: optimization
+
+  - name: CONCURRENT_READS
+    displayName: "Concurrent Reads"
+    type: integer
+    description: "For workloads with more data than can fit in memory, the bottleneck is reads fetching data from disk. Setting to (16 times the number of drives) allows operations to queue low enough in the stack so that the OS and drives can reorder them."
+    hint: "concurrent_reads - Number of reads."
+    default: "16"
+    group: optimization
+
+  - name: CONCURRENT_WRITES
+    displayName: "Concurrent Writes"
+    type: integer
+    description: "Writes in Cassandra are rarely I/O bound, so the ideal number of concurrent writes depends on the number of CPU cores in your system. The recommended value is 8 times the number of cpu cores."
+    hint: "concurrent_writes - Number of writes."
+    default: "32"
+    group: optimization
+
+  - name: CONCURRENT_COUNTER_WRITES
+    displayName: "Concurrent Counter Writes"
+    type: integer
+    description: "Counter writes read the current values before incrementing and writing them back. The recommended value is (16 times the number of drives) ."
+    hint: "concurrent_counter_writes - Number of writes."
+    default: "16"
+    group: optimization
+
+  - name: CONCURRENT_MATERIALIZED_VIEW_WRITES
+    displayName: "Concurrent Materialized View Writes"
+    type: integer
+    description: "The maximum number of concurrent writes to materialized views."
+    hint: "concurrent_materialized_view_writes - Number of writes."
+    default: "32"
+    group: optimization
+
+  - name: MEMTABLE_ALLOCATION_TYPE
+    displayName: "MemTable Allocation Type"
+    type: string
+    description: "The type of allocations for the Cassandra memtable. heap_buffers keep all data on the JVM heap. offheap_buffers may reduce heap utilization for large string or binary values. offheap_objects may improve heap size for small integers or UUIDs as well. Both off heap options will increase read latency. (https://cassandra.apache.org/doc/latest/configuration/cassandra_config_file.html#memtable-allocation-type )."
+    hint: "memtable_allocation_type - Type of Allocation."
+    default: "heap_buffers"
+    enum:
+      - "heap_buffers"
+      - "offheap_buffers"
+      - "offheap_objects"
+    group: optimization
+
+  - name: INDEX_SUMMARY_RESIZE_INTERVAL_IN_MINUTES
+    displayName: "Index Summary Resize Interval"
+    type: integer
+    description: "How frequently index summaries should be re-sampled in minutes. This is done periodically to redistribute memory from the fixed-size pool to SSTables proportional their recent read rates."
+    hint: "index_summary_resize_interval_in_minutes - In Minutes. -1 to disable."
+    default: "60"
+    group: optimization
+
+  - name: TRICKLE_FSYNC
+    displayName: "Trickle FSync"
+    type: boolean
+    description: "When set to true, causes fsync to force the operating system to flush the dirty buffers at the set interval."
+    hint: "trickle_fsync - Defaults to false."
+    default: "false"
+    group: optimization
+
+  - name: TRICKLE_FSYNC_INTERVAL_IN_KB
+    displayName: "Trickle FSync Interval"
+    type: integer
+    description: "The size of the fsync in kilobytes."
+    hint: "trickle_fsync_interval_in_kb - In KB. Defaults to 10240."
+    default: "10240"
+    group: optimization
+
+  - name: THRIFT_FRAMED_TRANSPORT_SIZE_IN_MB
+    displayName: "Thrift Frame Size"
+    type: integer
+    description: "Frame size (maximum field length) for Thrift."
+    hint: "thrift_framed_transport_size_in_mb - In MB. Defaults to 15."
+    default: "15"
+    group: "network"
 
   - name: INTERNODE_SEND_BUFF_SIZE_IN_BYTES
-    description: "Set socket buffer size for internode communication Note that when setting this, the buffer size is limited by net.core.wmem_max and when not setting it it is defined by net.ipv4.tcp_wm"
-    default: ""
+    displayName: "Internode Send Buffer Size"
+    type: integer
+    description: "Set socket buffer size for internode communication Note that when setting this, the buffer size is limited by net.core.wmem_max and when not setting it it is defined by net.ipv4.tcp_wm."
+    hint: "internode_send_buff_size_in_bytes - In Bytes. System dependent if not set."
+    required: false
+    group: network
 
   - name: INTERNODE_RECV_BUFF_SIZE_IN_BYTES
-    description: "Set socket buffer size for internode communication Note that when setting this, the buffer size is limited by net.core.wmem_max and when not setting it it is defined by net.ipv4.tcp_wmem"
-    default: ""
+    displayName: "Internode Receive Buffer Size"
+    type: integer
+    description: "Set socket buffer size for internode communication Note that when setting this, the buffer size is limited by net.core.wmem_max and when not setting it it is defined by net.ipv4.tcp_wmem."
+    hint: "internode_recv_buff_size_in_bytes - In Bytes. System dependent if not set."
+    required: false
+    group: network
 
-  - name: GC_LOG_THRESHOLD_IN_MS
-    description: "GC Pauses greater than 200 ms will be logged at INFO level This threshold can be adjusted to minimize logging if necessary"
-    default: ""
+  - name: INTERNODE_COMPRESSION
+    displayName: "Internode Compression"
+    type: string
+    description: "Controls whether traffic between nodes is compressed. all compresses all traffic. none compresses no traffic. dc compresses between datacenters."
+    hint: "internode_compression - Defaults to dc."
+    default: "dc"
+    enum:
+      - "none"
+      - "dc"
+      - "all"
+    group: network
+
+  - name: OTC_COALESCING_STRATEGY
+    displayName: "Coalescing Strategy"
+    type: string
+    description: "The strategy to use for coalescing network messages. (https://cassandra.apache.org/doc/latest/configuration/cassandra_config_file.html#otc-coalescing-strategy)."
+    hint: "otc_coalescing_strategy - Defaults to disabled if not set."
+    required: false
+    enum:
+      - "disabled"
+      - "fixed"
+      - "movingaverage"
+      - "timehorizon"
+    group: network
 
   - name: OTC_COALESCING_WINDOW_US
+    displayName: "Coalescing Window"
+    type: integer
     description: "How many microseconds to wait for coalescing."
-    default: ""
+    hint: "otc_coalescing_window_us - In microseconds. 200 if not set."
+    required: false
+    group: network
 
   - name: OTC_COALESCING_ENOUGH_COALESCED_MESSAGES
+    displayName: "Coalescing Message Limit"
+    type: integer
     description: "Do not try to coalesce messages if we already got that many messages. This should be more than 2 and less than 128."
-    default: ""
+    hint: "otc_coalescing_enough_coalesced_messages - Number of messages. 8 if not set."
+    required: false
+    group: network
 
   - name: OTC_BACKLOG_EXPIRATION_INTERVAL_MS
+    displayName: "Coalescing Backlog Expiration Interval"
+    type: integer
     description: "How many milliseconds to wait between two expiration runs on the backlog (queue) of the OutboundTcpConnection."
-    default: ""
+    hint: "otc_backlog_expiration_interval_ms - In milliseconds. 200 if not set."
+    required: false
+    group: network
+
+  - name: TOMBSTONE_WARN_THRESHOLD
+    displayName: "Tombstone Warning Threshold"
+    type: integer
+    description: "The maximum number of tombstones a query can scan before warning."
+    hint: "tombstone_warn_threshold - Defaults to 1000."
+    default: "1000"
+    group: safety_thresholds
+
+  - name: TOMBSTONE_FAILURE_THRESHOLD
+    displayName: "Tombstone Failure Threshold"
+    type: integer
+    description: "The maximum number of tombstones a query can scan before aborting."
+    hint: "tombstone_failure_threshold - Defaults to 100000."
+    default: "100000"
+    group: safety_thresholds
+
+  - name: BATCH_SIZE_WARN_THRESHOLD_IN_KB
+    displayName: "Batch Size Warning Threshold"
+    type: integer
+    description: "Warn the operator on a batch size exceeding this value in kilobytes. Caution should be taken on increasing the size of this threshold as it can lead to node instability."
+    hint: "batch_size_warn_threshold_in_kb - In KB. Defaults to 5."
+    default: "5"
+    group: safety_thresholds
+
+  - name: BATCH_SIZE_FAIL_THRESHOLD_IN_KB
+    displayName: "Batch Size Failure Threshold"
+    type: integer
+    description: "Fail batch sizes exceeding this value in kilobytes. Caution should be taken on increasing the size of this threshold as it can lead to node instability."
+    hint: "batch_size_fail_threshold_in_kb - In KB. Defaults to 50."
+    default: "50"
+    group: safety_thresholds
+
+  - name: UNLOGGED_BATCH_ACROSS_PARTITIONS_WARN_THRESHOLD
+    displayName: "Unlogged Batch Across Partitions Warning Threshold"
+    type: integer
+    description: "Causes Cassandra to log a WARN message on any batches not of type LOGGED that span across more partitions than this limit."
+    hint: "compaction_large_partition_warning_threshold_mb - In MB. Defaults to 10."
+    default: "10"
+    group: safety_thresholds
+
+  - name: COMPACTION_LARGE_PARTITION_WARNING_THRESHOLD_MB
+    displayName: "Large Partition Compaction Warning Threshold"
+    type: integer
+    description: "Cassandra logs a warning when compacting partitions larger than the set value."
+    hint: "compaction_large_partition_warning_threshold_mb - In MB. Defaults to 100."
+    default: "100"
+    group: safety_thresholds
+
+  - name: GC_WARN_THRESHOLD_IN_MS
+    displayName: "GC Warning Threshold"
+    type: integer
+    description: "Any GC pause longer than this interval is logged at the WARN level."
+    hint: "gc_warn_threshold_in_ms - In Milliseconds. 1000 if not set."
+    default: "1000"
+    required: false
+    group: safety_thresholds
+
+  - name: GC_LOG_THRESHOLD_IN_MS
+    displayName: "GC Logging Threshold"
+    type: integer
+    description: "GC Pauses greater than this interval will be logged at INFO level. This threshold can be adjusted to minimize logging if necessary."
+    hint: "gc_log_threshold_in_ms - In Milliseconds. 200 if not set."
+    default: "200"
+    required: false
+    group: safety_thresholds
+
+  - name: MAX_VALUE_SIZE_IN_MB
+    displayName: "Max Value Size"
+    type: integer
+    description: "The maximum size of any value in SSTables."
+    hint: "max_value_size_in_mb - In MB. 256 if not set."
+    required: false
+    group: safety_thresholds
+
+  - name: SLOW_QUERY_LOG_TIMEOUT_IN_MS
+    displayName: "Slow Query Logging Threshold"
+    type: integer
+    description: "How long before a node logs slow queries. Select queries that exceed this value generate an aggregated log message to identify slow queries. To disable, set to 0."
+    hint: "slow_query_log_timeout_in_ms - In milliseconds. 0 to disable."
+    default: "500"
+    group: safety_thresholds
+
+  - name: COMPACTION_THROUGHPUT_MB_PER_SEC
+    displayName: "Compaction Throughput Throttle"
+    type: integer
+    description: "Throttles compaction to the specified total throughput across the node. Compaction frequency varies with direct proportion to write throughput and is necessary to limit the SSTable size. The recommended value is 16 to 32 times the rate of write throughput (in MB/second)."
+    hint: "compaction_throughput_mb_per_sec - In MB/sec. 0 to disable throttling."
+    default: "64"
+    group: optimization
+
+  - name: SSTABLE_PREEMPTIVE_OPEN_INTERVAL_IN_MB
+    displayName: "SSTable Preemptive Open Interval"
+    type: integer
+    description: "When compacting, the replacement opens SSTables before they are completely written and uses in place of the prior SSTables for any range previously written. This setting helps to smoothly transfer reads between the SSTables by reducing page cache churn and keeps hot rows hot."
+    hint: "sstable_preemptive_open_interval_in_mb - In MB."
+    default: "50"
+    group: optimization
+
+  - name: READ_REQUEST_TIMEOUT_IN_MS
+    displayName: "Read Request Timeout"
+    type: integer
+    description: "The time that the coordinator waits for read operations to complete in ms."
+    hint: "read_request_timeout_in_ms - In milliseconds. Defaults to 5000."
+    default: "5000"
+    group: timeouts
+
+  - name: RANGE_REQUEST_TIMEOUT_IN_MS
+    displayName: "Range Request Timeout"
+    type: integer
+    description: "The time that the coordinator waits for range scans complete in ms."
+    hint: "range_request_timeout_in_ms - In milliseconds. Defaults to 10000."
+    default: "10000"
+    group: timeouts
+
+  - name: WRITE_REQUEST_TIMEOUT_IN_MS
+    displayName: "Write Request Timeout"
+    type: integer
+    description: "The time that the coordinator waits for write operations to complete in ms."
+    hint: "write_request_timeout_in_ms - In milliseconds. Defaults to 2000."
+    default: "2000"
+    group: timeouts
+
+  - name: COUNTER_WRITE_REQUEST_TIMEOUT_IN_MS
+    displayName: "Counter Write Request Timeout"
+    type: integer
+    description: "The time that the coordinator waits for counter write operations to complete in ms."
+    hint: "counter_write_request_timeout_in_ms - In milliseconds. Defaults to 5000."
+    default: "5000"
+    group: timeouts
+
+  - name: CAS_CONTENTION_TIMEOUT_IN_MS
+    displayName: "CAS Contention Timeout"
+    type: integer
+    description: "The time for which the coordinator will retry CAS operations on the same row in ms."
+    hint: "cas_contention_timeout_in_ms - In milliseconds. Defaults to 1000."
+    default: "1000"
+    group: timeouts
+
+  - name: TRUNCATE_REQUEST_TIMEOUT_IN_MS
+    displayName: "Truncate Request Timeout"
+    type: integer
+    description: "The time that the coordinator waits for truncate operations to complete in ms."
+    hint: "truncate_request_timeout_in_ms - In milliseconds. Defaults to 60000."
+    default: "60000"
+    group: timeouts
+
+  - name: REQUEST_TIMEOUT_IN_MS
+    displayName: "Default Request Timeout"
+    type: integer
+    description: "The default timeout for all other requests in ms."
+    hint: "request_timeout_in_ms - In milliseconds. Defaults to 10000."
+    default: "10000"
+    group: timeouts
+
+  - name: CROSS_NODE_TIMEOUT
+    displayName: "Cross Node Timeout"
+    type: boolean
+    description: "Operation timeout information exchange between nodes (to accurately measure request timeouts)."
+    hint: "cross_node_timeout - Defaults to false."
+    default: "false"
+    group: timeouts
+
+  - name: DYNAMIC_SNITCH_UPDATE_INTERVAL_IN_MS
+    displayName: "Dynamic Snitch Update Interval"
+    type: integer
+    description: "The time, in ms, the snitch will wait before updating node scores."
+    hint: "dynamic_snitch_update_interval_in_ms - In milliseconds. Defaults to 100."
+    default: "100"
+    group: optimization
+
+  - name: DYNAMIC_SNITCH_RESET_INTERVAL_IN_MS
+    displayName: "Dynamic Snitch Reset Interval"
+    type: integer
+    description: "The time, in ms, the snitch will wait before resetting node scores allowing bad nodes to recover."
+    hint: "dynamic_snitch_reset_interval_in_ms - In milliseconds. Defaults to 600000."
+    default: "600000"
+    group: optimization
+
+  - name: DYNAMIC_SNITCH_BADNESS_THRESHOLD
+    displayName: "Dynamic Snitch Badness Threshold"
+    type: number
+    description: "Sets the performance threshold for dynamically routing client requests away from a poorly performing node."
+    hint: "dynamic_snitch_badness_threshold - A percentage from 0 to 1."
+    default: "0.1"
+    group: optimization
+
+  - name: MAX_HINTS_FILE_SIZE_IN_MB
+    displayName: "Hints Max File Size"
+    type: integer
+    description: "The maximum size of a single hints file in Mb."
+    hint: "max_hints_file_size_in_mb - In MB. Defaults to 128."
+    default: "128"
+    group: node-advanced
+
+  - name: HINTS_FLUSH_PERIOD_IN_MS
+    displayName: "Hints Flush Period"
+    type: integer
+    description: "The time, in ms, for the period in which hints are flushed to disk."
+    hint: "hints_flush_period_in_ms - In milliseconds. Defaults to 10000."
+    default: "10000"
+    group: optimization
+
+  - name: COMMITLOG_TOTAL_SPACE_IN_MB
+    displayName: "Commitlog Total Size"
+    type: integer
+    description: "The total size of the commit log in Mb."
+    hint: "commitlog_total_space_in_mb - In Mb. Auto if not set."
+    required: false
+    group: node-advanced
+
+  - name: AUTO_SNAPSHOT
+    displayName: "Auto Snapshot"
+    type: boolean
+    description: "Take a snapshot of the data before truncating a keyspace or dropping a table."
+    hint: "auto_snapshot - Defaults to true."
+    default: "true"
+    group: node-advanced
+
+  - name: MEMTABLE_HEAP_SPACE_IN_MB
+    displayName: "Memtable Onheap Space"
+    type: integer
+    description: "The amount of on-heap memory allocated for memtables."
+    hint: "memtable_heap_space_in_mb - In MB - System dependent if not set."
+    required: false
+    group: node-advanced
+
+  - name: MEMTABLE_OFFHEAP_SPACE_IN_MB
+    displayName: "Memtable Offheap Space"
+    type: integer
+    description: "The total amount of off-heap memory allocated for memtables."
+    hint: "memtable_offheap_space_in_mb - In MB - System dependent if not set."
+    required: false
+    group: node-advanced
+
+  - name: MEMTABLE_CLEANUP_THRESHOLD
+    displayName: "Memtable Cleanup Threshold"
+    type: number
+    description: "The ratio used for automatic memtable flush."
+    hint: "memtable_cleanup_threshold - DEPRECATED - System dependent if not set."
+    required: false
+    group: optimization
+
+  - name: MEMTABLE_FLUSH_WRITERS
+    displayName: "Memtable Flush Writers"
+    type: integer
+    description: "The number of memtable flush writer threads."
+    hint: "memtable_flush_writers - System dependent if not set."
+    required: false
+    group: optimization
+
+  - name: LISTEN_ON_BROADCAST_ADDRESS
+    displayName: "Listen on Broadcast Adress"
+    type: boolean
+    description: "Listen on the address set in broadcast_address property."
+    hint: "listen_on_broadcast_address - false if not set."
+    required: false
+    group: network
+
+  - name: INTERNODE_AUTHENTICATOR
+    displayName: "Internode Authenticator"
+    type: string
+    description: "The internode authentication backend."
+    hint: "internode_authenticator - Java ClassName - AllowAllInternodeAuthenticator if not set."
+    required: false
+    group: security
+
+  - name: CONCURRENT_COMPACTORS
+    displayName: "Concurrent Compactors"
+    type: integer
+    description: "The number of concurrent compaction processes allowed to run simultaneously on a node."
+    hint: "concurrent_compactors - System dependent if not set."
+    required: false
+    group: optimization
+
+  - name: STREAM_THROUGHPUT_OUTBOUND_MEGABITS_PER_SEC
+    displayName: "Stream Outbound Throughput Limit"
+    type: integer
+    description: "The maximum throughput of all outbound streaming file transfers on a node."
+    hint: "stream_throughput_outbound_megabits_per_sec - In Mbps - Defaults to 200 if unset."
+    required: false
+    group: network
+
+  - name: INTER_DC_STREAM_THROUGHPUT_OUTBOUND_MEGABITS_PER_SEC
+    displayName: "Inter-DC Stream Outbound Throughput Limit"
+    type: integer
+    description: "The maximum throughput of all streaming file transfers between datacenters."
+    hint: "inter_dc_stream_throughput_outbound_megabits_per_sec - In Mbps - Defaults to 200 if unset."
+    required: false
+    group: network
+
+  - name: STREAMING_KEEP_ALIVE_PERIOD_IN_SECS
+    displayName: "Streaming Keep-Alive Period"
+    type: integer
+    description: "Interval to send keep-alive messages. The stream session fails when a keep-alive message is not received for 2 keep-alive cycles."
+    hint: "streaming_keep_alive_period_in_secs - Defaults to 300 if not set."
+    required: false
+    group: node-advanced
+
+  - name: PHI_CONVICT_THRESHOLD
+    displayName: "Phi Convict Threshold"
+    type: integer
+    description: "The sensitivity of the failure detector on an exponential scale."
+    hint: "phi_convict_threshold - Automatic if not set."
+    required: false
+    advanced: true
+    group: node-advanced
+
+  - name: DISK_OPTIMIZATION_STRATEGY
+    displayName: "Disk optimization strategy"
+    type: string
+    description: "The strategy for optimizing disk reads. (https://cassandra.apache.org/doc/latest/configuration/cassandra_config_file.html#disk-optimization-strategy)."
+    hint: "disk_optimization_strategy - Defaults to ssd if not set."
+    required: false
+    enum:
+      - "ssd"
+      - "spinning"
+    group: optimization
+
+  - name: REQUEST_SCHEDULER
+    displayName: "Request Scheduler"
+    type: string
+    description: "The scheduler to handle incoming client requests according to a defined policy. This scheduler is useful for throttling client requests in single clusters containing multiple keyspaces."
+    hint: "request_scheduler - Java ClassName."
+    default: "org.apache.cassandra.scheduler.NoScheduler"
+    group: node-advanced
+
+  - name: INTER_DC_TCP_NODELAY
+    displayName: "Inter-DC TCP NoDelay"
+    type: boolean
+    description: "Enable or disable tcp_nodelay for inter-dc communication. Disabling it will result in larger (but fewer) network packets being sent, reducing overhead from the TCP protocol itself, at the cost of increasing latency if you block for cross-datacenter responses."
+    hint: "inter_dc_tcp_nodelay - Defaults to false if not set."
+    required: false
+    group: racks_and_dc
+
+  - name: TRACETYPE_QUERY_TTL
+    displayName: "Tracetype Query TTL"
+    type: integer
+    description: "TTL for different trace types used during logging of the query process."
+    hint: "tracetype_query_ttl - Defaults to 86400 if not set."
+    required: false
+    group: optimization
+
+  - name: TRACETYPE_REPAIR_TTL
+    displayName: "Tracetype Repair TTL"
+    type: integer
+    description: "TTL for different trace types used during logging of the repair process."
+    hint: "tracetype_repair_ttl - Defaults to 604800 if not set."
+    required: false
+    group: optimization
+
+  - name: INCREMENTAL_BACKUPS
+    displayName: "Incremental Backups"
+    type: boolean
+    description: "Backs up data updated since the last snapshot was taken. When enabled, Cassandra creates a hard link to each SSTable flushed or streamed locally in a backups subdirectory of the keyspace data."
+    hint: "incremental_backups - Defaults to false."
+    default: "false"
+    group: node-advanced
+
+  - name: SNAPSHOT_BEFORE_COMPACTION
+    displayName: "Snapshot before compaction"
+    type: boolean
+    description: "Enables or disables taking a snapshot before each compaction. A snapshot is useful to back up data when there is a data format change."
+    hint: "snapshot_before_compaction - Defaults to false."
+    default: "false"
+    group: node-advanced
+
+  - name: COMMIT_FAILURE_POLICY
+    displayName: "Commit Failure Policy"
+    type: string
+    description: "Policy for commit disk failures. (https://cassandra.apache.org/doc/latest/configuration/cassandra_config_file.html#commit-failure-policy)."
+    hint: "commit_failure_policy - Defaults to stop."
+    default: "stop"
+    enum:
+      - "die"
+      - "stop"
+      - "stop_commit"
+      - "ignore"
+    group: node-advanced
+
+  - name: INDEX_SUMMARY_CAPACITY_IN_MB
+    displayName: "Index Summary Capacity"
+    type: integer
+    description: "Fixed memory pool size in MB for SSTable index summaries."
+    hint: "index_summary_capacity_in_mb - Defaults to 5% of heap if not set."
+    required: false
+    group: node-advanced
+
+  - name: ENDPOINT_SNITCH
+    displayName: "Snitch Type"
+    type: string
+    description: "Set to a class that implements the IEndpointSnitch interface. Cassandra uses the snitch to locate nodes and route requests."
+    hint: "endpoint_snitch - Java Class Name."
+    default: "SimpleSnitch"
+    enum:
+      - "SimpleSnitch"
+      - "GossipingPropertyFileSnitch"
+      - "PropertyFileSnitch"
+      - "Ec2Snitch"
+      - "Ec2MultiRegionSnitch"
+      - "RackInferringSnitch"
+    group: node-advanced
+
+  - name: DISK_FAILURE_POLICY
+    displayName: "Disk Failure Policy"
+    hint: "How Cassanda Responds to disk failure."
+    type: string
+    description: "The policy for how Cassandra responds to disk failure. (https://cassandra.apache.org/doc/latest/configuration/cassandra_config_file.html#disk-failure-policy)."
+    default: "stop"
+    enum:
+      - "die"
+      - "stop_paranoid"
+      - "stop"
+      - "best_effort"
+      - "ignore"
+    group: node-advanced
+
+  - name: ENABLE_USER_DEFINED_FUNCTIONS
+    displayName: "User Defined Functions"
+    type: boolean
+    description: " User defined functions (UDFs) present a security risk, since they are executed on the server side. UDFs are executed in a sandbox to contain the execution of malicious code."
+    hint: "enable_user_defined_functions - May be a security risk."
+    default: "false"
+    group: node-advanced
+
+  - name: ENABLE_SCRIPTED_USER_DEFINED_FUNCTIONS
+    displayName: "Scripted User Defined Functions"
+    type: boolean
+    description: "Java UDFs are always enabled, if enable_user_defined_functions is true. Enable this option to use UDFs with language javascript or any custom JSR-223 provider. This option has no effect if enable_user_defined_functions is false."
+    hint: "enable_scripted_user_defined_functions - May be a security risk."
+    default: "false"
+    group: node-advanced
+
+  - name: ENABLE_MATERIALIZED_VIEWS
+    displayName: "Materialized Views"
+    type: boolean
+    description: "Enables materialized view creation on this node. Materialized views are considered experimental and are not recommended for production use."
+    hint: "enable_materialized_views - EXPERIMENTAL."
+    default: "false"
+    group: node-advanced
+
+  - name: CDC_ENABLED
+    displayName: "CDC - Changed Data Capture"
+    type: boolean
+    description: "Enable / disable CDC functionality on a per-node basis. This modifies the logic used for write path allocation rejection."
+    hint: "cdc_enabled - Defaults to false."
+    default: "false"
+    group: node-advanced
+
+  - name: CDC_TOTAL_SPACE_IN_MB
+    displayName: "CDC Total Space"
+    type: integer
+    description: "Total space to use for change-data-capture (CDC) logs on disk. ."
+    hint: "cdc_total_space_in_mb - In MB. Auto if not set."
+    required: false
+    group: node-advanced
+
+  - name: CDC_FREE_SPACE_CHECK_INTERVAL_MS
+    displayName: "CDC Free Space Check Interval"
+    type: integer
+    description: "Interval between checks for new available space for CDC-tracked tables when the cdc_total_space_in_mb threshold is reached and the CDCCompactor is running behind or experiencing back pressure."
+    hint: "cdc_free_space_check_interval_ms - In milliseconds. Auto if not set."
+    required: false
+    group: node-advanced
+
+  - name: COLUMN_INDEX_SIZE_IN_KB
+    displayName: "Column Index Size"
+    type: integer
+    description: "The granularity of the index of rows within a partition. For huge rows, decrease this setting to improve seek time. If you use key cache, be careful not to make this setting too large because key cache will be overwhelmed."
+    hint: "column_index_size_in_kb - In KB. Defaults to 64."
+    default: "64"
+    group: node-advanced
+
+  - name: ALLOCATE_TOKENS_FOR_KEYSPACE
+    displayName: "Allocate Tokens for Keyspace"
+    type: string
+    description: "Triggers automatic allocation of num_tokens tokens for this node. The allocation algorithm attempts to choose tokens in a way that optimizes replicated load over the nodes in the datacenter for the replication strategy used by the specified keyspace."
+    hint: "allocate_tokens_for_keyspace - The name of a keyspace."
+    required: false
+    group: node-advanced
+
+  - name: HINTS_DIRECTORY
+    displayName: "Hints Directory"
+    type: string
+    description: "Directory where Cassandra should store hints."
+    hint: "hints_directory - A directory."
+    required: false
+    advanced: true
+    group: directories
+
+  - name: COMMITLOG_DIRECTORY
+    displayName: "Commitlog Directory"
+    type: string
+    description: "When running on magnetic HDD, this should be a separate spindle than the data directories. If not set, the default directory is $CASSANDRA_HOME/data/commitlog."
+    hint: "commitlog_directory - A directory."
+    required: false
+    advanced: true
+    group: directories
+
+  - name: CDC_RAW_DIRECTORY
+    displayName: "CDC Raw Directory"
+    type: string
+    description: "CommitLogSegments are moved to this directory on flush if cdc_enabled: true and the segment contains mutations for a CDC-enabled table."
+    hint: "cdc_raw_directory - A directory."
+    required: false
+    advanced: true
+    group: directories
+
+  - name: SAVED_CACHES_DIRECTORY
+    displayName: "Saved Caches Directory"
+    type: string
+    description: "Saved caches. If not set, the default directory is $CASSANDRA_HOME/data/saved_caches."
+    hint: "saved_caches_directory - A directory."
+    required: false
+    advanced: true
+    group: directories
 
   - name: REPAIR_SESSION_MAX_TREE_DEPTH
+    displayName: "Repair Session Max Tree Depth"
+    type: integer
     description: "Limits the maximum Merkle tree depth to avoid consuming too much memory during repairs."
-    default: ""
+    hint: "repair_session_max_tree_depth - Defaults to 18 if not set."
+    required: false
+    group: node-advanced
 
   - name: ENABLE_SASI_INDEXES
+    displayName: "Enable SASI indexes"
+    type: string
     description: "Enables SASI index creation on this node. SASI indexes are considered experimental and are not recommended for production use."
-    default: ""
+    hint: "enable_sasi_indexes - EXPERIMENTAL."
+    required: false
+    group: node-advanced
 
   - name: CUSTOM_CASSANDRA_YAML_BASE64
-    description: "Base64-encoded Cassandra properties appended to cassandra.yaml."
-    default: ""
+    displayName: "Custom cassandra.yaml properties"
+    hint: "Base64 encoded properties."
+    type: string
+    description: "Base64-encoded Cassandra properties are appended to cassandra.yaml and overwrite the default values."
+    group: "advanced"
+    required: false
 
   - name: KUBECTL_VERSION
+    displayName: "KubeCtl Version"
+    hint: "Version of the 'bitnami/kubectl' image."
+    type: string
     description: "Version of 'bitnami/kubectl' image. This image is used for some functionality of the operator."
     default: "1.18.4"
+    group: "advanced"
 
   ################################################################################
   ################################ JVM Options ###################################
   ################################################################################
 
   - name: JVM_OPT_AVAILABLE_PROCESSORS
+    displayName: "Available Processors"
+    type: integer
     description: "In a multi-instance deployment, multiple Cassandra instances will independently assume that all CPU processors are available to it. This setting allows you to specify a smaller set of processors and perhaps have affinity."
-    default: ""
+    hint: "-Dcassandra.available_processors - Auto detect if not set."
+    required: false
+    group: optimization
 
   - name: JVM_OPT_JOIN_RING
+    displayName: "Join Ring"
+    type: boolean
     description: "Set to false to start Cassandra on a node but not have the node join the cluster."
-    default: ""
+    hint: "-Dcassandra.join_ring - True if not set."
+    required: false
+    group: node-advanced
 
   - name: JVM_OPT_LOAD_RING_STATE
+    displayName: "Load Ring State"
+    type: boolean
     description: "Set to false to clear all gossip state for the node on restart. Use when you have changed node information in cassandra.yaml (such as listen_address)."
-    default: ""
+    hint: "-Dcassandra.load_ring_state - True if not set."
+    required: false
+    group: node-advanced
 
   - name: JVM_OPT_REPLAYLIST
+    displayName: "Replay List"
+    type: string
     description: "Allow restoring specific tables from an archived commit log."
-    default: ""
+    hint: "-Dcassandra.replayList - Name of a table."
+    required: false
+    advanced: true
+    group: node-advanced
 
   - name: JVM_OPT_RING_DELAY_MS
+    displayName: "Join Ring Delay"
+    type: integer
     description: "Allows overriding of the default RING_DELAY (30000ms), which is the amount of time a node waits before joining the ring."
-    default: ""
+    hint: "-Dcassandra.ring_delay_ms - In milliseconds - 30000 if not set."
+    required: false
+    group: node-advanced
 
   - name: JVM_OPT_TRIGGERS_DIR
-    description: "Set the default location for the trigger JARs. (Default: conf/triggers)"
-    default: ""
+    displayName: "Trigger JAR directory"
+    type: string
+    description: "Set the default location for the trigger JARs. (Default: conf/triggers)."
+    hint: "-Dcassandra.triggers_dir - 'conf/triggers' if not set."
+    required: false
+    advanced: true
+    group: directories
 
   - name: JVM_OPT_WRITE_SURVEY
+    displayName: "Enable Write Survey"
+    type: boolean
     description: "For testing new compaction and compression strategies. It allows you to experiment with different strategies and benchmark write performance differences without affecting the production workload."
-    default: ""
+    hint: "-Dcassandra.write_survey - false if not set."
+    required: false
+    group: node-advanced
 
   - name: JVM_OPT_DISABLE_AUTH_CACHES_REMOTE_CONFIGURATION
+    displayName: "Disable Auth Cache Remote Configuration"
+    type: boolean
     description: "To disable configuration via JMX of auth caches (such as those for credentials, permissions and roles). This will mean those config options can only be set (persistently) in cassandra.yaml and will require a restart for new values to take effect."
-    default: ""
+    hint: "-Dcassandra.disable_auth_caches_remote_configuration - false if not set."
+    required: false
+    group: security
 
   - name: JVM_OPT_FORCE_DEFAULT_INDEXING_PAGE_SIZE
+    displayName: "Force Indexing Page Size"
+    type: boolean
     description: "To disable dynamic calculation of the page size used when indexing an entire partition (during initial index build/rebuild). If set to true, the page size will be fixed to the default of 10000 rows per page."
-    default: ""
+    hint: "-Dcassandra.force_default_indexing_page_size - false if not set."
+    required: false
+    group: node-advanced
+    advanced: true
 
   - name: JVM_OPT_PREFER_IPV4_STACK
+    displayName: "Prefer IPv4 Stack"
+    type: boolean
     description: "Prefer binding to IPv4 network intefaces (when net.ipv6.bindv6only=1). See http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6342561 (short version: comment out this entry to enable IPv6 support)."
+    hint: "-Djava.net.preferIPv4Stack - Defaults to true."
     default: "true"
+    group: "network"
 
   - name: JVM_OPT_EXPIRATION_DATE_OVERFLOW_POLICY
-    description: "Defines how to handle INSERT requests with TTL exceeding the maximum supported expiration date."
-    default: ""
+    displayName: "Expiration Date Overflow Policy"
+    type: string
+    description: "Defines how to handle INSERT requests with TTL exceeding the maximum supported expiration date. (https://docs.datastax.com/en/dse/6.0/dse-dev/datastax_enterprise/config/cassandraSystemProperties.html)"
+    hint: "-Dcassandra.expiration_date_overflow_policy - REJECT if not set."
+    required: false
+    group: node-advanced
+    enum:
+      - REJECT
+      - CAP
+      - CAP-NOWARN
 
   - name: JVM_OPT_THREAD_PRIORITY_POLICY
-    description: "allows lowering thread priority without being root on linux - probably not necessary on Windows but doesn't harm anything."
-    default: "42"
+    displayName: "Thread Priority Policy"
+    type: integer
+    description: "Allows lowering thread priority without being root on linux - probably not necessary on Windows but doesn't harm anything."
+    hint: "-XX:ThreadPriorityPolicy - Can be 0 or 1."
+    default: "0"
+    group: jvm
 
   - name: JVM_OPT_THREAD_STACK_SIZE
+    displayName: "Thread Stack Size"
+    type: string
     description: "Per-thread stack size."
+    hint: "-Xss - Can have k, m, g postfix. Defaults to 256k."
     default: "256k"
+    group: jvm
 
   - name: JVM_OPT_STRING_TABLE_SIZE
-    description: "Larger interned string table, for gossip's benefit (CASSANDRA-6410)"
+    displayName: "String Table Size"
+    type: integer
+    description: "Larger interned string table, for gossip's benefit (CASSANDRA-6410)."
+    hint: "-XX:StringTableSize - Number of Strings."
     default: "1000003"
+    group: jvm
 
   - name: JVM_OPT_SURVIVOR_RATIO
-    description: "CMS Settings: SurvivorRatio"
-    default: "8"
+    displayName: "CMS: Survivor Ratio"
+    type: integer
+    description: "The Ratio between eden and survivor space parts of the heap. A value of 6 sets the ratio between eden and a survivor space to 1:6. In other words, each survivor space will be one-sixth the size of eden, and thus one-eighth the size of the young generation (not one-seventh, because there are two survivor spaces)."
+    hint: "-XX:SurvivorRatio - JVM dependent if not set."
+    required: false
+    group: jvm
 
   - name: JVM_OPT_MAX_TENURING_THRESHOLD
-    description: "CMS Settings: MaxTenuringThreshold"
-    default: "1"
+    displayName: "CMS: Max Tenuring Threshold"
+    type: integer
+    description: "The number of times an object is moved between eden spaces before it is promoted to the survivor (old-gen) space."
+    hint: "-XX:MaxTenuringThreshold - JVM dependent if not set."
+    required: false
+    group: jvm
 
   - name: JVM_OPT_CMS_INITIATING_OCCUPANCY_FRACTION
-    description: "CMS Settings: CMSInitiatingOccupancyFraction"
-    default: "75"
+    displayName: "CMS: InitiatingOccupancyFraction"
+    type: integer
+    description: "The amount of heap that needs to be full before a CMS GC cycle is triggered."
+    hint: "-XX:CMSInitiatingOccupancyFraction - JVM dependent if not set."
+    required: false
+    group: jvm
+
+  - name: JVM_OPT_USE_CMS_INITIATING_OCCUPANCY_ONLY
+    displayName: "CMS: UseCMSInitiatingOccupancyOnly"
+    type: boolean
+    description: "If set to true, the GC will not autodetect when to trigger a GC cycle, only the defined CMSInitiatingOccupancyFraction."
+    hint: "-XX+UseCMSInitiatingOccupancyOnly - False if not set."
+    required: false
+    group: jvm
 
   - name: JVM_OPT_CMS_WAIT_DURATION
-    description: "CMS Settings: CMSWaitDuration"
-    default: "10000"
+    displayName: "CMS: WaitDuration"
+    type: integer
+    description: "Once CMS collection is triggered, it will wait for next young collection to perform initial mark right after. This parameter specifies how long CMS can wait for young collection."
+    hint: "-XX:CMSWaitDuration - JVM dependent if not set."
+    required: false
+    group: jvm
 
-  - name: JVM_OPT_NUMBER_OF_GC_LOG_FILES
-    description: "GC logging options: NumberOfGCLogFiles"
-    default: "10"
-
-  - name: JVM_OPT_GC_LOG_FILE_SIZE
-    description: "GC logging options: GCLOGFILESIZE"
-    default: "10M"
-
-  - name: JVM_OPT_GC_LOG_DIRECTORY
-    description: "GC logging options: GC_LOG_DIRECTORY"
-    default: ""
-
-  - name: JVM_OPT_PRINT_FLS_STATISTICS
-    description: "GC logging options: PrintFLSStatistics"
-    default: ""
+  - name: JVM_OPT_PARALLEL_GC_THREADS
+    displayName: "GC - Parallel GC Threads"
+    type: integer
+    description: "For systems with > 8 cores, the default ParallelGCThreads is 5/8 the number of logical cores. Otherwise equal to the number of cores when 8 or less. Machines with > 10 cores should try setting these to <= full cores."
+    hint: "-XX:ParallelGCThreads - Number of Threads."
+    required: false
+    group: jvm
 
   - name: JVM_OPT_CONC_GC_THREADS
+    displayName: "GC - Concurrent GC Threads"
+    type: integer
     description: "By default, ConcGCThreads is 1/4 of ParallelGCThreads. Setting both to the same value can reduce STW durations."
-    default: ""
+    hint: "-XX:ConcGCThreads - Number of Threads."
+    required: false
+    group: jvm
 
-  - name: JVM_OPT_INITIATING_HEAP_OCCUPANCY_PERCENT
-    description: "Save CPU time on large (>= 16GB) heaps by delaying region scanning until the heap is 70% full. The default in Hotspot 8u40 is 40%."
-    default: ""
+  - name: JVM_OPT_NUMBER_OF_GC_LOG_FILES
+    displayName: "GC Number of Log Files"
+    type: integer
+    description: "GC logging options: NumberOfGCLogFiles."
+    hint: "-XX:NumberOfGCLogFiles - Number of log files. Defaults to 10."
+    default: "10"
+    group: jvm
 
-  - name: JVM_OPT_MAX_GC_PAUSE_MILLIS
-    description: "Main G1GC tunable: lowering the pause target will lower throughput and vise versa."
-    default: ""
+  - name: JVM_OPT_GC_LOG_FILE_SIZE
+    displayName: "GC Log File Size"
+    type: string
+    description: "GC logging options: GCLOGFILESIZE."
+    hint: "-XX:GCLogFileSize - Size of log files. Defaults to 10M."
+    default: "10M"
+    group: jvm
 
-  - name: JVM_OPT_G1R_SET_UPDATING_PAUSE_TIME_PERCENT
-    description: "Have the JVM do less remembered set work during STW, instead preferring concurrent GC. Reduces p99.9 latency."
-    default: ""
+  - name: JVM_OPT_GC_LOG_DIRECTORY
+    displayName: "GC Log Directory"
+    type: string
+    description: "GC logging options: GC_LOG_DIRECTORY."
+    hint: "-Xloggc: - File name for GC logs. Use for debugging."
+    advanced: true
+    required: false
+    group: jvm
+
+  - name: JVM_OPT_PRINT_FLS_STATISTICS
+    displayName: "GC Print FLS Statistics"
+    type: integer
+    description: "GC logging options: PrintFLSStatistics."
+    hint: "-XX:PrintFLSStatistics - Can be 0 (off), 1 or 2. Off if not set."
+    required: false
+    group: jvm
 
   - name: CUSTOM_JVM_OPTIONS_BASE64
-    description: "Base64-encoded JVM options appended to jvm.options."
-    default: ""
-
-  - name: POD_MANAGEMENT_POLICY
-    description: "podManagementPolicy of the Cassandra Statefulset"
-    default: "OrderedReady"
+    displayName: "Custom JVM Options"
+    hint: "Base64 encoded JVM options."
+    description: "Base64-encoded JVM options are appended to the default jvm.options and overwrite existing values there."
+    type: string
+    required: false
+    group: jvm
 
   ################################################################################
   ################################ Repair options ################################
   ################################################################################
 
   - name: REPAIR_POD
+    displayName: "Pod to Repair"
     description: "Name of the pod on which 'nodetool repair' should be run."
-    default: ""
+    hint: "Name of a pod."
+    required: false
+    type: "string"
     trigger: repair
+    group: repair
 
   ################################################################################
-  ################################ Repair options ################################
+  ############################### Recovery options ###############################
   ################################################################################
 
   - name: RECOVERY_CONTROLLER
-    displayName: "Enables or disables the recovery controller"
-    description: "Needs to be true for automatic failure recovery and node eviction"
+    displayName: "Recovery Controller Enabled"
+    type: boolean
+    description: "Needs to be true for automatic failure recovery and node eviction."
+    hint: "Start the Recovery Controller."
     default: "false"
+    group: recovery
 
   - name: RECOVERY_CONTROLLER_DOCKER_IMAGE
-    description: "Recovery controller Docker image."
+    displayName: "Docker Image"
+    description: "Docker image for the recovery controller."
+    hint: "Docker Image."
+    type: string
     default: "${RECOVERY_CONTROLLER_DOCKER_IMAGE}"
+    advanced: true
+    group: recovery
 
   - name: RECOVERY_CONTROLLER_DOCKER_IMAGE_PULL_POLICY
+    displayName: "Pull Policy"
     description: "Recovery controller Docker image pull policy."
+    hint: "Pull Policy for the docker image."
+    type: string
     default: "Always"
+    advanced: true
+    enum:
+      - "Always"
+      - "IfNotPresent"
+      - "Never"
+    group: recovery
 
   - name: RECOVERY_CONTROLLER_CPU_MC
-    description: "CPU request (in millicores) for the Recovery controller container."
+    displayName: "CPU Request"
+    hint: "Allowed CPU usage in millicores."
+    description: "CPU request for the Recovery controller container."
+    type: integer
     default: "50"
+    advanced: true
+    group: recovery
 
   - name: RECOVERY_CONTROLLER_CPU_LIMIT_MC
-    description: "CPU limit (in millicores) for the Recovery controller container."
+    displayName: "CPU Limit"
+    hint: "Allowed CPU limit in millicores."
+    description: "CPU limit for the Recovery controller container."
+    type: integer
     default: "200"
+    advanced: true
+    group: recovery
 
   - name: RECOVERY_CONTROLLER_MEM_MIB
-    description: "Memory request (in MiB) for the Recovery controller container."
+    displayName: "Memory Request"
+    description: "Memory request for the Recovery controller container."
+    hint: "Allowed Memory usage in MiB."
     default: "50"
+    type: integer
+    advanced: true
+    group: recovery
 
   - name: RECOVERY_CONTROLLER_MEM_LIMIT_MIB
-    description: "Memory limit (in MiB) for the Recovery controller container."
+    displayName: "Memory Limit"
+    description: "Memory limit for the Recovery controller container."
+    hint: "Temporary allowed Memory limit in MiB."
     default: "256"
+    type: integer
+    advanced: true
+    group: recovery
