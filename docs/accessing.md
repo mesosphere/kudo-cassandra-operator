@@ -129,6 +129,7 @@ Cassandra nodes. There are the following options:
   the native transport port on the nodes
 - EXTERNAL_RPC_PORT="9160" The external port that is forwarded to the rpc port
   on the nodes
+- EXTERNAL_SERVICE_ANNOTATIONS Annotations that are added to the external service. E.g., this can be used to configure ExternalDNS access
 
 :warning: The external service definition will at the moment not be deleted if
 you set EXTERNAL_NATIVE_TRANSPORT and EXTERNAL_RPC to "false". If you need to

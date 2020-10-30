@@ -117,6 +117,7 @@ Allow access to the Cassandra Cluster from outside Kubernetes.
 | **EXTERNAL_RPC**                   | This exposes the Cassandra cluster via an external service so it can be accessed from outside the Kubernetes cluster. Works only if START_RPC is true. | False   |
 | **EXTERNAL_NATIVE_TRANSPORT_PORT** | The external port to use for Cassandra native transport protocol.                                                                                      | 9042    |
 | **EXTERNAL_RPC_PORT**              | The external port to use for Cassandra rpc protocol.                                                                                                   | 9160    |
+| **EXTERNAL_SERVICE_ANNOTATIONS**   | Custom annotations for the external service.                                                                                                           |         |
 
 ## <a name="metrics"></a> Metrics Export
 

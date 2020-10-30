@@ -338,6 +338,14 @@ parameters:
     default: "9160"
     group: external
 
+  - name: EXTERNAL_SERVICE_ANNOTATIONS
+    displayName: "External service annotations"
+    hint: "Annotations added to the external service."
+    type: map
+    description: "Custom annotations for the external service."
+    default:
+    group: external
+
   - name: BOOTSTRAP_TIMEOUT
     displayName: "Bootstrap Timeout"
     type: string
