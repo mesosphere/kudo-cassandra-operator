@@ -340,7 +340,7 @@ parameters:
 
   - name: EXTERNAL_SERVICE_ANNOTATIONS
     displayName: "External service annotations"
-    hint: "Annotations added to the external service."
+    hint: "Key-Value Pairs of annotations."
     type: map
     description: "Custom annotations for the external service."
     default:
