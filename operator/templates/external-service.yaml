@@ -3,6 +3,8 @@ kind: Service
 metadata:
   name: {{ .Name }}-svc-external
   namespace: {{ .Namespace }}
+  annotations:
+    {{ toYaml .Params.EXTERNAL_SERVICE_ANNOTATIONS }}
 spec:
   type: LoadBalancer
   externalTrafficPolicy: Local
