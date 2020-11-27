@@ -423,6 +423,6 @@ require changes to the used docker image.
 
 All parameters that are not assigned to a specific group.
 
-| Name | Description | Default |
-| ---- | ----------- | ------- |
-
+| Name                              | Description                                                                                                                 | Default |
+| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------- | ------- |
+| **PERMISSIONS_CACHE_MAX_ENTRIES** | The maximum number of entries that are held by the standard authentication cache and row-level access control (RLAC) cache. | 1000    |
