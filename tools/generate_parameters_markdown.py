@@ -25,29 +25,41 @@ log = logging.getLogger(__name__)
 def generate_markdown_table(input_params_yaml, output_markdown_file_path):
     try:
         with open(input_params_yaml, "r") as input:
-            parameters = yaml.safe_load(input)["parameters"]
-            parameter_fields = ["name", "description", "default"]
+            yamlData = yaml.safe_load(input)
 
-            writer = MarkdownTableWriter()
-            writer.table_name = "Parameters"
-            writer.styles = [
-                Style(align="left", font_weight="bold"),
+            groups = yamlData["groups"]
+            parameters = yamlData["parameters"]
+
+            groupTable = MarkdownTableWriter()
+            groupTable.table_name = "Groups"
+            groupTable.styles = [
                 Style(align="left"),
                 Style(align="left"),
             ]
-            writer.headers = [field.capitalize() for field in parameter_fields]
-            writer.margin = 1
-
-            writer.value_matrix = [
-                list([parameter.get(field) for field in parameter_fields])
-                for parameter in parameters
+            groupTable.headers = [ "Group", "Description" ] #"[field.capitalize() for field in group_fields]
+            groupTable.margin = 1
+            groupTable.value_matrix = [
+                # list([group.get(field) for field in group_fields])
+                gen_group_header(group) for group in groups
             ]
+
+            emptyGroup = {
+                'name': '',
+                'displayName': 'Ungrouped Parameters',
+                'description': 'All parameters that are not assigned to a specific group.'
+            }
 
             if output_markdown_file_path:
                 try:
                     with open(output_markdown_file_path, "w") as output:
-                        writer.stream = output
-                        writer.write_table()
+                        groupTable.stream = output
+                        groupTable.write_table()
+
+                        for group in groups:
+                            gen_group(group, parameters, output)
+
+                        gen_group(emptyGroup, parameters, output)
+
                 except Exception as e:
                     logging.error(
                         f"Failed to output Markdown to {output_markdown_file_path}",
@@ -55,7 +67,9 @@ def generate_markdown_table(input_params_yaml, output_markdown_file_path):
                     )
                     return 1
             else:
-                print(writer.dumps())
+                logging.error(
+                    f"Required markdown output"
+                )
 
             return 0
     except Exception as e:
@@ -65,10 +79,48 @@ def generate_markdown_table(input_params_yaml, output_markdown_file_path):
         return 1
 
 
+def gen_group_header(group):
+    display_name = group.get("displayName", group.get("name"))
+
+    return [f'[{display_name}](#{group.get("name")})', group.get("description")]
+
+def gen_group(group, parameters, output):
+    parameter_fields = ["name", "description", "default"]
+
+    display_name = group.get("displayName", group.get("name"))
+
+    output.write(f'## <a name="{group.get("name")}"></a>  {display_name} \n')
+    if "description" in group:
+        output.write(f'{group.get("description")}\n')
+
+    output.write('\n\n')
+
+    paramTable = MarkdownTableWriter()
+
+    # paramTable.table_name = group["displayName"]
+    paramTable.styles = [
+        Style(align="left", font_weight="bold"),
+        Style(align="left"),
+        Style(align="left"),
+    ]
+    paramTable.headers = [field.capitalize() for field in parameter_fields]
+    paramTable.margin = 1
+
+    paramTable.value_matrix = [
+        list([parameter.get(field) for field in parameter_fields])
+        for parameter in parameters if parameter.get("group", "") == group.get("name")
+    ]
+
+    paramTable.stream = output
+    paramTable.write_table()
+
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Generate a markdown table of all parameters in a KUDO "
-        + "Operator params.yaml file"
+                    + "Operator params.yaml file"
     )
 
     parser.add_argument(

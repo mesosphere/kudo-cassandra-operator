@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/kudobuilder/kudo/pkg/apis/kudo/v1beta1"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/kudobuilder/test-tools/pkg/client"
 	"github.com/kudobuilder/test-tools/pkg/debug"
@@ -185,13 +186,15 @@ var _ = Describe(TestName, func() {
 
 		By("Configuring Cassandra JVM options through custom options")
 		parameter = "-XX:CMSWaitDuration"
-		initialValue = "10000"
+		initialValue = ""
 		desiredValue = "11000"
 		desiredEncodedProperties = base64.StdEncoding.EncodeToString(
 			[]byte(parameter + "=" + desiredValue),
 		)
 
 		configuration, err = cassandra.NodeJVMOptions(Client, Operator.Instance)
+
+		log.Infof("JVMOptions: %v", configuration)
 
 		Expect(err).To(BeNil())
 		Expect(configuration[parameter]).To(Equal(initialValue))

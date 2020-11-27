@@ -243,6 +243,10 @@ with `tools/compile_templates.sh`.
 
 ### Running tests
 
+```bash
+./tests/run.sh <suitename>
+```
+
 ### Style guide
 
 #### Opening pull requests

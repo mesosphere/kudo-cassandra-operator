@@ -371,7 +371,9 @@ data:
     # Constantly re-preparing statements is a performance penalty.
     #
     # Default value ("auto") is 1/256th of the heap or 10MB, whichever is greater
+    {{ if .Params.PREPARED_STATEMENTS_CACHE_SIZE_MB }}
     prepared_statements_cache_size_mb: {{ .Params.PREPARED_STATEMENTS_CACHE_SIZE_MB }}
+    {{ end }}
 
     # Maximum size of the Thrift prepared statement cache
     #
@@ -380,7 +382,9 @@ data:
     # See description of 'prepared_statements_cache_size_mb' above for more information.
     #
     # Default value ("auto") is 1/256th of the heap or 10MB, whichever is greater
+    {{ if .Params.THRIFT_PREPARED_STATEMENTS_CACHE_SIZE_MB }}
     thrift_prepared_statements_cache_size_mb: {{ .Params.THRIFT_PREPARED_STATEMENTS_CACHE_SIZE_MB }}
+    {{ end }}
 
     # Maximum size of the key cache in memory.
     #
@@ -394,7 +398,9 @@ data:
     # NOTE: if you reduce the size, you may not get you hottest keys loaded on startup.
     #
     # Default value is empty to make it "auto" (min(5% of Heap (in MB), 100MB)). Set to 0 to disable key cache.
+    {{ if .Params.KEY_CACHE_SIZE_IN_MB }}
     key_cache_size_in_mb: {{ .Params.KEY_CACHE_SIZE_IN_MB }}
+    {{ end }}
 
     # Duration in seconds after which Cassandra should
     # save the key cache. Caches are saved to saved_caches_directory as
@@ -443,7 +449,9 @@ data:
     # has limited use.
     #
     # Default is 0 to disable saving the row cache.
+    {{ if .Params.ROW_CACHE_SAVE_PERIOD }}
     row_cache_save_period: {{ .Params.ROW_CACHE_SAVE_PERIOD }}
+    {{ end }}
 
     # Number of keys from the row cache to save.
     # Specify 0 (which is the default), meaning all keys are going to be saved
@@ -464,7 +472,9 @@ data:
     #
     # Default value is empty to make it "auto" (min(2.5% of Heap (in MB), 50MB)). Set to 0 to disable counter cache.
     # NOTE: if you perform counter deletes and rely on low gcgs, you should disable the counter cache.
+    {{ if .Params.COUNTER_CACHE_SIZE_IN_MB }}
     counter_cache_size_in_mb: {{ .Params.COUNTER_CACHE_SIZE_IN_MB }}
+    {{ end }}
 
     # Duration in seconds after which Cassandra should
     # save the counter cache (keys only). Caches are saved to saved_caches_directory as
@@ -717,7 +727,9 @@ data:
     # shrink their index summaries in order to meet this limit.  However, this
     # is a best-effort process. In extreme conditions Cassandra may need to use
     # more than this amount of memory.
+    {{ if .Params.INDEX_SUMMARY_CAPACITY_IN_MB }}
     index_summary_capacity_in_mb: {{ .Params.INDEX_SUMMARY_CAPACITY_IN_MB }}
+    {{ end }}
 
     # How frequently index summaries should be resampled.  This is done
     # periodically to redistribute memory from the fixed-size pool to sstables
@@ -825,7 +837,7 @@ data:
 
     # The maximum number of concurrent client connections per source ip.
     # The default is -1, which means unlimited.
-    {{ if .Params.NATIVE_TRANSPORT_MAX_FRAME_SIZE_IN_MB }}
+    {{ if .Params.NATIVE_TRANSPORT_MAX_CONCURRENT_CONNECTIONS_PER_IP }}
     native_transport_max_concurrent_connections_per_ip: {{ .Params.NATIVE_TRANSPORT_MAX_CONCURRENT_CONNECTIONS_PER_IP }}
     {{ end }}
 
@@ -1277,11 +1289,17 @@ data:
     # Disabling it will result in larger (but fewer) network packets being sent,
     # reducing overhead from the TCP protocol itself, at the cost of increasing
     # latency if you block for cross-datacenter responses.
+    {{ if .Params.INTER_DC_TCP_NODELAY }}
     inter_dc_tcp_nodelay: {{ .Params.INTER_DC_TCP_NODELAY }}
+    {{ end }}
 
     # TTL for different trace types used during logging of the repair process.
+    {{ if .Params.TRACETYPE_QUERY_TTL }}
     tracetype_query_ttl: {{ .Params.TRACETYPE_QUERY_TTL }}
+    {{ end }}
+    {{ if .Params.TRACETYPE_REPAIR_TTL }}
     tracetype_repair_ttl: {{ .Params.TRACETYPE_REPAIR_TTL }}
+    {{ end }}
 
     # By default, Cassandra logs GC Pauses greater than 200 ms at INFO level
     # This threshold can be adjusted to minimize logging if necessary
@@ -1304,13 +1322,6 @@ data:
     # Enables materialized view creation on this node.
     # Materialized views are considered experimental and are not recommended for production use.
     enable_materialized_views: {{ .Params.ENABLE_MATERIALIZED_VIEWS }}
-
-    # The default Windows kernel timer and scheduling resolution is 15.6ms for power conservation.
-    # Lowering this value on Windows can provide much tighter latency and better throughput, however
-    # some virtualized environments may see a negative performance impact from changing this setting
-    # below their system default. The sysinternals 'clockres' tool can confirm your system's default
-    # setting.
-    windows_timer_interval: {{ .Params.WINDOWS_TIMER_INTERVAL }}
 
     # Enables encrypting data at-rest (on disk). Different key providers can be plugged in, but the default reads from
     # a JCE-style keystore. A single keystore can hold multiple keys, but the one referenced by
@@ -1371,7 +1382,9 @@ data:
     # GC Pauses greater than gc_warn_threshold_in_ms will be logged at WARN level
     # Adjust the threshold based on your application throughput requirement
     # By default, Cassandra logs GC Pauses greater than 200 ms at INFO level
+    {{ if .Params.GC_WARN_THRESHOLD_IN_MS }}
     gc_warn_threshold_in_ms: {{ .Params.GC_WARN_THRESHOLD_IN_MS }}
+    {{ end }}
 
     # Maximum size of any value in SSTables. Safety measure to detect SSTable corruption
     # early. Any value size larger than this threshold will result into marking an SSTable
@@ -1380,27 +1393,8 @@ data:
     max_value_size_in_mb: {{ .Params.MAX_VALUE_SIZE_IN_MB }}
     {{ end }}
 
-    # Back-pressure settings #
-    # If enabled, the coordinator will apply the back-pressure strategy specified below to each mutation
-    # sent to replicas, with the aim of reducing pressure on overloaded replicas.
-    back_pressure_enabled: {{ .Params.BACK_PRESSURE_ENABLED }}
-    # The back-pressure strategy applied.
-    # The default implementation, RateBasedBackPressure, takes three arguments:
-    # high ratio, factor, and flow type, and uses the ratio between incoming mutation responses and outgoing mutation requests.
-    # If below high ratio, outgoing mutations are rate limited according to the incoming rate decreased by the given factor;
-    # if above high ratio, the rate limiting is increased by the given factor;
-    # such factor is usually best configured between 1 and 10, use larger values for a faster recovery
-    # at the expense of potentially more dropped mutations;
-    # the rate limiting is applied according to the flow type: if FAST, it's rate limited at the speed of the fastest replica,
-    # if SLOW at the speed of the slowest one.
-    # New strategies can be added. Implementors need to implement org.apache.cassandra.net.BackpressureStrategy and
-    # provide a public constructor accepting a Map<String, Object>.
-    back_pressure_strategy:
-      - class_name: {{ .Params.BACK_PRESSURE_STRATEGY_CLASS_NAME }}
-        parameters:
-          - high_ratio: {{ .Params.BACK_PRESSURE_STRATEGY_HIGH_RATIO }}
-            factor: {{ .Params.BACK_PRESSURE_STRATEGY_FACTOR }}
-            flow: {{ .Params.BACK_PRESSURE_STRATEGY_FLOW }}
+    # Back-pressure settings # Removed, see: https://issues.apache.org/jira/browse/CASSANDRA-15375
+
     # Coalescing Strategies #
     # Coalescing multiples messages turns out to significantly boost message processing throughput (think doubling or more).
     # On bare metal, the floor for packet processing throughput is high enough that many applications won't notice, but in
