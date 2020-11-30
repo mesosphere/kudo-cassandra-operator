@@ -172,7 +172,7 @@ parameters:
     type: string
     description: "Cassandra node Docker image."
     hint: "Docker Image for Cassandra."
-    default: "mesosphere/cassandra:3.11.7-1.0.2"
+    default: "mesosphere/cassandra:3.11.7-1.0.3"
     advanced: true
     group: general
 
@@ -469,7 +469,7 @@ parameters:
     hint: "The Medusa Docker Image."
     description: "Medusa backup Docker image which is used to make backups."
     type: string
-    default: "mesosphere/kudo-cassandra-medusa:0.6.0-1.0.2"
+    default: "mesosphere/kudo-cassandra-medusa:0.6.0-1.0.3"
     advanced: true
     group: backup
 
@@ -627,7 +627,7 @@ parameters:
     type: string
     hint: "Prometheus Docker Image."
     description: "The docker image of the Prometheus exporter."
-    default: "mesosphere/cassandra-prometheus-exporter:2.3.4-1.0.2"
+    default: "mesosphere/cassandra-prometheus-exporter:2.3.4-1.0.3"
     advanced: true
     group: metrics
 
@@ -1022,6 +1022,10 @@ parameters:
     hint: "credentials_update_interval_in_ms - Update interval in milliseconds."
     required: false
     group: security
+
+  - name: PERMISSIONS_CACHE_MAX_ENTRIES
+    description: "The maximum number of entries that are held by the standard authentication cache and row-level access control (RLAC) cache."
+    default: "1000"
 
   - name: PERMISSIONS_VALIDITY_IN_MS
     displayName: "Permissions Validity Period"
@@ -2133,7 +2137,7 @@ parameters:
     description: "Docker image for the recovery controller."
     hint: "Docker Image."
     type: string
-    default: "mesosphere/kudo-cassandra-recovery:0.0.2-1.0.2"
+    default: "mesosphere/kudo-cassandra-recovery:0.0.2-1.0.3"
     advanced: true
     group: recovery
 

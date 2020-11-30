@@ -1023,6 +1023,10 @@ parameters:
     required: false
     group: security
 
+  - name: PERMISSIONS_CACHE_MAX_ENTRIES
+    description: "The maximum number of entries that are held by the standard authentication cache and row-level access control (RLAC) cache."
+    default: "1000"
+
   - name: PERMISSIONS_VALIDITY_IN_MS
     displayName: "Permissions Validity Period"
     type: integer
