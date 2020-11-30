@@ -37,7 +37,7 @@ Common settings for the Operator.
 | **NODE_MEM_LIMIT_MIB**            | Memory limit for the Cassandra node containers.                                                                                                            | 4096                              |
 | **NODE_DISK_SIZE_GIB**            | Disk size (in GiB) for the Cassandra node containers.                                                                                                      | 20                                |
 | **NODE_STORAGE_CLASS**            | The storage class to be used in volumeClaimTemplates. By default, it is not required and the default storage class is used.                                |                                   |
-| **NODE_DOCKER_IMAGE**             | Cassandra node Docker image.                                                                                                                               | mesosphere/cassandra:3.11.7-1.0.2 |
+| **NODE_DOCKER_IMAGE**             | Cassandra node Docker image.                                                                                                                               | mesosphere/cassandra:3.11.7-1.0.3 |
 | **NODE_DOCKER_IMAGE_PULL_POLICY** | Cassandra node Docker image pull policy.                                                                                                                   | Always                            |
 | **POD_MANAGEMENT_POLICY**         | Parallel startup may decrease the startup time of big clusters but lead to failing pods in the beginning when two nodes try to join at the very same time. | OrderedReady                      |
 | **OVERRIDE_CLUSTER_NAME**         | Override the name of the Cassandra cluster set by the operator. This shouldn't be explicit set, unless you know what you're doing.                         |                                   |
@@ -92,7 +92,7 @@ Configuration related to backup and restore of the Cassandra Cluster.
 | **BACKUP_MEDUSA_CPU_LIMIT_MC**             | CPU limit for the Medusa backup containers.                                                                       | 500                                          |
 | **BACKUP_MEDUSA_MEM_MIB**                  | Memory request for the Medusa backup containers.                                                                  | 256                                          |
 | **BACKUP_MEDUSA_MEM_LIMIT_MIB**            | Memory limit for the Medusa backup containers.                                                                    | 512                                          |
-| **BACKUP_MEDUSA_DOCKER_IMAGE**             | Medusa backup Docker image which is used to make backups.                                                         | mesosphere/kudo-cassandra-medusa:0.6.0-1.0.2 |
+| **BACKUP_MEDUSA_DOCKER_IMAGE**             | Medusa backup Docker image which is used to make backups.                                                         | mesosphere/kudo-cassandra-medusa:0.6.0-1.0.3 |
 | **BACKUP_MEDUSA_DOCKER_IMAGE_PULL_POLICY** | The Pull policy for the Medusa Docker Image.                                                                      | Always                                       |
 | **BACKUP_NAME**                            | The name of the backup to create or restore.                                                                      |                                              |
 
@@ -132,7 +132,7 @@ Metrics can be exported with the Prometheus Metrics Exporter.
 | **PROMETHEUS_EXPORTER_CPU_LIMIT_MC**             | CPU limit for the Prometheus exporter containers.                                                     | 1000                                                 |
 | **PROMETHEUS_EXPORTER_MEM_MIB**                  | Memory request for the Prometheus exporter containers.                                                | 512                                                  |
 | **PROMETHEUS_EXPORTER_MEM_LIMIT_MIB**            | Memory limit for the Prometheus exporter containers.                                                  | 512                                                  |
-| **PROMETHEUS_EXPORTER_DOCKER_IMAGE**             | The docker image of the Prometheus exporter.                                                          | mesosphere/cassandra-prometheus-exporter:2.3.4-1.0.2 |
+| **PROMETHEUS_EXPORTER_DOCKER_IMAGE**             | The docker image of the Prometheus exporter.                                                          | mesosphere/cassandra-prometheus-exporter:2.3.4-1.0.3 |
 | **PROMETHEUS_EXPORTER_DOCKER_IMAGE_PULL_POLICY** | Prometheus exporter Docker image pull policy.                                                         | Always                                               |
 
 ## <a name="recovery"></a> Recovery Controller
@@ -143,7 +143,7 @@ fails.
 | Name                                             | Description                                                        | Default                                        |
 | ------------------------------------------------ | ------------------------------------------------------------------ | ---------------------------------------------- |
 | **RECOVERY_CONTROLLER**                          | Needs to be true for automatic failure recovery and node eviction. | False                                          |
-| **RECOVERY_CONTROLLER_DOCKER_IMAGE**             | Docker image for the recovery controller.                          | mesosphere/kudo-cassandra-recovery:0.0.2-1.0.2 |
+| **RECOVERY_CONTROLLER_DOCKER_IMAGE**             | Docker image for the recovery controller.                          | mesosphere/kudo-cassandra-recovery:0.0.2-1.0.3 |
 | **RECOVERY_CONTROLLER_DOCKER_IMAGE_PULL_POLICY** | Recovery controller Docker image pull policy.                      | Always                                         |
 | **RECOVERY_CONTROLLER_CPU_MC**                   | CPU request for the Recovery controller container.                 | 50                                             |
 | **RECOVERY_CONTROLLER_CPU_LIMIT_MC**             | CPU limit for the Recovery controller container.                   | 200                                            |
