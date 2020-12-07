@@ -9,7 +9,7 @@ FROM cassandra:3.11.7
 
 RUN set -eux; \
   apt-get update; \
-  apt-get install -y --no-install-recommends libcap2-bin jq; \
+  apt-get install -y --no-install-recommends libcap2-bin jq awscli; \
   curl -Lo /etc/jolokia.tar.gz https://github.com/rhuss/jolokia/releases/download/v1.6.2/jolokia-1.6.2-bin.tar.gz; \
   tar xvfz /etc/jolokia.tar.gz; \
   mv jolokia-1.6.2/agents/jolokia-jvm.jar /etc/jolokia-agent.jar; \
