@@ -1,0 +1,18 @@
+apiVersion: kudo.dev/v1alpha1
+kind: TestSuite
+manifestDirs:
+  - ./manifests/
+commands:
+  - command: ./bin/kubectl-kudo init --unsafe-self-signed-webhook-ca --wait
+  - command: ./bin/kubectl create ns cassandra-upgrade-test
+  - command: ./bin/kubectl-kudo install -n cassandra-upgrade-test --skip-instance ../operator/
+testDirs:
+  - ./suites/upgrade
+startKIND: true
+kindConfig: ./suites/upgrade/kind-config.yaml
+{{- if not .IMAGE_DISAMBIGUATION_SUFFIX }}
+kindContainers:
+  - {{ .CASSANDRA_DOCKER_IMAGE }}
+{{- end }}
+timeout: 300
+parallel: 3

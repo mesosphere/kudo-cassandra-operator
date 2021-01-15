@@ -9,7 +9,7 @@ FROM ${CASSANDRA_DOCKER_IMAGE_FROM}
 
 RUN set -eux; \
   apt-get update; \
-  apt-get install -y --no-install-recommends libcap2-bin jq; \
+  apt-get install -y --no-install-recommends libcap2-bin jq awscli; \
   curl -Lo /etc/jolokia.tar.gz https://github.com/rhuss/jolokia/releases/download/v${JOLOKIA_VERSION}/jolokia-${JOLOKIA_VERSION}-bin.tar.gz; \
   tar xvfz /etc/jolokia.tar.gz; \
   mv jolokia-${JOLOKIA_VERSION}/agents/jolokia-jvm.jar /etc/jolokia-agent.jar; \

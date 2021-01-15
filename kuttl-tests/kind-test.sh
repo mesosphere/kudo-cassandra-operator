@@ -54,3 +54,4 @@ go get github.com/jstemmer/go-junit-report
 PATH="$(pwd)/bin:${PATH}"
 kubectl kuttl test --config=./suites/kuttl-common.yaml --artifacts-dir=${ARTIFACTS} 2>&1 | tee /dev/fd/2 | go-junit-report -set-exit-code > kuttl-dist/common-junit.xml
 kubectl kuttl test --config=./suites/kuttl-failure-recovery.yaml --artifacts-dir=${ARTIFACTS} 2>&1 | tee /dev/fd/2 | go-junit-report -set-exit-code > kuttl-dist/failure-recovery-junit.xml
+kubectl kuttl test --config=./suites/kuttl-upgrade.yaml --artifacts-dir=${ARTIFACTS} 2>&1 | tee /dev/fd/2 | go-junit-report -set-exit-code > kuttl-dist/upgrade-junit.xml
