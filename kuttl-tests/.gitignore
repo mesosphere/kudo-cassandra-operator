@@ -8,5 +8,6 @@ kubeconfig
 /suites/kuttl-failure-recovery.yaml
 /suites/kuttl-upgrade.yaml
 /suites/kuttl-common.yaml
+/suites/upgrade/upgrade-test/params.yaml
 /suites/common/install-test/params.yaml
 /suites/failure-recovery/node-failure/params.yaml

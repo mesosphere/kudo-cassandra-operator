@@ -51,6 +51,9 @@ ln -sf "./kind_${KIND_VERSION}_${OS}" ./bin/kind
 mkdir -p $ARTIFACTS
 go get github.com/jstemmer/go-junit-report
 
+# Make sure we don't have an existing kind cluster running
+./bin/kind delete cluster
+
 PATH="$(pwd)/bin:${PATH}"
 kubectl kuttl test --config=./suites/kuttl-common.yaml --artifacts-dir=${ARTIFACTS} 2>&1 | tee /dev/fd/2 | go-junit-report -set-exit-code > kuttl-dist/common-junit.xml
 kubectl kuttl test --config=./suites/kuttl-failure-recovery.yaml --artifacts-dir=${ARTIFACTS} 2>&1 | tee /dev/fd/2 | go-junit-report -set-exit-code > kuttl-dist/failure-recovery-junit.xml
