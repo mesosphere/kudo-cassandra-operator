@@ -2,5 +2,5 @@ apiVersion: kudo.dev/v1beta1
 kind: TestStep
 commands:
   - command: cat params.yaml
-  - command: kubectl kudo upgrade -n cassandra-upgrade-test --instance cassandra --app-version 3.11.7 -p NUM_TOKENS=256
+  - command: kubectl kudo upgrade -n cassandra-upgrade-test --instance cassandra -P params.yaml ../../../../operator/
     namespaced: true
