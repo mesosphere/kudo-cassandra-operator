@@ -27,6 +27,8 @@ import (
 // maws
 // source ../scripts/export_maws.sh
 // ./run.sh backup_restore
+//
+// Additionally, you can export LOCAL_CLUSTER=true to only use very limited resources
 
 var (
 	TestName          = "backup-restore-test"
