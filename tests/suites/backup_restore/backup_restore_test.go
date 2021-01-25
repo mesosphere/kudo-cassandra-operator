@@ -199,6 +199,22 @@ func createAwsCredentials() string {
 	return awsSecretName
 }
 
+func printBackupPodLogs() {
+	pods, err := kubernetes.ListPods(Client, TestNamespace)
+	if err != nil {
+		fmt.Printf("Failed to list pods: %v\n", err)
+	} else {
+		for _, p := range pods {
+			log, err2 := p.ContainerLogs("backup")
+			if err2 != nil {
+				fmt.Printf("Failed to get log for container 'backup' from pod %s\n", p.Name)
+			} else {
+				fmt.Printf("Log for container 'backup' from pod %s:\n%s\n", p.Name, log)
+			}
+		}
+	}
+}
+
 var _ = Describe("backup and restore", func() {
 
 	It("Creates and restores a backup with local JMX and no SSL", func() {
@@ -248,6 +264,7 @@ var _ = Describe("backup and restore", func() {
 
 		By("Waiting for the plan to complete")
 		err = Operator.Instance.WaitForPlanComplete("backup")
+		printBackupPodLogs()
 		Expect(err).To(BeNil())
 
 		By("Uninstalling the operator instance")
@@ -390,6 +407,7 @@ var _ = Describe("backup and restore", func() {
 
 		By("Waiting for the plan to complete")
 		err = Operator.Instance.WaitForPlanComplete("backup")
+		printBackupPodLogs()
 		Expect(err).To(BeNil())
 
 		By("Uninstalling the operator instance")
