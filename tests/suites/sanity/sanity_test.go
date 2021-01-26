@@ -247,7 +247,7 @@ var _ = Describe(TestName, func() {
 		Expect(repair).To(BeTrue())
 
 		By("Triggering a Cassandra node repair again to make sure it can execute twice")
-		podName, err = cassandra.PodName(Operator.Instance, 1)
+		podName, err = cassandra.FirstPodName(Operator.Instance)
 		Expect(err).To(BeNil())
 
 		err = Operator.Instance.UpdateParameters(map[string]string{
