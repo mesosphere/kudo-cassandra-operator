@@ -239,6 +239,7 @@ var _ = Describe(TestName, func() {
 		Expect(err).To(BeNil())
 
 		err = Operator.Instance.WaitForPlanComplete("repair")
+		suites.PrintPodLogs(Client, TestNamespace, "repair-job")
 		Expect(err).To(BeNil())
 
 		repair, err := cassandra.NodeWasRepaired(Client, Operator.Instance, podName)
