@@ -230,9 +230,10 @@ var _ = Describe(TestName, func() {
 		suites.AssertNumberOfCassandraNodes(Client, Operator, NodeCount)
 
 		By("Triggering a Cassandra node repair")
-		podName, err := cassandra.PodName(Operator.Instance, 0)
+		podName, err := cassandra.FirstPodName(Operator.Instance)
 		Expect(err).To(BeNil())
 
+		fmt.Printf("Run node repair for pod '%s'\n", podName)
 		err = Operator.Instance.UpdateParameters(map[string]string{
 			"REPAIR_POD": podName,
 		})
@@ -247,15 +248,17 @@ var _ = Describe(TestName, func() {
 		Expect(repair).To(BeTrue())
 
 		By("Triggering a Cassandra node repair again to make sure it can execute twice")
-		podName, err = cassandra.FirstPodName(Operator.Instance)
+		podName, err = cassandra.PodName(Operator.Instance, 1)
 		Expect(err).To(BeNil())
 
+		fmt.Printf("Run node repair for pod '%s'\n", podName)
 		err = Operator.Instance.UpdateParameters(map[string]string{
 			"REPAIR_POD": podName,
 		})
 		Expect(err).To(BeNil())
 
 		err = Operator.Instance.WaitForPlanComplete("repair")
+		suites.PrintPodLogs(Client, TestNamespace, "repair-job")
 		Expect(err).To(BeNil())
 
 		repair, err = cassandra.NodeWasRepaired(Client, Operator.Instance, podName)
