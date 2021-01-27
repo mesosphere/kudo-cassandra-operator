@@ -4,6 +4,10 @@ parameters:
     description: "A cassandra node that is used by cassandra stress"
     required: true
 
+  - name: CASSANDRA_DOCKER_IMAGE
+    description: "A docker image for Cassandra Stress pod"
+    default: "mesosphere/cassandra:3.11.7-1.0.3"
+
   - name: NUM_CLIENTS
     description: "Number of Cassandra Stress clients to start"
     default: "3"

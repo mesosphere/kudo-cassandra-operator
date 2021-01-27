@@ -2,6 +2,7 @@ NUM_CLIENTS: 120
 DURATION: 10m
 THREADS_PER_CLIENT: 500
 TARGET_HOST: cassandra-dc1-node-0.cassandra-svc.cassandra.svc.cluster.local
+CASSANDRA_DOCKER_IMAGE: "mesosphere/cassandra:3.11.7-1.0.3"
 KEYSPACE_NAME: "stress6"
 CONSISTENCY_LEVEL: "LOCAL_ONE"
 REPLICATION_STRING: "strategy=NetworkTopologyStrategy, datacenter1=1"
