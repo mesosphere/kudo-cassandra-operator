@@ -27,6 +27,10 @@ import (
 // maws
 // source ../scripts/export_maws.sh
 // ./run.sh backup_restore
+//
+// Additionally, you can export LOCAL_CLUSTER=true to only use very limited resources
+//
+// When running these tests locall, it helps to pre-load the required images with kind load docker-image <image-name>
 
 var (
 	TestName          = "backup-restore-test"
@@ -244,6 +248,7 @@ var _ = Describe("backup and restore", func() {
 
 		By("Waiting for the plan to complete")
 		err = Operator.Instance.WaitForPlanComplete("backup")
+		suites.PrintPodLogs(Client, TestNamespace, "backup")
 		Expect(err).To(BeNil())
 
 		By("Uninstalling the operator instance")
@@ -386,6 +391,7 @@ var _ = Describe("backup and restore", func() {
 
 		By("Waiting for the plan to complete")
 		err = Operator.Instance.WaitForPlanComplete("backup")
+		suites.PrintPodLogs(Client, TestNamespace, "backup")
 		Expect(err).To(BeNil())
 
 		By("Uninstalling the operator instance")
