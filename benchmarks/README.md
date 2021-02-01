@@ -4,16 +4,19 @@
 
 ### Set up some KUDO Cassandra instance information
 
-1. Ensure a configuration with clsuter
-2. cd mwt
-3. read [README](mwt/README.md)
+1. Ensure a configuration with cluster
+2. Ensure KUDO CRDs are installed on the cluster in `kudo-system` namespace. If not, issue the following:
+```
+kubectl kudo init
+```
+3. cd mwt
+4. read [README](mwt/README.md)
 
 ```bash
-kudo_cassandra_operator_name="cassandra"
-kudo_cassandra_instance_name="cassandra"
-kudo_cassandra_instance_namespace="cassandra"
-
-svc_endpoint="${kudo_cassandra_instance_name}-svc.${kudo_cassandra_instance_namespace}.svc.cluster.local"
+export kudo_cassandra_operator_name="cassandra"
+export kudo_cassandra_instance_name="cassandra"
+export kudo_cassandra_instance_namespace="cassandra"
+export svc_endpoint="${kudo_cassandra_instance_name}-svc.${kudo_cassandra_instance_namespace}.svc.cluster.local"
 ```
 
 ### Setup and Verify KUDO Cassandra
