@@ -1,10 +1,12 @@
 package suites
 
 import (
+	"fmt"
 	"os"
 	"time"
 
 	"github.com/kudobuilder/test-tools/pkg/client"
+	"github.com/kudobuilder/test-tools/pkg/kubernetes"
 	"github.com/kudobuilder/test-tools/pkg/kudo"
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
@@ -28,6 +30,22 @@ func AssertNumberOfCassandraNodes(client client.Client, op kudo.Operator, nodeCo
 
 		return upNormalNodes
 	}, 5*time.Minute, 15*time.Second).Should(Equal(nodeCount))
+}
+
+func PrintPodLogs(client client.Client, namespace, containerName string) {
+	pods, err := kubernetes.ListPods(client, namespace)
+	if err != nil {
+		fmt.Printf("Failed to list pods: %v\n", err)
+	} else {
+		for _, p := range pods {
+			log, err2 := p.ContainerLogs(containerName)
+			if err2 != nil {
+				fmt.Printf("Failed to get log for container '%s' from pod %s\n", containerName, p.Name)
+			} else {
+				fmt.Printf("Log for container '%s' from pod %s:\n%s\n", containerName, p.Name, log)
+			}
+		}
+	}
 }
 
 func IsLocalCluster() bool {

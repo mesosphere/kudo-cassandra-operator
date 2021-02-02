@@ -5,10 +5,13 @@
 ### Set up some KUDO Cassandra instance information
 
 1. Ensure a configuration with cluster
-2. Ensure KUDO CRDs are installed on the cluster in `kudo-system` namespace. If not, issue the following:
+2. Ensure KUDO CRDs are installed on the cluster in `kudo-system` namespace. If
+   not, issue the following:
+
 ```
 kubectl kudo init
 ```
+
 3. cd mwt
 4. read [README](mwt/README.md)
 
@@ -32,7 +35,8 @@ Which will:
 
 ### Deploy `cassandra-stress` operator
 
-This will deploy the `cassandra-stress` operator based on the parameters in `workloads/stress-params.yaml` file.
+This will deploy the `cassandra-stress` operator based on the parameters in
+`workloads/stress-params.yaml` file.
 
 ```bash
 kubectl kuttl test workload/
