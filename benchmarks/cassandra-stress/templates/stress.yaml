@@ -29,7 +29,7 @@ spec:
           effect: "NoExecute"
       containers:
         - name: cassandra-stress
-          image: mesosphere/cassandra:3.11.6-1.0.0
+          image: {{ .Params.CASSANDRA_DOCKER_IMAGE }}
           resources:
             requests:
               cpu: {{ .Params.STRESS_CPU_MC }}m
