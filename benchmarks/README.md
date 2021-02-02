@@ -35,7 +35,7 @@ Which will:
 This will deploy the `cassandra-stress` operator based on the parameters in `workloads/stress-params.yaml` file.
 
 ```bash
-k kuttl test workload/
+kubectl kuttl test workload/
 ```
 
 ### Check workload pods
