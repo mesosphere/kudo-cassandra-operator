@@ -1,4 +1,5 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
-  - command: kubectl exec "pod/cassandra-node-0" -n cassandra -c cassandra -- bash -c "nodetool status" 
+  - command: kubectl exec "pod/cassandra-dc1-node-0" -n cassandra -c cassandra -- bash -c "nodetool status" 
+  - command: kubectl exec "pod/cassandra-dc2-node-0" -n cassandra -c cassandra -- bash -c "nodetool status" 
