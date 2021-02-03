@@ -220,9 +220,7 @@ kubectl logs kudo-controller-manager-0 \
 ### Get endpoints
 
 ```bash
-kubectl get events \
-        --sort-by='{.lastTimestamp}' \
-        -n "${instance_namespace}"
+kubectl describe svc "${instance_name}-svc" -n "${instance_namespace}"
 ```
 
 ### Kubernetes events in the instance namespace
