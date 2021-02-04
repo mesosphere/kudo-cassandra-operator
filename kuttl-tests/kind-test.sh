@@ -9,7 +9,7 @@ readonly project_directory="$(readlink -f "${script_directory}/..")"
 source "${project_directory}/metadata.sh"
 
 KUBECTL_VERSION=1.18.4
-KUTTL_VERSION=0.5.0
+KUTTL_VERSION=0.8.0
 KUBECTL_KUDO_VERSION=${DS_KUDO_VERSION#v}
 KIND_VERSION=0.8.1
 
@@ -51,6 +51,10 @@ ln -sf "./kind_${KIND_VERSION}_${OS}" ./bin/kind
 mkdir -p $ARTIFACTS
 go get github.com/jstemmer/go-junit-report
 
+# Make sure we don't have an existing kind cluster running
+./bin/kind delete cluster
+
 PATH="$(pwd)/bin:${PATH}"
 kubectl kuttl test --config=./suites/kuttl-common.yaml --artifacts-dir=${ARTIFACTS} 2>&1 | tee /dev/fd/2 | go-junit-report -set-exit-code > kuttl-dist/common-junit.xml
 kubectl kuttl test --config=./suites/kuttl-failure-recovery.yaml --artifacts-dir=${ARTIFACTS} 2>&1 | tee /dev/fd/2 | go-junit-report -set-exit-code > kuttl-dist/failure-recovery-junit.xml
+kubectl kuttl test --config=./suites/kuttl-upgrade.yaml --artifacts-dir=${ARTIFACTS} 2>&1 | tee /dev/fd/2 | go-junit-report -set-exit-code > kuttl-dist/upgrade-junit.xml

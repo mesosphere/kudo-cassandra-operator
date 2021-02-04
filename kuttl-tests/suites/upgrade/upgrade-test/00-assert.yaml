@@ -1,0 +1,9 @@
+apiVersion: kudo.dev/v1beta1
+kind: Instance
+metadata:
+  name: cassandra
+  namespace: cassandra-upgrade-test
+status:
+  planStatus:
+    deploy:
+      status: COMPLETE
