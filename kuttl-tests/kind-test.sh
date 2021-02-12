@@ -9,7 +9,7 @@ readonly project_directory="$(readlink -f "${script_directory}/..")"
 source "${project_directory}/metadata.sh"
 
 KUBECTL_VERSION=1.18.4
-KUTTL_VERSION=0.5.0
+KUTTL_VERSION=0.8.0
 KUBECTL_KUDO_VERSION=${DS_KUDO_VERSION#v}
 KIND_VERSION=0.8.1
 
